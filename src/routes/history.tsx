@@ -1,9 +1,8 @@
 import { createFileRoute, useNavigate, redirect } from "@tanstack/react-router";
 import { ChevronLeft } from "lucide-react";
 import { useProgramStore } from "../stores/program-store";
-import { useTheme } from "../stores/ui-store";
-import { FN } from "../constants/theme";
 import { LIFTS } from "../constants/program";
+import { cn } from "../lib/cn";
 
 export const Route = createFileRoute("/history")({
   beforeLoad: () => {
@@ -14,44 +13,10 @@ export const Route = createFileRoute("/history")({
 });
 
 function HistoryPage() {
-  const { c } = useTheme();
   const navigate = useNavigate();
   const prog = useProgramStore((s) => s.prog);
 
   if (!prog) return null;
-
-  const appStyle = {
-    maxWidth: 460,
-    margin: "0 auto",
-    padding: "12px 16px 80px",
-  };
-  const topBarStyle = {
-    display: "flex",
-    justifyContent: "space-between",
-    alignItems: "center",
-    padding: "8px 0 16px",
-    minHeight: 44,
-  };
-  const iconBtnStyle = {
-    width: 44,
-    height: 44,
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    background: c.s1,
-    border: `1px solid ${c.b}`,
-    borderRadius: 10,
-    color: c.t3,
-    cursor: "pointer",
-  };
-  const sectionLbl = {
-    fontSize: 11,
-    fontWeight: 700 as const,
-    textTransform: "uppercase" as const,
-    letterSpacing: "1px",
-    color: c.t2,
-    marginBottom: 10,
-  };
 
   const prRecords = prog.wk.filter((w) => w.ne1).map((w) => ({ ...w.ne1!, dt: w.dt, cy: w.cy }));
   const liftData = LIFTS.map((l) => {
@@ -87,136 +52,53 @@ function HistoryPage() {
     });
 
   return (
-    <div style={appStyle}>
-      <div style={topBarStyle}>
-        <button onClick={() => navigate({ to: "/" })} style={iconBtnStyle}>
+    <div className="max-w-[460px] mx-auto px-4 py-3 pb-20">
+      <div className="flex justify-between items-center py-2 pb-4 min-h-[44px]">
+        <button
+          onClick={() => navigate({ to: "/" })}
+          className="w-[44px] h-[44px] flex items-center justify-center bg-th-s1 border border-th-b rounded-[10px] text-th-t3 cursor-pointer"
+        >
           <ChevronLeft size={18} />
         </button>
         <div />
       </div>
-      <h1 style={{ fontSize: 24, fontWeight: 800, margin: "0 0 16px" }}>History</h1>
-      <div style={sectionLbl}>1RM Progress</div>
-      <div
-        style={{
-          display: "flex",
-          flexDirection: "column",
-          gap: 6,
-          marginBottom: 24,
-        }}
-      >
+      <h1 className="text-2xl font-extrabold m-0 mb-4">History</h1>
+      <div className="text-[11px] font-bold uppercase tracking-[1px] text-th-t2 mb-2.5">
+        1RM Progress
+      </div>
+      <div className="flex flex-col gap-1.5 mb-6">
         {liftData.map((ld) => (
-          <div
-            key={ld.lift.id}
-            style={{
-              background: c.s1,
-              border: `1px solid ${c.b}`,
-              borderRadius: 12,
-              padding: "14px 16px",
-            }}
-          >
-            <div
-              style={{
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-              }}
-            >
+          <div key={ld.lift.id} className="bg-th-s1 border border-th-b rounded-xl px-4 py-3.5">
+            <div className="flex justify-between items-center">
               <div>
-                <span style={{ fontSize: 16, fontWeight: 700, color: c.t }}>{ld.lift.nm}</span>
-                <div
-                  style={{
-                    display: "flex",
-                    alignItems: "baseline",
-                    gap: 8,
-                    marginTop: 2,
-                  }}
-                >
-                  <span
-                    style={{
-                      fontSize: 24,
-                      fontWeight: 800,
-                      fontFamily: FN.m,
-                      color: c.t,
-                    }}
-                  >
-                    {ld.e1}
-                  </span>
-                  <span
-                    style={{
-                      fontSize: 12,
-                      color: c.t4,
-                      fontFamily: FN.m,
-                    }}
-                  >
-                    {prog.unit}
-                  </span>
+                <span className="text-[16px] font-bold text-th-t">{ld.lift.nm}</span>
+                <div className="flex items-baseline gap-2 mt-0.5">
+                  <span className="text-2xl font-extrabold font-mono text-th-t">{ld.e1}</span>
+                  <span className="text-[12px] text-th-t4 font-mono">{prog.unit}</span>
                   {ld.gain > 0 && (
-                    <span
-                      style={{
-                        fontSize: 12,
-                        fontFamily: FN.m,
-                        fontWeight: 700,
-                        color: c.g,
-                      }}
-                    >
-                      +{ld.gain}
-                    </span>
+                    <span className="text-[12px] font-mono font-bold text-th-g">+{ld.gain}</span>
                   )}
                 </div>
               </div>
-              <div style={{ textAlign: "right" }}>
+              <div className="text-right">
                 {ld.best > ld.e1 && (
-                  <div
-                    style={{
-                      fontSize: 11,
-                      fontFamily: FN.m,
-                      color: c.t3,
-                    }}
-                  >
-                    Best: <span style={{ fontWeight: 700, color: c.go }}>{ld.best}</span>
+                  <div className="text-[11px] font-mono text-th-t3">
+                    Best: <span className="font-bold text-th-go">{ld.best}</span>
                   </div>
                 )}
                 {ld.prCount > 0 && (
-                  <div
-                    style={{
-                      fontSize: 11,
-                      fontFamily: FN.m,
-                      color: c.t4,
-                    }}
-                  >
+                  <div className="text-[11px] font-mono text-th-t4">
                     {ld.prCount} PR{ld.prCount !== 1 ? "s" : ""}
                   </div>
                 )}
               </div>
             </div>
             {ld.lastPR && (
-              <div
-                style={{
-                  marginTop: 8,
-                  paddingTop: 8,
-                  borderTop: `1px solid ${c.b}`,
-                  display: "flex",
-                  justifyContent: "space-between",
-                  alignItems: "center",
-                }}
-              >
-                <span
-                  style={{
-                    fontSize: 11,
-                    color: c.t3,
-                    fontFamily: FN.m,
-                  }}
-                >
+              <div className="mt-2 pt-2 border-t border-th-b flex justify-between items-center">
+                <span className="text-[11px] text-th-t3 font-mono">
                   Last PR: {ld.lastPR.old} {"\u2192"} {ld.lastPR.nw}
                 </span>
-                <span
-                  style={{
-                    fontSize: 11,
-                    fontFamily: FN.m,
-                    fontWeight: 700,
-                    color: c.go,
-                  }}
-                >
+                <span className="text-[11px] font-mono font-bold text-th-go">
                   {ld.lastPR.w}x{ld.lastPR.reps}
                 </span>
               </div>
@@ -226,84 +108,36 @@ function HistoryPage() {
       </div>
       {recent.length > 0 && (
         <>
-          <div style={sectionLbl}>Recent Workouts</div>
-          <div
-            style={{
-              display: "flex",
-              flexDirection: "column",
-              gap: 4,
-              marginBottom: 24,
-            }}
-          >
+          <div className="text-[11px] font-bold uppercase tracking-[1px] text-th-t2 mb-2.5">
+            Recent Workouts
+          </div>
+          <div className="flex flex-col gap-1 mb-6">
             {recent.map((r, i) => (
               <div
                 key={i}
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 12,
-                  background: c.s1,
-                  border: `1px solid ${c.b}`,
-                  borderRadius: 10,
-                  padding: "10px 16px",
-                  minHeight: 48,
-                }}
+                className="flex items-center gap-3 bg-th-s1 border border-th-b rounded-[10px] px-4 py-2.5 min-h-[48px]"
               >
-                <span
-                  style={{
-                    fontSize: 12,
-                    fontFamily: FN.m,
-                    color: c.t4,
-                    minWidth: 36,
-                  }}
-                >
-                  {r.dayStr}
-                </span>
-                <span
-                  style={{
-                    fontSize: 14,
-                    fontWeight: 600,
-                    color: c.t,
-                    flex: 1,
-                  }}
-                >
+                <span className="text-[12px] font-mono text-th-t4 min-w-[36px]">{r.dayStr}</span>
+                <span className="text-[14px] font-semibold text-th-t flex-1">
                   {r.lift?.nm || "?"}
                 </span>
                 {r.dur > 0 && (
-                  <span
-                    style={{
-                      fontSize: 11,
-                      fontFamily: FN.m,
-                      color: c.t4,
-                    }}
-                  >
+                  <span className="text-[11px] font-mono text-th-t4">
                     {Math.floor(r.dur / 60)}m
                   </span>
                 )}
                 {r.amReps !== null && (
                   <span
-                    style={{
-                      fontSize: 13,
-                      fontFamily: FN.m,
-                      fontWeight: 700,
-                      color: r.hadPR ? c.go : r.amReps === 0 ? c.r : c.t3,
-                    }}
+                    className={cn(
+                      "text-[13px] font-mono font-bold",
+                      r.hadPR ? "text-th-go" : r.amReps === 0 ? "text-th-r" : "text-th-t3",
+                    )}
                   >
                     {r.amReps} reps
                   </span>
                 )}
                 {r.hadPR && (
-                  <span
-                    style={{
-                      fontSize: 10,
-                      fontFamily: FN.m,
-                      fontWeight: 700,
-                      color: c.go,
-                      background: c.god,
-                      padding: "2px 8px",
-                      borderRadius: 100,
-                    }}
-                  >
+                  <span className="text-[10px] font-mono font-bold text-th-go bg-th-god px-2 py-0.5 rounded-full">
                     PR
                   </span>
                 )}

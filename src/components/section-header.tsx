@@ -1,50 +1,30 @@
-import type { ThemeColors } from "../types";
+import { cn } from "../lib/cn";
 
 interface SectionHeaderProps {
   label: string;
   done: boolean;
   collapsed: boolean;
   onToggle: () => void;
-  c: ThemeColors;
   extra?: React.ReactNode;
 }
 
-export function SectionHeader({ label, done, collapsed, onToggle, c, extra }: SectionHeaderProps) {
+export function SectionHeader({ label, done, collapsed, onToggle, extra }: SectionHeaderProps) {
   return (
     <button
       onClick={onToggle}
-      style={{
-        fontSize: 11,
-        fontWeight: 700,
-        textTransform: "uppercase",
-        letterSpacing: "1px",
-        color: c.t2,
-        marginBottom: 10,
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "space-between",
-        width: "100%",
-        boxSizing: "border-box",
-        background: "none",
-        border: "none",
-        cursor: "pointer",
-        padding: "8px 0",
-        minHeight: 44,
-      }}
+      className="text-[11px] font-bold uppercase tracking-[1px] text-th-t2 mb-2.5 flex items-center justify-between w-full box-border bg-none border-none cursor-pointer py-2 px-0 min-h-[44px]"
     >
       <span>
         {label}
         {done ? " \u2713" : ""}
       </span>
-      <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+      <div className="flex gap-2 items-center">
         {extra}
         <span
-          style={{
-            fontSize: 11,
-            color: c.t4,
-            transform: collapsed ? "rotate(-90deg)" : "rotate(0deg)",
-            transition: "transform .2s",
-          }}
+          className={cn(
+            "text-[11px] text-th-t4 transition-transform duration-200",
+            collapsed ? "-rotate-90" : "rotate-0",
+          )}
         >
           {"\u25BC"}
         </span>

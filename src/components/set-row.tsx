@@ -1,6 +1,5 @@
 import { Check } from "lucide-react";
-import type { ThemeColors, ThemeMode } from "../types";
-import { FN } from "../constants/theme";
+import { cn } from "../lib/cn";
 
 interface SetRowProps {
   done: boolean;
@@ -10,61 +9,31 @@ interface SetRowProps {
   pct: number;
   isAmrap?: boolean;
   onClick: () => void;
-  c: ThemeColors;
-  mode: ThemeMode;
 }
 
-export function SetRow({ done, weight, unit, reps, pct, isAmrap, onClick, c, mode }: SetRowProps) {
+export function SetRow({ done, weight, unit, reps, pct, isAmrap, onClick }: SetRowProps) {
   return (
     <button
       onClick={onClick}
-      style={{
-        display: "grid",
-        gridTemplateColumns: "28px 1fr auto 42px",
-        alignItems: "center",
-        gap: 8,
-        padding: "12px 14px",
-        background: done ? c.gd : c.s1,
-        border: `1px solid ${done ? c.gb : isAmrap ? c.yb : c.b}`,
-        borderRadius: 10,
-        cursor: "pointer",
-        fontFamily: FN.s,
-        textAlign: "left",
-        width: "100%",
-        boxSizing: "border-box",
-        transition: "all .12s",
-        minHeight: 52,
-      }}
+      className={cn(
+        "grid grid-cols-[28px_1fr_auto_42px] items-center gap-2 px-3.5 py-3 rounded-[10px] cursor-pointer font-sans text-left w-full box-border transition-all duration-[120ms] min-h-[52px]",
+        done ? "bg-th-gd border border-th-gb" : "bg-th-s1 border",
+        !done && isAmrap ? "border-th-yb" : !done ? "border-th-b" : "",
+      )}
     >
       <div
-        style={{
-          width: 24,
-          height: 24,
-          borderRadius: 6,
-          border: `2px solid ${done ? c.g : c.t4}`,
-          background: done ? c.g : "transparent",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          color: done ? (mode === "dark" ? "#111" : "#fff") : "transparent",
-        }}
+        className={cn(
+          "w-6 h-6 rounded-md border-2 flex items-center justify-center",
+          done ? "border-th-g bg-th-g text-th-inv" : "border-th-t4 bg-transparent text-transparent",
+        )}
       >
         {done && <Check size={13} strokeWidth={3} />}
       </div>
-      <span style={{ fontSize: 16, fontWeight: 700, fontFamily: FN.m, color: c.t }}>
-        {weight} <span style={{ fontSize: 12, color: c.t4 }}>{unit}</span>
+      <span className="text-[16px] font-bold font-mono text-th-t">
+        {weight} <span className="text-[12px] text-th-t4">{unit}</span>
       </span>
-      <span style={{ fontSize: 14, fontFamily: FN.m, color: c.t3 }}>x{reps}</span>
-      <span
-        style={{
-          fontSize: 11,
-          fontFamily: FN.m,
-          color: c.t4,
-          textAlign: "right",
-        }}
-      >
-        {Math.round(pct * 100)}%
-      </span>
+      <span className="text-[14px] font-mono text-th-t3">x{reps}</span>
+      <span className="text-[11px] font-mono text-th-t4 text-right">{Math.round(pct * 100)}%</span>
     </button>
   );
 }

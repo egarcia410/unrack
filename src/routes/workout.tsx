@@ -3,11 +3,11 @@ import { ChevronLeft, Check } from "lucide-react";
 import { useProgramStore } from "../stores/program-store";
 import { useWorkoutStore } from "../stores/workout-store";
 import { useUIStore, useTheme } from "../stores/ui-store";
-import { FN } from "../constants/theme";
 import { VARS, LIFTS, LIFT_ORDER } from "../constants/program";
 import { EXERCISE_LIB, CATS, CAT_LABELS, CAT_COLORS, AW } from "../constants/exercises";
 import { calcWeight, epley, smartRest } from "../lib/calc";
 import { getAccForLift, accDiscovered, getRx } from "../lib/exercises";
+import { cn } from "../lib/cn";
 import { RestTimer } from "../components/rest-timer";
 import { LiveClock } from "../components/live-clock";
 import { SetRow } from "../components/set-row";
@@ -24,7 +24,8 @@ export const Route = createFileRoute("/workout")({
 });
 
 function WorkoutPage() {
-  const { mode, c } = useTheme();
+  const { mode } = useTheme();
+  void mode;
   const navigate = useNavigate();
   const prog = useProgramStore((s) => s.prog);
   const finishWorkout = useProgramStore((s) => s.finishWorkout);
@@ -126,52 +127,6 @@ function WorkoutPage() {
     })),
   ];
 
-  const appStyle = {
-    maxWidth: 460,
-    margin: "0 auto",
-    padding: "12px 16px 80px",
-  };
-  const topBarStyle = {
-    display: "flex",
-    justifyContent: "space-between",
-    alignItems: "center",
-    padding: "8px 0 16px",
-    minHeight: 44,
-  };
-  const iconBtnStyle = {
-    width: 44,
-    height: 44,
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    background: c.s1,
-    border: `1px solid ${c.b}`,
-    borderRadius: 10,
-    color: c.t3,
-    cursor: "pointer",
-  };
-  const pillStyle = {
-    fontSize: 11,
-    fontFamily: FN.m,
-    fontWeight: 700,
-    color: c.a,
-    background: c.ad,
-    padding: "4px 12px",
-    borderRadius: 100,
-    letterSpacing: ".4px",
-    textTransform: "uppercase" as const,
-  };
-  const inputStyle = {
-    background: c.s2,
-    border: `1px solid ${c.bm}`,
-    borderRadius: 8,
-    color: c.t,
-    fontFamily: FN.m,
-    fontWeight: 600,
-    outline: "none",
-    textAlign: "center" as const,
-    boxSizing: "border-box" as const,
-  };
   const handleFinish = async () => {
     const result = await finishWorkout({
       activeWeek,
@@ -196,29 +151,18 @@ function WorkoutPage() {
 
   return (
     <div>
-      <div style={appStyle}>
+      <div className="max-w-[460px] mx-auto px-4 py-3 pb-20">
         {/* Swap exercise sheet */}
         {swapSlot && (
-          <BottomSheet
-            title="Swap Exercise"
-            c={c}
-            onClose={() => setSwapSlot(null)}
-            maxHeight="70vh"
-          >
+          <BottomSheet title="Swap Exercise" onClose={() => setSwapSlot(null)} maxHeight="70vh">
             {CATS.map((cat) => {
-              const catColor = CAT_COLORS(c)[cat as keyof ReturnType<typeof CAT_COLORS>];
+              const catColor = CAT_COLORS[cat as keyof typeof CAT_COLORS];
               const exercises = EXERCISE_LIB.filter((e) => e.cat === cat);
               return (
-                <div key={cat} style={{ marginBottom: 12 }}>
+                <div key={cat} className="mb-3">
                   <div
-                    style={{
-                      fontSize: 10,
-                      fontWeight: 700,
-                      textTransform: "uppercase",
-                      letterSpacing: ".7px",
-                      color: catColor,
-                      padding: "8px 4px 4px",
-                    }}
+                    className="text-[10px] font-bold uppercase tracking-[.7px] px-1 pt-2 pb-1"
+                    style={{ color: catColor }}
                   >
                     {CAT_LABELS[cat]}
                   </div>
@@ -236,79 +180,37 @@ function WorkoutPage() {
                               setSwapSlot(null),
                             );
                         }}
-                        style={{
-                          display: "flex",
-                          alignItems: "center",
-                          width: "100%",
-                          boxSizing: "border-box",
-                          padding: "10px 12px",
-                          background: isCurrent ? c.ad : "transparent",
-                          border: isCurrent ? `1px solid ${c.am}` : `1px solid transparent`,
-                          borderRadius: 10,
-                          cursor: isCurrent ? "default" : "pointer",
-                          textAlign: "left",
-                          minHeight: 48,
-                          marginBottom: 2,
-                          gap: 10,
-                        }}
+                        className={cn(
+                          "flex items-center w-full box-border px-3 py-2.5 rounded-[10px] text-left min-h-[48px] mb-0.5 gap-2.5",
+                          isCurrent
+                            ? "bg-th-ad border border-th-am cursor-default"
+                            : "bg-transparent border border-transparent cursor-pointer",
+                        )}
                       >
                         <div
-                          style={{
-                            width: 6,
-                            height: 6,
-                            borderRadius: 3,
-                            background: isCurrent ? c.a : isNew ? c.t4 : c.g,
-                            flexShrink: 0,
-                          }}
+                          className={cn(
+                            "w-1.5 h-1.5 rounded-full shrink-0",
+                            isCurrent ? "bg-th-a" : isNew ? "bg-th-t4" : "bg-th-g",
+                          )}
                         />
                         <span
-                          style={{
-                            flex: 1,
-                            fontSize: 14,
-                            fontWeight: isCurrent ? 700 : 500,
-                            color: c.t,
-                          }}
+                          className={cn(
+                            "flex-1 text-[14px] text-th-t",
+                            isCurrent ? "font-bold" : "font-medium",
+                          )}
                         >
                           {e.nm}
                         </span>
                         {isCurrent && (
-                          <span
-                            style={{
-                              fontSize: 10,
-                              fontFamily: FN.m,
-                              fontWeight: 700,
-                              color: c.a,
-                            }}
-                          >
-                            CURRENT
-                          </span>
+                          <span className="text-[10px] font-mono font-bold text-th-a">CURRENT</span>
                         )}
                         {!isCurrent && hasMax && (
-                          <span
-                            style={{
-                              fontSize: 12,
-                              fontFamily: FN.m,
-                              fontWeight: 700,
-                              color: c.pr,
-                              background: c.prd,
-                              padding: "2px 10px",
-                              borderRadius: 100,
-                            }}
-                          >
+                          <span className="text-[12px] font-mono font-bold text-th-pr bg-th-prd px-2.5 py-0.5 rounded-full">
                             {rx.wt} {prog.unit}
                           </span>
                         )}
                         {!isCurrent && isNew && (
-                          <span
-                            style={{
-                              fontSize: 10,
-                              fontFamily: FN.m,
-                              color: c.y,
-                              background: c.yd,
-                              padding: "2px 8px",
-                              borderRadius: 100,
-                            }}
-                          >
+                          <span className="text-[10px] font-mono text-th-y bg-th-yd px-2 py-0.5 rounded-full">
                             NEW
                           </span>
                         )}
@@ -321,18 +223,20 @@ function WorkoutPage() {
           </BottomSheet>
         )}
 
-        <div style={topBarStyle}>
-          <button onClick={() => navigate({ to: "/" })} style={iconBtnStyle}>
+        <div className="flex justify-between items-center py-2 pb-4 min-h-[44px]">
+          <button
+            onClick={() => navigate({ to: "/" })}
+            className="w-[44px] h-[44px] flex items-center justify-center bg-th-s1 border border-th-b rounded-[10px] text-th-t3 cursor-pointer"
+          >
             <ChevronLeft size={18} />
           </button>
-          <span style={pillStyle}>
+          <span className="text-[11px] font-mono font-bold text-th-a bg-th-ad px-3 py-1 rounded-full tracking-[.4px] uppercase">
             C{prog.cycle} {wd.t}
           </span>
         </div>
 
         {showTimer && (
           <RestTimer
-            c={c}
             dur={timerInfo.dur}
             timerKey={timerKey}
             onDismiss={dismissTimer}
@@ -340,43 +244,11 @@ function WorkoutPage() {
           />
         )}
 
-        <div style={{ textAlign: "center", padding: "4px 0 20px" }}>
-          <h1
-            style={{
-              fontSize: 28,
-              fontWeight: 800,
-              margin: "2px 0",
-              letterSpacing: "-1px",
-            }}
-          >
-            {lift.nm}
-          </h1>
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "center",
-              gap: 14,
-            }}
-          >
-            <span
-              style={{
-                fontSize: 14,
-                fontFamily: FN.m,
-                color: c.a,
-                fontWeight: 600,
-              }}
-            >
-              TM {tm}
-            </span>
-            <span
-              style={{
-                fontSize: 14,
-                fontFamily: FN.m,
-                color: c.t3,
-              }}
-            >
-              1RM {prog.e1[lid]}
-            </span>
+        <div className="text-center py-1 pb-5">
+          <h1 className="text-[28px] font-extrabold my-0.5 tracking-tight">{lift.nm}</h1>
+          <div className="flex justify-center gap-3.5">
+            <span className="text-[14px] font-mono text-th-a font-semibold">TM {tm}</span>
+            <span className="text-[14px] font-mono text-th-t3">1RM {prog.e1[lid]}</span>
           </div>
         </div>
 
@@ -386,17 +258,9 @@ function WorkoutPage() {
           done={allWarmup}
           collapsed={!!collapsed.warmup}
           onToggle={() => toggleCollapse("warmup")}
-          c={c}
         />
         {!collapsed.warmup && (
-          <div
-            style={{
-              display: "flex",
-              flexDirection: "column",
-              gap: 4,
-              marginBottom: 24,
-            }}
-          >
+          <div className="flex flex-col gap-1 mb-6">
             {warmup.map((w, i) => {
               const k = `w${i}`;
               return (
@@ -408,8 +272,6 @@ function WorkoutPage() {
                   reps={w.r}
                   pct={w.p}
                   onClick={() => onSetCheck(k, allSets)}
-                  c={c}
-                  mode={mode}
                 />
               );
             })}
@@ -422,17 +284,9 @@ function WorkoutPage() {
           done={allMain}
           collapsed={!!collapsed.main}
           onToggle={() => toggleCollapse("main")}
-          c={c}
         />
         {!collapsed.main && (
-          <div
-            style={{
-              display: "flex",
-              flexDirection: "column",
-              gap: 4,
-              marginBottom: 24,
-            }}
-          >
+          <div className="flex flex-col gap-1 mb-6">
             {wd.s.map((set, i) => {
               const k = `m${i}`;
               const d = checked[k];
@@ -487,108 +341,46 @@ function WorkoutPage() {
                     [k]: String((parseInt(p[k]) || 0) + 1),
                   }));
                 };
-                const clr = !amDone
-                  ? c.t4
+
+                const borderClr = !amDone
+                  ? "var(--color-th-t4)"
                   : entered <= 0
-                    ? c.r
+                    ? "var(--color-th-r)"
                     : isPR
-                      ? c.go
+                      ? "var(--color-th-go)"
                       : entered > minR
-                        ? c.pr
+                        ? "var(--color-th-pr)"
                         : entered === minR
-                          ? c.g
+                          ? "var(--color-th-g)"
                           : entered < minR
-                            ? c.r
-                            : c.g;
-                void clr;
-                const bgColor = isPR ? c.god : c.s1;
+                            ? "var(--color-th-r)"
+                            : "var(--color-th-g)";
 
                 return (
                   <div key={k}>
                     <div
-                      style={{
-                        background: bgColor,
-                        border:
-                          "2px solid " +
-                          (!amDone
-                            ? c.t4
-                            : entered <= 0
-                              ? c.r
-                              : isPR
-                                ? c.go
-                                : entered > minR
-                                  ? c.pr
-                                  : entered === minR
-                                    ? c.g
-                                    : entered < minR
-                                      ? c.r
-                                      : c.g),
-                        borderRadius: 14,
-                        padding: "16px",
-                        transition: "all .25s",
-                        ...(isPR
-                          ? {
-                              animation: "gold-glow 1.5s ease-in-out infinite",
-                            }
-                          : {}),
-                      }}
+                      className={cn(
+                        "rounded-[14px] p-4 transition-all duration-[250ms]",
+                        isPR ? "bg-th-god animate-gold-glow" : "bg-th-s1",
+                      )}
+                      style={{ border: `2px solid ${borderClr}` }}
                     >
                       {!amDone ? (
                         <button
                           onClick={activateAmrap}
-                          style={{
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: "space-between",
-                            width: "100%",
-                            boxSizing: "border-box",
-                            background: "none",
-                            border: "none",
-                            padding: 0,
-                            cursor: "pointer",
-                            minHeight: 56,
-                          }}
+                          className="flex items-center justify-between w-full box-border bg-none border-none p-0 cursor-pointer min-h-[56px]"
                         >
                           <div>
-                            <span
-                              style={{
-                                fontSize: 22,
-                                fontWeight: 800,
-                                fontFamily: FN.m,
-                                color: c.t,
-                              }}
-                            >
+                            <span className="text-[22px] font-extrabold font-mono text-th-t">
                               {amrapWeight}
                             </span>
-                            <span
-                              style={{
-                                fontSize: 13,
-                                color: c.t4,
-                                fontFamily: FN.m,
-                                fontWeight: 600,
-                              }}
-                            >
+                            <span className="text-[13px] text-th-t4 font-mono font-semibold">
                               {" "}
                               {prog.unit}
                             </span>
                             {goalReps && (
-                              <div
-                                style={{
-                                  fontSize: 12,
-                                  color: c.t4,
-                                  fontFamily: FN.m,
-                                  marginTop: 4,
-                                }}
-                              >
-                                PR at{" "}
-                                <span
-                                  style={{
-                                    color: c.go,
-                                    fontWeight: 700,
-                                  }}
-                                >
-                                  {goalReps}+
-                                </span>
+                              <div className="text-[12px] text-th-t4 font-mono mt-1">
+                                PR at <span className="text-th-go font-bold">{goalReps}+</span>
                               </div>
                             )}
                           </div>
@@ -597,50 +389,20 @@ function WorkoutPage() {
                             min={minR}
                             prGoal={goalReps}
                             value={0}
-                            c={c}
                             active={true}
                             activated={false}
                           />
                         </button>
                       ) : (
                         <div>
-                          <div
-                            style={{
-                              fontSize: 13,
-                              color: c.t4,
-                              fontFamily: FN.m,
-                              marginBottom: 8,
-                              textAlign: "center",
-                            }}
-                          >
+                          <div className="text-[13px] text-th-t4 font-mono mb-2 text-center">
                             {amrapWeight} {prog.unit}
                             {goalReps ? ` \u00B7 PR at ${goalReps}+` : ""}
                           </div>
-                          <div
-                            style={{
-                              display: "flex",
-                              alignItems: "center",
-                              justifyContent: "center",
-                              gap: 12,
-                            }}
-                          >
+                          <div className="flex items-center justify-center gap-3">
                             <button
                               onClick={stepDown}
-                              style={{
-                                width: 48,
-                                height: 48,
-                                borderRadius: 10,
-                                border: "1px solid " + c.b,
-                                background: c.s2,
-                                color: c.t3,
-                                cursor: "pointer",
-                                display: "flex",
-                                alignItems: "center",
-                                justifyContent: "center",
-                                fontSize: 20,
-                                fontWeight: 700,
-                                fontFamily: FN.m,
-                              }}
+                              className="w-12 h-12 rounded-[10px] border border-th-b bg-th-s2 text-th-t3 cursor-pointer flex items-center justify-center text-[20px] font-bold font-mono"
                             >
                               {"\u2212"}
                             </button>
@@ -649,42 +411,18 @@ function WorkoutPage() {
                               min={minR}
                               prGoal={goalReps}
                               value={entered}
-                              c={c}
                               active={true}
                               activated={true}
                             />
                             <button
                               onClick={stepUp}
-                              style={{
-                                width: 48,
-                                height: 48,
-                                borderRadius: 10,
-                                border: "1px solid " + c.b,
-                                background: c.s2,
-                                color: c.t3,
-                                cursor: "pointer",
-                                display: "flex",
-                                alignItems: "center",
-                                justifyContent: "center",
-                                fontSize: 20,
-                                fontWeight: 700,
-                                fontFamily: FN.m,
-                              }}
+                              className="w-12 h-12 rounded-[10px] border border-th-b bg-th-s2 text-th-t3 cursor-pointer flex items-center justify-center text-[20px] font-bold font-mono"
                             >
                               +
                             </button>
                           </div>
                           {isPR && curE1 > 0 && (
-                            <div
-                              style={{
-                                fontSize: 14,
-                                fontFamily: FN.m,
-                                fontWeight: 800,
-                                marginTop: 10,
-                                color: c.go,
-                                textAlign: "center",
-                              }}
-                            >
+                            <div className="text-[14px] font-mono font-extrabold mt-2.5 text-th-go text-center">
                               PR {prevE1Val} {"\u2192"} {curE1} {prog.unit}
                             </div>
                           )}
@@ -704,8 +442,6 @@ function WorkoutPage() {
                   reps={set.r}
                   pct={set.p}
                   onClick={() => onSetCheck(k, allSets)}
-                  c={c}
-                  mode={mode}
                 />
               );
             })}
@@ -720,9 +456,8 @@ function WorkoutPage() {
               done={allSupp}
               collapsed={!!collapsed.supp}
               onToggle={() => toggleCollapse("supp")}
-              c={c}
               extra={
-                <span style={{ color: c.t4 }}>
+                <span className="text-th-t4">
                   {prog.variant === "bbb" || prog.variant === "bbbC"
                     ? "BBB"
                     : prog.variant === "fsl"
@@ -732,14 +467,7 @@ function WorkoutPage() {
               }
             />
             {!collapsed.supp && (
-              <div
-                style={{
-                  display: "flex",
-                  flexDirection: "column",
-                  gap: 4,
-                  marginBottom: 24,
-                }}
-              >
+              <div className="flex flex-col gap-1 mb-6">
                 {supp.map((s) => (
                   <SetRow
                     key={s.k}
@@ -749,8 +477,6 @@ function WorkoutPage() {
                     reps={s.r}
                     pct={s.p}
                     onClick={() => onSetCheck(s.k, allSets)}
-                    c={c}
-                    mode={mode}
                   />
                 ))}
               </div>
@@ -764,17 +490,9 @@ function WorkoutPage() {
           done={allAcc}
           collapsed={!!collapsed.acc}
           onToggle={() => toggleCollapse("acc")}
-          c={c}
         />
         {!collapsed.acc && (
-          <div
-            style={{
-              display: "flex",
-              flexDirection: "column",
-              gap: 6,
-              marginBottom: 24,
-            }}
-          >
+          <div className="flex flex-col gap-1.5 mb-6">
             {accs.map((a) => {
               const discovered = accDiscovered(a, prog);
               const log = accLog[a.id] || {};
@@ -791,13 +509,10 @@ function WorkoutPage() {
                 return (
                   <div
                     key={a.id}
-                    style={{
-                      background: done ? c.gd : c.s1,
-                      border: `1px solid ${done ? c.gb : c.b}`,
-                      borderRadius: 12,
-                      padding: "12px 14px",
-                      transition: "all .15s",
-                    }}
+                    className={cn(
+                      "rounded-xl px-3.5 py-3 transition-all duration-150",
+                      done ? "bg-th-gd border border-th-gb" : "bg-th-s1 border border-th-b",
+                    )}
                   >
                     <button
                       onClick={() =>
@@ -807,70 +522,27 @@ function WorkoutPage() {
                           currentId: a.id,
                         })
                       }
-                      style={{
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "space-between",
-                        width: "100%",
-                        boxSizing: "border-box",
-                        background: "none",
-                        border: "none",
-                        padding: 0,
-                        cursor: "pointer",
-                        marginBottom: 10,
-                        minHeight: 44,
-                      }}
+                      className="flex items-center justify-between w-full box-border bg-none border-none p-0 cursor-pointer mb-2.5 min-h-[44px]"
                     >
-                      <div
-                        style={{
-                          display: "flex",
-                          alignItems: "baseline",
-                          gap: 6,
-                          minWidth: 0,
-                          flex: 1,
-                        }}
-                      >
-                        <span
-                          style={{
-                            fontSize: 15,
-                            fontWeight: 600,
-                            color: c.t,
-                          }}
-                        >
-                          {a.nm}
-                        </span>
+                      <div className="flex items-baseline gap-1.5 min-w-0 flex-1">
+                        <span className="text-[15px] font-semibold text-th-t">{a.nm}</span>
                         <svg
                           width="12"
                           height="12"
                           viewBox="0 0 24 24"
                           fill="none"
-                          stroke={c.t4}
+                          stroke="var(--color-th-t4)"
                           strokeWidth="2.5"
-                          style={{ flexShrink: 0 }}
+                          className="shrink-0"
                         >
                           <path d="M8 9l4 4 4-4" />
                         </svg>
                       </div>
-                      <span
-                        style={{
-                          fontSize: 13,
-                          fontFamily: FN.m,
-                          fontWeight: 600,
-                          color: c.t3,
-                          flexShrink: 0,
-                          marginLeft: 8,
-                        }}
-                      >
+                      <span className="text-[13px] font-mono font-semibold text-th-t3 shrink-0 ml-2">
                         {rxText}
                       </span>
                     </button>
-                    <div
-                      style={{
-                        display: "flex",
-                        alignItems: "center",
-                        gap: 8,
-                      }}
-                    >
+                    <div className="flex items-center gap-2">
                       {Array.from({ length: rx.sets }, (_, si) => {
                         const filled = si < setsDone;
                         const isNext = si === setsDone;
@@ -892,45 +564,27 @@ function WorkoutPage() {
                                   ? () => untapAccSet(a.id, rx.sets)
                                   : undefined
                             }
-                            style={{
-                              width: 44,
-                              height: 44,
-                              borderRadius: 8,
-                              border: `2px solid ${filled ? c.g : isNext ? c.t3 : c.t4}`,
-                              background: filled ? c.g : c.s2,
-                              display: "flex",
-                              alignItems: "center",
-                              justifyContent: "center",
-                              color: filled ? (mode === "dark" ? "#111" : "#fff") : c.t4,
-                              cursor: isNext || isLast ? "pointer" : "default",
-                              transition: "all .15s",
-                              opacity: isNext || filled ? 1 : 0.35,
-                            }}
+                            className={cn(
+                              "w-[44px] h-[44px] rounded-lg border-2 flex items-center justify-center transition-all duration-150",
+                              filled
+                                ? "border-th-g bg-th-g text-th-inv"
+                                : isNext
+                                  ? "border-th-t3 bg-th-s2 text-th-t4"
+                                  : "border-th-t4 bg-th-s2 text-th-t4",
+                              isNext || isLast ? "cursor-pointer" : "cursor-default",
+                              isNext || filled ? "opacity-100" : "opacity-35",
+                            )}
                           >
                             {filled && <Check size={13} strokeWidth={3} />}
                             {!filled && isNext && (
-                              <span
-                                style={{
-                                  fontSize: 13,
-                                  fontWeight: 700,
-                                  fontFamily: FN.m,
-                                  color: c.t3,
-                                }}
-                              >
+                              <span className="text-[13px] font-bold font-mono text-th-t3">
                                 {si + 1}
                               </span>
                             )}
                           </button>
                         );
                       })}
-                      <span
-                        style={{
-                          fontSize: 12,
-                          fontFamily: FN.m,
-                          color: c.t3,
-                          marginLeft: 4,
-                        }}
-                      >
+                      <span className="text-[12px] font-mono text-th-t3 ml-1">
                         {setsDone}/{rx.sets}
                       </span>
                     </div>
@@ -948,13 +602,10 @@ function WorkoutPage() {
               return (
                 <div
                   key={a.id}
-                  style={{
-                    background: ftComplete ? c.gd : c.s1,
-                    border: `1px solid ${ftComplete ? c.gb : c.yb}`,
-                    borderRadius: 12,
-                    padding: "12px 14px",
-                    transition: "all .15s",
-                  }}
+                  className={cn(
+                    "rounded-xl px-3.5 py-3 transition-all duration-150",
+                    ftComplete ? "bg-th-gd border border-th-gb" : "bg-th-s1 border border-th-yb",
+                  )}
                 >
                   <button
                     onClick={() =>
@@ -964,94 +615,36 @@ function WorkoutPage() {
                         currentId: a.id,
                       })
                     }
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "space-between",
-                      width: "100%",
-                      boxSizing: "border-box",
-                      background: "none",
-                      border: "none",
-                      padding: 0,
-                      cursor: "pointer",
-                      marginBottom: 4,
-                      minHeight: 44,
-                    }}
+                    className="flex items-center justify-between w-full box-border bg-none border-none p-0 cursor-pointer mb-1 min-h-[44px]"
                   >
-                    <div
-                      style={{
-                        display: "flex",
-                        alignItems: "baseline",
-                        gap: 6,
-                        minWidth: 0,
-                        flex: 1,
-                      }}
-                    >
-                      <span
-                        style={{
-                          fontSize: 15,
-                          fontWeight: 600,
-                          color: c.t,
-                        }}
-                      >
-                        {a.nm}
-                      </span>
+                    <div className="flex items-baseline gap-1.5 min-w-0 flex-1">
+                      <span className="text-[15px] font-semibold text-th-t">{a.nm}</span>
                       <svg
                         width="12"
                         height="12"
                         viewBox="0 0 24 24"
                         fill="none"
-                        stroke={c.t4}
+                        stroke="var(--color-th-t4)"
                         strokeWidth="2.5"
-                        style={{ flexShrink: 0 }}
+                        className="shrink-0"
                       >
                         <path d="M8 9l4 4 4-4" />
                       </svg>
                     </div>
-                    <span
-                      style={{
-                        fontSize: 13,
-                        fontFamily: FN.m,
-                        fontWeight: 600,
-                        color: c.y,
-                        flexShrink: 0,
-                        marginLeft: 8,
-                      }}
-                    >
+                    <span className="text-[13px] font-mono font-semibold text-th-y shrink-0 ml-2">
                       {weekRx.s}
                       {"\u00D7"}
                       {weekRx.r}
                     </span>
                   </button>
-                  <div
-                    style={{
-                      fontSize: 12,
-                      color: c.t3,
-                      marginBottom: 10,
-                    }}
-                  >
+                  <div className="text-[12px] text-th-t3 mb-2.5">
                     {a.bw
                       ? "Max reps with good form each set."
                       : "Same weight all " + weekRx.s + " sets. Leave 1\u20132 reps in the tank."}
                   </div>
                   {!a.bw && (
-                    <div
-                      style={{
-                        display: "flex",
-                        alignItems: "center",
-                        gap: 8,
-                        marginBottom: 10,
-                      }}
-                    >
-                      <span
-                        style={{
-                          fontSize: 13,
-                          fontWeight: 600,
-                          color: c.t,
-                        }}
-                      >
-                        Weight:
-                      </span>
+                    <div className="flex items-center gap-2 mb-2.5">
+                      <span className="text-[13px] font-semibold text-th-t">Weight:</span>
                       <input
                         type="number"
                         inputMode="numeric"
@@ -1075,32 +668,12 @@ function WorkoutPage() {
                               return n;
                             });
                         }}
-                        style={{
-                          ...inputStyle,
-                          width: 90,
-                          padding: "10px 8px",
-                          fontSize: 18,
-                          fontWeight: 700,
-                        }}
+                        className="w-[90px] px-2 py-2.5 text-[18px] font-bold bg-th-s2 border border-th-bm rounded-lg text-th-t font-mono outline-none box-border text-center"
                       />
-                      <span
-                        style={{
-                          fontSize: 13,
-                          color: c.t4,
-                          fontFamily: FN.m,
-                        }}
-                      >
-                        {prog.unit}
-                      </span>
+                      <span className="text-[13px] text-th-t4 font-mono">{prog.unit}</span>
                     </div>
                   )}
-                  <div
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      gap: 8,
-                    }}
-                  >
+                  <div className="flex items-center gap-2">
                     {Array.from({ length: weekRx.s }, (_, si) => {
                       const filled = si < ftSetsDone;
                       const isNext = si === ftSetsDone;
@@ -1129,45 +702,27 @@ function WorkoutPage() {
                                 ? () => untapAccSet(a.id, weekRx.s)
                                 : undefined
                           }
-                          style={{
-                            width: 44,
-                            height: 44,
-                            borderRadius: 8,
-                            border: `2px solid ${filled ? c.g : isNext ? c.t3 : c.t4}`,
-                            background: filled ? c.g : c.s2,
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: "center",
-                            color: filled ? (mode === "dark" ? "#111" : "#fff") : c.t4,
-                            cursor: isNext || isLast ? "pointer" : "default",
-                            transition: "all .15s",
-                            opacity: isNext || filled ? 1 : 0.35,
-                          }}
+                          className={cn(
+                            "w-[44px] h-[44px] rounded-lg border-2 flex items-center justify-center transition-all duration-150",
+                            filled
+                              ? "border-th-g bg-th-g text-th-inv"
+                              : isNext
+                                ? "border-th-t3 bg-th-s2 text-th-t4"
+                                : "border-th-t4 bg-th-s2 text-th-t4",
+                            isNext || isLast ? "cursor-pointer" : "cursor-default",
+                            isNext || filled ? "opacity-100" : "opacity-35",
+                          )}
                         >
                           {filled && <Check size={13} strokeWidth={3} />}
                           {!filled && isNext && (
-                            <span
-                              style={{
-                                fontSize: 13,
-                                fontWeight: 700,
-                                fontFamily: FN.m,
-                                color: c.t3,
-                              }}
-                            >
+                            <span className="text-[13px] font-bold font-mono text-th-t3">
                               {si + 1}
                             </span>
                           )}
                         </button>
                       );
                     })}
-                    <span
-                      style={{
-                        fontSize: 12,
-                        fontFamily: FN.m,
-                        color: c.t3,
-                        marginLeft: 4,
-                      }}
-                    >
+                    <span className="text-[12px] font-mono text-th-t3 ml-1">
                       {ftSetsDone}/{weekRx.s}
                     </span>
                   </div>
@@ -1177,7 +732,7 @@ function WorkoutPage() {
           </div>
         )}
 
-        <div style={{ height: 70 }} />
+        <div className="h-[70px]" />
       </div>
 
       {/* Bottom bar */}
@@ -1197,102 +752,37 @@ function WorkoutPage() {
         const total = warmup.length + wd.s.length + supp.length + accSetsTotal;
 
         return (
-          <div
-            style={{
-              position: "fixed",
-              bottom: 0,
-              left: 0,
-              right: 0,
-              zIndex: 20,
-              transition: "all .3s",
-            }}
-          >
+          <div className="fixed bottom-0 left-0 right-0 z-20 transition-all duration-300">
             <div
-              style={{
-                maxWidth: 460,
-                margin: "0 auto",
-                padding: canFinish ? "0" : "16px 20px",
-                background: canFinish ? c.g : c.s1,
-                borderTop: `1px solid ${canFinish ? c.gb : c.b}`,
-                boxShadow: "0 -4px 12px rgba(0,0,0,0.1)",
-              }}
+              className={cn(
+                "max-w-[460px] mx-auto shadow-[0_-4px_12px_rgba(0,0,0,0.1)]",
+                canFinish
+                  ? "p-0 bg-th-g border-t border-th-gb"
+                  : "px-5 py-4 bg-th-s1 border-t border-th-b",
+              )}
             >
               {canFinish ? (
                 <button
                   onClick={handleFinish}
-                  style={{
-                    width: "100%",
-                    padding: "18px 20px",
-                    background: "none",
-                    border: "none",
-                    cursor: "pointer",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    gap: 8,
-                    fontFamily: FN.s,
-                  }}
+                  className="w-full px-5 py-[18px] bg-none border-none cursor-pointer flex items-center justify-center gap-2 font-sans"
                 >
                   <Check size={13} strokeWidth={3} />
-                  <span
-                    style={{
-                      fontSize: 17,
-                      fontWeight: 700,
-                      color: mode === "dark" ? "#111" : "#fff",
-                    }}
-                  >
-                    Complete Workout
-                  </span>
+                  <span className="text-[17px] font-bold text-th-inv">Complete Workout</span>
                 </button>
               ) : (
-                <div
-                  style={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    alignItems: "center",
-                  }}
-                >
-                  <div
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      gap: 10,
-                      flex: 1,
-                      minWidth: 0,
-                    }}
-                  >
-                    <span
-                      style={{
-                        fontSize: 15,
-                        fontFamily: FN.m,
-                        fontWeight: 700,
-                        color: c.t,
-                        flexShrink: 0,
-                      }}
-                    >
+                <div className="flex justify-between items-center">
+                  <div className="flex items-center gap-2.5 flex-1 min-w-0">
+                    <span className="text-[15px] font-mono font-bold text-th-t shrink-0">
                       {done}/{total}
                     </span>
-                    <div
-                      style={{
-                        flex: 1,
-                        height: 6,
-                        background: c.s3,
-                        borderRadius: 3,
-                        overflow: "hidden",
-                      }}
-                    >
+                    <div className="flex-1 h-1.5 bg-th-s3 rounded-sm overflow-hidden">
                       <div
-                        style={{
-                          height: "100%",
-                          width: `${(done / total) * 100}%`,
-                          background: c.a,
-                          borderRadius: 3,
-                          transition: "width .3s",
-                        }}
+                        className="h-full bg-th-a rounded-sm transition-[width] duration-300"
+                        style={{ width: `${(done / total) * 100}%` }}
                       />
                     </div>
                   </div>
-                  {workoutStart && <LiveClock start={workoutStart} c={c} />}
+                  {workoutStart && <LiveClock start={workoutStart} />}
                 </div>
               )}
             </div>

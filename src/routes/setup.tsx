@@ -2,9 +2,9 @@ import { useState } from "react";
 import { createFileRoute, useNavigate, redirect } from "@tanstack/react-router";
 import { useProgramStore } from "../stores/program-store";
 import { useTheme } from "../stores/ui-store";
-import { FN } from "../constants/theme";
 import { LIFTS, VARS } from "../constants/program";
 import { rnd } from "../lib/calc";
+import { cn } from "../lib/cn";
 
 export const Route = createFileRoute("/setup")({
   beforeLoad: () => {
@@ -15,7 +15,7 @@ export const Route = createFileRoute("/setup")({
 });
 
 function SetupPage() {
-  const { mode, c } = useTheme();
+  const { mode } = useTheme();
   const createProgram = useProgramStore((s) => s.createProgram);
   const navigate = useNavigate();
   const inferredUnit = (
@@ -38,228 +38,103 @@ function SetupPage() {
   const calcTM = (orm: string) => rnd(parseFloat(orm) * (tmPct / 100));
   const allOrmValid = LIFTS.every((l) => parseFloat(orms[l.id]) > 0);
 
-  const appStyle = {
-    maxWidth: 460,
-    margin: "0 auto",
-    padding: "12px 16px 80px",
-  };
-  const sectionLbl = {
-    fontSize: 11,
-    fontWeight: 700 as const,
-    textTransform: "uppercase" as const,
-    letterSpacing: "1px",
-    color: c.t2,
-    marginBottom: 10,
-  };
-  const inputStyle = {
-    background: c.s2,
-    border: `1px solid ${c.bm}`,
-    borderRadius: 8,
-    color: c.t,
-    fontFamily: FN.m,
-    fontWeight: 600,
-    outline: "none",
-    textAlign: "center" as const,
-    boxSizing: "border-box" as const,
-  };
-  const btnStyle = (on: boolean) => ({
-    width: "100%",
-    background: on ? c.a : c.s3,
-    color: on ? (mode === "dark" ? "#111" : "#fff") : c.t4,
-    border: "none",
-    borderRadius: 12,
-    padding: "16px 24px",
-    fontSize: 16,
-    fontWeight: 700,
-    fontFamily: FN.s,
-    cursor: on ? "pointer" : ("not-allowed" as const),
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: 8,
-    opacity: on ? 1 : 0.35,
-    minHeight: 52,
-  });
-
   const handleCreate = async () => {
     await createProgram({ variant: vari, unit, tmPct, orms, mode });
     navigate({ to: "/" });
   };
 
   return (
-    <div style={appStyle}>
-      <div
-        style={{
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-          padding: "48px 0 32px",
-          gap: 6,
-        }}
-      >
-        <div
-          style={{
-            fontSize: 36,
-            fontWeight: 800,
-            fontFamily: FN.m,
-            color: c.a,
-            letterSpacing: "0.5px",
-          }}
-        >
-          unrack
-        </div>
-        <p
-          style={{
-            color: c.t3,
-            fontSize: 13,
-            letterSpacing: ".5px",
-            textTransform: "uppercase",
-            margin: 0,
-          }}
-        >
-          Strength Program
-        </p>
+    <div className="max-w-[460px] mx-auto px-4 py-3 pb-20">
+      <div className="flex flex-col items-center pt-12 pb-8 gap-1.5">
+        <div className="text-4xl font-extrabold font-mono text-th-a tracking-[0.5px]">unrack</div>
+        <p className="text-th-t3 text-[13px] tracking-[.5px] uppercase m-0">Strength Program</p>
       </div>
-      <div style={sectionLbl}>Template</div>
-      <div
-        style={{
-          display: "flex",
-          flexDirection: "column",
-          gap: 4,
-          marginBottom: 24,
-        }}
-      >
+      <div className="text-[11px] font-bold uppercase tracking-[1px] text-th-t2 mb-2.5">
+        Template
+      </div>
+      <div className="flex flex-col gap-1 mb-6">
         {Object.entries(VARS).map(([k, vr]) => {
           const isCurrent = k === vari;
           return (
             <button
               key={k}
               onClick={() => setVari(k)}
-              style={{
-                display: "flex",
-                alignItems: "center",
-                width: "100%",
-                boxSizing: "border-box",
-                padding: "12px 14px",
-                background: isCurrent ? c.ad : "transparent",
-                border: isCurrent ? `1px solid ${c.am}` : `1px solid transparent`,
-                borderRadius: 12,
-                cursor: isCurrent ? "default" : "pointer",
-                textAlign: "left",
-                minHeight: 52,
-                marginBottom: 4,
-                gap: 12,
-              }}
+              className={cn(
+                "flex items-center w-full box-border px-3.5 py-3 rounded-xl text-left min-h-[52px] mb-1 gap-3",
+                isCurrent
+                  ? "bg-th-ad border border-th-am cursor-default"
+                  : "bg-transparent border border-transparent cursor-pointer",
+              )}
             >
               <div
-                style={{
-                  width: 6,
-                  height: 6,
-                  borderRadius: 3,
-                  background: isCurrent ? c.a : c.t4,
-                  flexShrink: 0,
-                }}
+                className={cn(
+                  "w-1.5 h-1.5 rounded-full shrink-0",
+                  isCurrent ? "bg-th-a" : "bg-th-t4",
+                )}
               />
-              <div style={{ flex: 1 }}>
+              <div className="flex-1">
                 <span
-                  style={{
-                    fontSize: 15,
-                    fontWeight: isCurrent ? 700 : 500,
-                    color: c.t,
-                    display: "block",
-                  }}
+                  className={cn(
+                    "text-[15px] text-th-t block",
+                    isCurrent ? "font-bold" : "font-medium",
+                  )}
                 >
                   {vr.n}
                 </span>
-                <span style={{ fontSize: 11, fontFamily: FN.m, color: c.t3 }}>{vr.d}</span>
+                <span className="text-[11px] font-mono text-th-t3">{vr.d}</span>
               </div>
               {isCurrent && (
-                <span
-                  style={{
-                    fontSize: 10,
-                    fontFamily: FN.m,
-                    fontWeight: 700,
-                    color: c.a,
-                  }}
-                >
-                  SELECTED
-                </span>
+                <span className="text-[10px] font-mono font-bold text-th-a">SELECTED</span>
               )}
             </button>
           );
         })}
       </div>
-      <div style={sectionLbl}>Enter Your 1 Rep Maxes</div>
-      <div
-        style={{
-          display: "flex",
-          flexDirection: "column",
-          gap: 6,
-          marginBottom: 24,
-        }}
-      >
+      <div className="text-[11px] font-bold uppercase tracking-[1px] text-th-t2 mb-2.5">
+        Enter Your 1 Rep Maxes
+      </div>
+      <div className="flex flex-col gap-1.5 mb-6">
         {LIFTS.map((l) => {
           const val = orms[l.id];
           const tm = parseFloat(val) > 0 ? calcTM(val) : 0;
           return (
             <div
               key={l.id}
-              style={{
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-                background: c.s1,
-                border: `1px solid ${c.b}`,
-                borderRadius: 12,
-                padding: "12px 16px",
-                minHeight: 56,
-              }}
+              className="flex justify-between items-center bg-th-s1 border border-th-b rounded-xl px-4 py-3 min-h-[56px]"
             >
               <div>
-                <div style={{ fontSize: 14, fontWeight: 600, color: c.t }}>{l.nm}</div>
+                <div className="text-[14px] font-semibold text-th-t">{l.nm}</div>
                 {tm > 0 && (
-                  <div
-                    style={{
-                      fontSize: 12,
-                      color: c.a,
-                      fontFamily: FN.m,
-                    }}
-                  >
+                  <div className="text-[12px] text-th-a font-mono">
                     TM = {tm} {unit}
                   </div>
                 )}
               </div>
-              <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
+              <div className="flex items-center gap-1">
                 <input
                   type="number"
                   inputMode="numeric"
                   placeholder="0"
                   value={val}
                   onChange={(e) => setOrms((p) => ({ ...p, [l.id]: e.target.value }))}
-                  style={{
-                    ...inputStyle,
-                    width: 80,
-                    padding: "10px 8px",
-                    fontSize: 18,
-                    fontWeight: 700,
-                    textAlign: "right",
-                  }}
+                  className="w-20 px-2 py-2.5 text-[18px] font-bold text-right bg-th-s2 border border-th-bm rounded-lg text-th-t font-mono outline-none box-border"
                 />
-                <span
-                  style={{
-                    fontSize: 13,
-                    color: c.t4,
-                    fontFamily: FN.m,
-                  }}
-                >
-                  {unit}
-                </span>
+                <span className="text-[13px] text-th-t4 font-mono">{unit}</span>
               </div>
             </div>
           );
         })}
       </div>
-      <button onClick={handleCreate} disabled={!allOrmValid} style={btnStyle(allOrmValid)}>
+      <button
+        onClick={handleCreate}
+        disabled={!allOrmValid}
+        className={cn(
+          "w-full border-none rounded-xl px-6 py-4 text-[16px] font-bold font-sans cursor-pointer flex items-center justify-center gap-2 min-h-[52px]",
+          allOrmValid
+            ? "bg-th-a text-th-inv opacity-100"
+            : "bg-th-s3 text-th-t4 opacity-35 cursor-not-allowed",
+        )}
+      >
         Start Program
       </button>
     </div>

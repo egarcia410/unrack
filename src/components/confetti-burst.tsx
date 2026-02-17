@@ -29,14 +29,7 @@ export function ConfettiBurst({ size }: ConfettiBurstProps) {
   return (
     <>
       <style>{css}</style>
-      <div
-        style={{
-          position: "absolute",
-          inset: 0,
-          pointerEvents: "none",
-          overflow: "visible",
-        }}
-      >
+      <div className="absolute inset-0 pointer-events-none overflow-visible">
         {particles.map((p, i) => (
           <div
             key={i}

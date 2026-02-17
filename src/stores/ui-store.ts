@@ -1,6 +1,5 @@
 import { create } from "zustand";
-import type { ThemeMode, ThemeColors, CelebState } from "../types";
-import { TK } from "../constants/theme";
+import type { ThemeMode, CelebState } from "../types";
 
 interface EditE1State {
   [liftId: string]: string;
@@ -44,7 +43,10 @@ export const useUIStore = create<UIState>((set) => ({
   editE1: null,
   editAcc: null,
 
-  setMode: (mode) => set({ mode }),
+  setMode: (mode) => {
+    document.documentElement.classList.toggle("dark", mode === "dark");
+    set({ mode });
+  },
   setShowConfirm: (v) => set({ showConfirm: v }),
   setShowSettings: (v) => set({ showSettings: v }),
   setSettingsExpanded: (v) => set({ settingsExpanded: v }),
@@ -64,7 +66,12 @@ export const useUIStore = create<UIState>((set) => ({
     }),
 }));
 
-export function useTheme(): { mode: ThemeMode; c: ThemeColors } {
+export function initTheme() {
+  const mode = useUIStore.getState().mode;
+  document.documentElement.classList.toggle("dark", mode === "dark");
+}
+
+export function useTheme(): { mode: ThemeMode } {
   const mode = useUIStore((s) => s.mode);
-  return { mode, c: TK[mode] };
+  return { mode };
 }

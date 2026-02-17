@@ -1,1 +1,180 @@
 @import "tailwindcss";
+
+@variant dark (&:where(.dark, .dark *));
+
+@theme {
+  --color-th-bg: var(--th-bg);
+  --color-th-s1: var(--th-s1);
+  --color-th-s2: var(--th-s2);
+  --color-th-s3: var(--th-s3);
+  --color-th-b: var(--th-b);
+  --color-th-bm: var(--th-bm);
+  --color-th-t: var(--th-t);
+  --color-th-t2: var(--th-t2);
+  --color-th-t3: var(--th-t3);
+  --color-th-t4: var(--th-t4);
+  --color-th-a: var(--th-a);
+  --color-th-ad: var(--th-ad);
+  --color-th-am: var(--th-am);
+  --color-th-g: var(--th-g);
+  --color-th-gd: var(--th-gd);
+  --color-th-gb: var(--th-gb);
+  --color-th-y: var(--th-y);
+  --color-th-yd: var(--th-yd);
+  --color-th-yb: var(--th-yb);
+  --color-th-pr: var(--th-pr);
+  --color-th-prd: var(--th-prd);
+  --color-th-r: var(--th-r);
+  --color-th-rd: var(--th-rd);
+  --color-th-go: var(--th-go);
+  --color-th-god: var(--th-god);
+  --color-th-inv: var(--th-inv);
+
+  --font-sans: "DM Sans", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", monospace;
+
+  --animate-pr-pulse: pr-pulse 2s ease-in-out infinite;
+  --animate-gold-glow: gold-glow 1.5s ease-in-out infinite;
+  --animate-sheet-up: sheet-up 0.2s ease-out;
+  --animate-timer-pulse: timer-pulse 1s infinite;
+  --animate-celeb-fade: celeb-fade 0.3s;
+  --animate-celeb-pop: celeb-pop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+  --animate-celeb-star: celeb-star 0.4s both;
+}
+
+:root {
+  --th-bg: #f4f4f7;
+  --th-s1: #ffffff;
+  --th-s2: #f0f0f4;
+  --th-s3: #dddde5;
+  --th-b: rgba(0, 0, 0, 0.09);
+  --th-bm: rgba(0, 0, 0, 0.13);
+  --th-t: #18181c;
+  --th-t2: #444452;
+  --th-t3: #636375;
+  --th-t4: #646478;
+  --th-a: #2d6600;
+  --th-ad: rgba(61, 122, 0, 0.07);
+  --th-am: rgba(61, 122, 0, 0.16);
+  --th-g: #097a52;
+  --th-gd: rgba(13, 150, 104, 0.07);
+  --th-gb: rgba(13, 150, 104, 0.18);
+  --th-y: #996200;
+  --th-yd: rgba(194, 125, 0, 0.07);
+  --th-yb: rgba(194, 125, 0, 0.18);
+  --th-pr: #6d28d9;
+  --th-prd: rgba(124, 58, 237, 0.08);
+  --th-r: #c41e2e;
+  --th-rd: rgba(220, 38, 38, 0.08);
+  --th-go: #8a6300;
+  --th-god: rgba(184, 134, 11, 0.08);
+  --th-inv: #fff;
+}
+
+.dark {
+  --th-bg: #101012;
+  --th-s1: #161619;
+  --th-s2: #1c1c20;
+  --th-s3: #2a2a32;
+  --th-b: rgba(255, 255, 255, 0.08);
+  --th-bm: rgba(255, 255, 255, 0.12);
+  --th-t: #eaeaed;
+  --th-t2: #a5a5b0;
+  --th-t3: #8e8e9d;
+  --th-t4: #8a8a9b;
+  --th-a: #b8e600;
+  --th-ad: rgba(184, 230, 0, 0.09);
+  --th-am: rgba(184, 230, 0, 0.2);
+  --th-g: #2dd4a0;
+  --th-gd: rgba(45, 212, 160, 0.08);
+  --th-gb: rgba(45, 212, 160, 0.18);
+  --th-y: #f5a623;
+  --th-yd: rgba(245, 166, 35, 0.09);
+  --th-yb: rgba(245, 166, 35, 0.22);
+  --th-pr: #c084fc;
+  --th-prd: rgba(192, 132, 252, 0.1);
+  --th-r: #f43f5e;
+  --th-rd: rgba(244, 63, 94, 0.1);
+  --th-go: #ffd700;
+  --th-god: rgba(255, 215, 0, 0.08);
+  --th-inv: #111;
+}
+
+body {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+@keyframes pr-pulse {
+  0%,
+  100% {
+    box-shadow: 0 0 8px rgba(184, 230, 0, 0.3);
+  }
+  50% {
+    box-shadow: 0 0 22px rgba(184, 230, 0, 0.6);
+  }
+}
+
+@keyframes gold-glow {
+  0%,
+  100% {
+    box-shadow:
+      0 0 10px rgba(255, 215, 0, 0.35),
+      0 0 25px rgba(255, 215, 0, 0.12);
+  }
+  50% {
+    box-shadow:
+      0 0 18px rgba(255, 215, 0, 0.6),
+      0 0 40px rgba(255, 215, 0, 0.2);
+  }
+}
+
+@keyframes sheet-up {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+@keyframes timer-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+@keyframes celeb-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes celeb-pop {
+  from {
+    opacity: 0;
+    transform: scale(0.85) translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes celeb-star {
+  from {
+    opacity: 0;
+    transform: scale(0);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}

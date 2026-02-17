@@ -1,31 +1,3 @@
-export interface ThemeColors {
-  bg: string;
-  s1: string;
-  s2: string;
-  s3: string;
-  b: string;
-  bm: string;
-  t: string;
-  t2: string;
-  t3: string;
-  t4: string;
-  a: string;
-  ad: string;
-  am: string;
-  g: string;
-  gd: string;
-  gb: string;
-  y: string;
-  yd: string;
-  yb: string;
-  pr: string;
-  prd: string;
-  r: string;
-  rd: string;
-  go: string;
-  god: string;
-}
-
 export type ThemeMode = "dark" | "light";
 
 export interface Lift {

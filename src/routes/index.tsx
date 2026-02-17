@@ -3,11 +3,11 @@ import { Check, Clock, Settings, Sun, Moon, Minus, Plus } from "lucide-react";
 import { useProgramStore } from "../stores/program-store";
 import { useWorkoutStore } from "../stores/workout-store";
 import { useUIStore, useTheme } from "../stores/ui-store";
-import { FN } from "../constants/theme";
 import { VARS, LIFTS, LIFT_ORDER } from "../constants/program";
 import { AW } from "../constants/exercises";
 import { rnd, calcWeight } from "../lib/calc";
 import { getAccForLift } from "../lib/exercises";
+import { cn } from "../lib/cn";
 import { ConfirmModal } from "../components/confirm-modal";
 import { Celebration } from "../components/celebration";
 import { BottomSheet } from "../components/bottom-sheet";
@@ -22,7 +22,7 @@ export const Route = createFileRoute("/")({
 });
 
 function HomePage() {
-  const { mode, c } = useTheme();
+  const { mode } = useTheme();
   const navigate = useNavigate();
   const prog = useProgramStore((s) => s.prog);
   const resetAll = useProgramStore((s) => s.resetAll);
@@ -60,82 +60,6 @@ function HomePage() {
   const weekDone = prog.wk.filter((w) => w.cy === prog.cycle && w.wk === prog.week);
   const doneLiftIds = weekDone.map((w) => w.lf);
 
-  const appStyle = {
-    maxWidth: 460,
-    margin: "0 auto",
-    padding: "12px 16px 80px",
-  };
-  const topBarStyle = {
-    display: "flex",
-    justifyContent: "space-between",
-    alignItems: "center",
-    padding: "8px 0 16px",
-    minHeight: 44,
-  };
-  const iconBtnStyle = {
-    width: 44,
-    height: 44,
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    background: c.s1,
-    border: `1px solid ${c.b}`,
-    borderRadius: 10,
-    color: c.t3,
-    cursor: "pointer",
-  };
-  const pillStyle = {
-    fontSize: 11,
-    fontFamily: FN.m,
-    fontWeight: 700,
-    color: c.a,
-    background: c.ad,
-    padding: "4px 12px",
-    borderRadius: 100,
-    letterSpacing: ".4px",
-    textTransform: "uppercase" as const,
-  };
-  const btnStyle = (on: boolean) => ({
-    width: "100%",
-    background: on ? c.a : c.s3,
-    color: on ? (mode === "dark" ? "#111" : "#fff") : c.t4,
-    border: "none",
-    borderRadius: 12,
-    padding: "16px 24px",
-    fontSize: 16,
-    fontWeight: 700,
-    fontFamily: FN.s,
-    cursor: on ? "pointer" : ("not-allowed" as const),
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: 8,
-    opacity: on ? 1 : 0.35,
-    minHeight: 52,
-  });
-  const inputStyle = {
-    background: c.s2,
-    border: `1px solid ${c.bm}`,
-    borderRadius: 8,
-    color: c.t,
-    fontFamily: FN.m,
-    fontWeight: 600,
-    outline: "none",
-    textAlign: "center" as const,
-    boxSizing: "border-box" as const,
-  };
-  const checkStyle = (on: boolean) => ({
-    width: 24,
-    height: 24,
-    borderRadius: 6,
-    border: `2px solid ${on ? c.g : c.t4}`,
-    background: on ? c.g : "transparent",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    color: on ? (mode === "dark" ? "#111" : "#fff") : "transparent",
-  });
-
   const allUsedAccs = () => {
     if (!prog) return [];
     const seen = new Set<string>();
@@ -169,11 +93,10 @@ function HomePage() {
   };
 
   return (
-    <div style={appStyle}>
+    <div className="max-w-[460px] mx-auto px-4 py-3 pb-20">
       {celeb && (
         <Celebration
           {...celeb}
-          c={c}
           onDone={() => setCeleb(null)}
           onAction={
             celeb._lid
@@ -191,27 +114,23 @@ function HomePage() {
           sub="All progress, history and PRs will be permanently lost."
           onYes={handleResetAll}
           onNo={() => setShowConfirm(false)}
-          c={c}
-          mode={mode}
         />
       )}
-      <div style={topBarStyle}>
-        <div
-          style={{
-            fontSize: 18,
-            fontWeight: 800,
-            fontFamily: FN.m,
-            color: c.a,
-            letterSpacing: "0.5px",
-          }}
-        >
+      <div className="flex justify-between items-center py-2 pb-4 min-h-[44px]">
+        <div className="text-[18px] font-extrabold font-mono text-th-a tracking-[0.5px]">
           unrack
         </div>
-        <div style={{ display: "flex", gap: 4 }}>
-          <button onClick={() => navigate({ to: "/history" })} style={iconBtnStyle}>
+        <div className="flex gap-1">
+          <button
+            onClick={() => navigate({ to: "/history" })}
+            className="w-[44px] h-[44px] flex items-center justify-center bg-th-s1 border border-th-b rounded-[10px] text-th-t3 cursor-pointer"
+          >
             <Clock size={18} />
           </button>
-          <button onClick={() => setShowSettings(true)} style={iconBtnStyle}>
+          <button
+            onClick={() => setShowSettings(true)}
+            className="w-[44px] h-[44px] flex items-center justify-center bg-th-s1 border border-th-b rounded-[10px] text-th-t3 cursor-pointer"
+          >
             <Settings size={18} />
           </button>
         </div>
@@ -219,122 +138,41 @@ function HomePage() {
 
       {/* Settings bottom sheet */}
       {showSettings && (
-        <BottomSheet title="Settings" c={c} onClose={closeSettings}>
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
-              marginBottom: 20,
-            }}
-          >
-            <div
-              style={{
-                fontSize: 12,
-                fontWeight: 700,
-                color: c.t3,
-                textTransform: "uppercase",
-                letterSpacing: ".5px",
-              }}
-            >
-              Theme
-            </div>
+        <BottomSheet title="Settings" onClose={closeSettings}>
+          <div className="flex justify-between items-center mb-5">
+            <div className="text-[12px] font-bold text-th-t3 uppercase tracking-[.5px]">Theme</div>
             <button
               onClick={toggleMode}
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: 8,
-                background: c.s2,
-                border: `1px solid ${c.b}`,
-                borderRadius: 10,
-                padding: "8px 14px",
-                cursor: "pointer",
-                minHeight: 44,
-              }}
+              className="flex items-center gap-2 bg-th-s2 border border-th-b rounded-[10px] px-3.5 py-2 cursor-pointer min-h-[44px]"
             >
-              <span style={{ color: c.t3, display: "flex" }}>
+              <span className="text-th-t3 flex">
                 {mode === "dark" ? <Sun size={18} /> : <Moon size={18} />}
               </span>
-              <span
-                style={{
-                  fontSize: 13,
-                  fontWeight: 600,
-                  color: c.t3,
-                  fontFamily: FN.s,
-                }}
-              >
+              <span className="text-[13px] font-semibold text-th-t3 font-sans">
                 {mode === "dark" ? "Light" : "Dark"}
               </span>
             </button>
           </div>
 
-          <div
-            style={{
-              fontSize: 12,
-              fontWeight: 700,
-              color: c.t3,
-              textTransform: "uppercase",
-              letterSpacing: ".5px",
-              marginBottom: 8,
-            }}
-          >
+          <div className="text-[12px] font-bold text-th-t3 uppercase tracking-[.5px] mb-2">
             1 Rep Maxes
           </div>
-          <div
-            style={{
-              display: "flex",
-              flexDirection: "column",
-              gap: 6,
-              marginBottom: editE1 ? 12 : 20,
-            }}
-          >
+          <div className={cn("flex flex-col gap-1.5", editE1 ? "mb-3" : "mb-5")}>
             {LIFTS.map((l) => {
               const curE1 = editE1 ? parseFloat(editE1[l.id]) || 0 : prog.e1[l.id];
               const derivedTM = curE1 > 0 ? rnd(curE1 * (prog.tmPct / 100)) : 0;
               return (
                 <div
                   key={l.id}
-                  style={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    alignItems: "center",
-                    background: c.s2,
-                    borderRadius: 8,
-                    padding: "8px 12px",
-                    minHeight: 44,
-                  }}
+                  className="flex justify-between items-center bg-th-s2 rounded-lg px-3 py-2 min-h-[44px]"
                 >
                   <div>
-                    <span
-                      style={{
-                        fontSize: 13,
-                        fontWeight: 600,
-                        color: c.t,
-                      }}
-                    >
-                      {l.nm}
-                    </span>
+                    <span className="text-[13px] font-semibold text-th-t">{l.nm}</span>
                     {derivedTM > 0 && (
-                      <span
-                        style={{
-                          fontSize: 10,
-                          fontFamily: FN.m,
-                          color: c.a,
-                          display: "block",
-                        }}
-                      >
-                        TM {derivedTM}
-                      </span>
+                      <span className="text-[10px] font-mono text-th-a block">TM {derivedTM}</span>
                     )}
                   </div>
-                  <div
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      gap: 4,
-                    }}
-                  >
+                  <div className="flex items-center gap-1">
                     <input
                       type="number"
                       inputMode="numeric"
@@ -353,24 +191,9 @@ function HomePage() {
                           };
                         });
                       }}
-                      style={{
-                        ...inputStyle,
-                        width: 70,
-                        padding: "8px 6px",
-                        fontSize: 16,
-                        fontWeight: 700,
-                        textAlign: "right",
-                      }}
+                      className="w-[70px] px-1.5 py-2 text-[16px] font-bold text-right bg-th-s2 border border-th-bm rounded-lg text-th-t font-mono outline-none box-border"
                     />
-                    <span
-                      style={{
-                        fontSize: 12,
-                        color: c.t4,
-                        fontFamily: FN.m,
-                      }}
-                    >
-                      {prog.unit}
-                    </span>
+                    <span className="text-[12px] text-th-t4 font-mono">{prog.unit}</span>
                   </div>
                 </div>
               );
@@ -382,20 +205,7 @@ function HomePage() {
                 await saveE1Edits(editE1);
                 setEditE1(null);
               }}
-              style={{
-                width: "100%",
-                padding: "12px",
-                borderRadius: 10,
-                border: "none",
-                background: c.a,
-                color: mode === "dark" ? "#111" : "#fff",
-                fontSize: 14,
-                fontWeight: 700,
-                fontFamily: FN.s,
-                cursor: "pointer",
-                minHeight: 44,
-                marginBottom: 20,
-              }}
+              className="w-full p-3 rounded-[10px] border-none bg-th-a text-th-inv text-[14px] font-bold font-sans cursor-pointer min-h-[44px] mb-5"
             >
               Save 1RMs
             </button>
@@ -403,26 +213,10 @@ function HomePage() {
 
           {allUsedAccs().some((a) => !a.bw) && (
             <>
-              <div
-                style={{
-                  fontSize: 12,
-                  fontWeight: 700,
-                  color: c.t3,
-                  textTransform: "uppercase",
-                  letterSpacing: ".5px",
-                  marginBottom: 8,
-                }}
-              >
+              <div className="text-[12px] font-bold text-th-t3 uppercase tracking-[.5px] mb-2">
                 Assistance
               </div>
-              <div
-                style={{
-                  display: "flex",
-                  flexDirection: "column",
-                  gap: 6,
-                  marginBottom: editAcc ? 12 : 20,
-                }}
-              >
+              <div className={cn("flex flex-col gap-1.5", editAcc ? "mb-3" : "mb-5")}>
                 {allUsedAccs()
                   .filter((a) => !a.bw)
                   .map((a) => {
@@ -433,46 +227,17 @@ function HomePage() {
                     return (
                       <div
                         key={a.id}
-                        style={{
-                          display: "flex",
-                          justifyContent: "space-between",
-                          alignItems: "center",
-                          background: c.s2,
-                          borderRadius: 8,
-                          padding: "8px 12px",
-                          minHeight: 44,
-                        }}
+                        className="flex justify-between items-center bg-th-s2 rounded-lg px-3 py-2 min-h-[44px]"
                       >
                         <div>
-                          <span
-                            style={{
-                              fontSize: 13,
-                              fontWeight: 600,
-                              color: c.t,
-                            }}
-                          >
-                            {a.nm}
-                          </span>
+                          <span className="text-[13px] font-semibold text-th-t">{a.nm}</span>
                           {phaseWt > 0 && (
-                            <span
-                              style={{
-                                fontSize: 10,
-                                fontFamily: FN.m,
-                                color: c.a,
-                                display: "block",
-                              }}
-                            >
+                            <span className="text-[10px] font-mono text-th-a block">
                               Phase weight: {phaseWt}
                             </span>
                           )}
                         </div>
-                        <div
-                          style={{
-                            display: "flex",
-                            alignItems: "center",
-                            gap: 4,
-                          }}
-                        >
+                        <div className="flex items-center gap-1">
                           <input
                             type="number"
                             inputMode="numeric"
@@ -491,24 +256,9 @@ function HomePage() {
                                 return { ...base, [a.id]: val };
                               });
                             }}
-                            style={{
-                              ...inputStyle,
-                              width: 70,
-                              padding: "8px 6px",
-                              fontSize: 16,
-                              fontWeight: 700,
-                              textAlign: "right",
-                            }}
+                            className="w-[70px] px-1.5 py-2 text-[16px] font-bold text-right bg-th-s2 border border-th-bm rounded-lg text-th-t font-mono outline-none box-border"
                           />
-                          <span
-                            style={{
-                              fontSize: 12,
-                              color: c.t4,
-                              fontFamily: FN.m,
-                            }}
-                          >
-                            {prog.unit}
-                          </span>
+                          <span className="text-[12px] text-th-t4 font-mono">{prog.unit}</span>
                         </div>
                       </div>
                     );
@@ -520,20 +270,7 @@ function HomePage() {
                     await saveAccEdits(editAcc);
                     setEditAcc(null);
                   }}
-                  style={{
-                    width: "100%",
-                    padding: "12px",
-                    borderRadius: 10,
-                    border: "none",
-                    background: c.a,
-                    color: mode === "dark" ? "#111" : "#fff",
-                    fontSize: 14,
-                    fontWeight: 700,
-                    fontFamily: FN.s,
-                    cursor: "pointer",
-                    minHeight: 44,
-                    marginBottom: 20,
-                  }}
+                  className="w-full p-3 rounded-[10px] border-none bg-th-a text-th-inv text-[14px] font-bold font-sans cursor-pointer min-h-[44px] mb-5"
                 >
                   Save Assistance
                 </button>
@@ -543,177 +280,75 @@ function HomePage() {
 
           <button
             onClick={toggleSettingsExpanded}
-            style={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
-              width: "100%",
-              boxSizing: "border-box",
-              background: "none",
-              border: "none",
-              padding: "8px 0",
-              cursor: "pointer",
-              minHeight: 44,
-            }}
+            className="flex items-center justify-between w-full box-border bg-none border-none py-2 px-0 cursor-pointer min-h-[44px]"
           >
-            <span
-              style={{
-                fontSize: 12,
-                fontWeight: 700,
-                color: c.t3,
-                textTransform: "uppercase",
-                letterSpacing: ".5px",
-              }}
-            >
+            <span className="text-[12px] font-bold text-th-t3 uppercase tracking-[.5px]">
               Program Settings
             </span>
             <span
-              style={{
-                fontSize: 11,
-                color: c.t4,
-                transform: settingsExpanded ? "rotate(0deg)" : "rotate(-90deg)",
-                transition: "transform .2s",
-              }}
+              className={cn(
+                "text-[11px] text-th-t4 transition-transform duration-200",
+                settingsExpanded ? "rotate-0" : "-rotate-90",
+              )}
             >
               {"\u25BC"}
             </span>
           </button>
           {settingsExpanded && (
-            <div style={{ marginBottom: 16 }}>
-              <div
-                style={{
-                  fontSize: 12,
-                  fontWeight: 700,
-                  color: c.t3,
-                  letterSpacing: ".3px",
-                  marginBottom: 8,
-                  marginTop: 4,
-                }}
-              >
+            <div className="mb-4">
+              <div className="text-[12px] font-bold text-th-t3 tracking-[.3px] mb-2 mt-1">
                 Units
               </div>
-              <div
-                style={{
-                  display: "grid",
-                  gridTemplateColumns: "1fr 1fr",
-                  gap: 8,
-                  marginBottom: 16,
-                }}
-              >
+              <div className="grid grid-cols-2 gap-2 mb-4">
                 {(["lb", "kg"] as const).map((u) => (
                   <button
                     key={u}
                     onClick={() => {
                       if (prog.unit !== u) toggleUnit();
                     }}
-                    style={{
-                      background: prog.unit === u ? c.ad : c.s2,
-                      border: `1px solid ${prog.unit === u ? c.am : c.b}`,
-                      borderRadius: 10,
-                      padding: "12px",
-                      color: prog.unit === u ? c.a : c.t3,
-                      fontSize: 14,
-                      fontWeight: prog.unit === u ? 700 : 500,
-                      fontFamily: FN.s,
-                      cursor: "pointer",
-                      textAlign: "center",
-                      minHeight: 44,
-                    }}
+                    className={cn(
+                      "rounded-[10px] p-3 text-[14px] font-sans cursor-pointer text-center min-h-[44px]",
+                      prog.unit === u
+                        ? "bg-th-ad border border-th-am text-th-a font-bold"
+                        : "bg-th-s2 border border-th-b text-th-t3 font-medium",
+                    )}
                   >
                     {u === "lb" ? "Pounds (lb)" : "Kilograms (kg)"}
                   </button>
                 ))}
               </div>
-              <div
-                style={{
-                  fontSize: 12,
-                  fontWeight: 700,
-                  color: c.t3,
-                  letterSpacing: ".3px",
-                  marginBottom: 8,
-                }}
-              >
+              <div className="text-[12px] font-bold text-th-t3 tracking-[.3px] mb-2">
                 Training Max %
               </div>
-              <div
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 16,
-                }}
-              >
+              <div className="flex items-center gap-4">
                 <button
                   onClick={() => changeTmPct(prog.tmPct - 5)}
-                  style={{
-                    ...iconBtnStyle,
-                    width: 48,
-                    height: 48,
-                    background: c.s2,
-                  }}
+                  className="w-12 h-12 rounded-[10px] border border-th-b bg-th-s2 text-th-t3 cursor-pointer flex items-center justify-center"
                 >
                   <Minus size={18} />
                 </button>
-                <div style={{ flex: 1, textAlign: "center" }}>
-                  <span
-                    style={{
-                      fontSize: 36,
-                      fontWeight: 800,
-                      fontFamily: FN.m,
-                      color: c.a,
-                      lineHeight: 1,
-                    }}
-                  >
+                <div className="flex-1 text-center">
+                  <span className="text-4xl font-extrabold font-mono text-th-a leading-none">
                     {prog.tmPct}
                   </span>
-                  <span
-                    style={{
-                      fontSize: 16,
-                      fontWeight: 600,
-                      color: c.t3,
-                    }}
-                  >
-                    %
-                  </span>
+                  <span className="text-[16px] font-semibold text-th-t3">%</span>
                 </div>
                 <button
                   onClick={() => changeTmPct(prog.tmPct + 5)}
-                  style={{
-                    ...iconBtnStyle,
-                    width: 48,
-                    height: 48,
-                    background: c.s2,
-                  }}
+                  className="w-12 h-12 rounded-[10px] border border-th-b bg-th-s2 text-th-t3 cursor-pointer flex items-center justify-center"
                 >
                   <Plus size={18} />
                 </button>
               </div>
             </div>
           )}
-          <div
-            style={{
-              borderTop: `1px solid ${c.b}`,
-              paddingTop: 16,
-              marginTop: 8,
-            }}
-          >
+          <div className="border-t border-th-b pt-4 mt-2">
             <button
               onClick={() => {
                 closeSettings();
                 setShowConfirm(true);
               }}
-              style={{
-                width: "100%",
-                padding: "14px",
-                borderRadius: 10,
-                border: `1px solid ${c.r}30`,
-                background: c.rd,
-                color: c.r,
-                fontSize: 14,
-                fontWeight: 600,
-                fontFamily: FN.s,
-                cursor: "pointer",
-                minHeight: 48,
-              }}
+              className="w-full p-3.5 rounded-[10px] border border-th-r/[0.19] bg-th-rd text-th-r text-[14px] font-semibold font-sans cursor-pointer min-h-[48px]"
             >
               Delete Program
             </button>
@@ -723,71 +358,40 @@ function HomePage() {
 
       {/* Template picker */}
       {showTemplPicker && (
-        <BottomSheet title="Template" c={c} onClose={() => setShowTemplPicker(false)}>
-          <div style={{ padding: 0 }}>
+        <BottomSheet title="Template" onClose={() => setShowTemplPicker(false)}>
+          <div className="p-0">
             {Object.entries(VARS).map(([k, vr]) => {
               const isCurrent = k === prog.variant;
               return (
                 <button
                   key={k}
                   onClick={() => swapVariant(k)}
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    width: "100%",
-                    boxSizing: "border-box",
-                    padding: "12px 14px",
-                    background: isCurrent ? c.ad : "transparent",
-                    border: isCurrent ? `1px solid ${c.am}` : `1px solid transparent`,
-                    borderRadius: 12,
-                    cursor: isCurrent ? "default" : "pointer",
-                    textAlign: "left",
-                    minHeight: 52,
-                    marginBottom: 4,
-                    gap: 12,
-                  }}
+                  className={cn(
+                    "flex items-center w-full box-border px-3.5 py-3 rounded-xl text-left min-h-[52px] mb-1 gap-3",
+                    isCurrent
+                      ? "bg-th-ad border border-th-am cursor-default"
+                      : "bg-transparent border border-transparent cursor-pointer",
+                  )}
                 >
                   <div
-                    style={{
-                      width: 6,
-                      height: 6,
-                      borderRadius: 3,
-                      background: isCurrent ? c.a : c.t4,
-                      flexShrink: 0,
-                    }}
+                    className={cn(
+                      "w-1.5 h-1.5 rounded-full shrink-0",
+                      isCurrent ? "bg-th-a" : "bg-th-t4",
+                    )}
                   />
-                  <div style={{ flex: 1 }}>
+                  <div className="flex-1">
                     <span
-                      style={{
-                        fontSize: 15,
-                        fontWeight: isCurrent ? 700 : 500,
-                        color: c.t,
-                        display: "block",
-                      }}
+                      className={cn(
+                        "text-[15px] text-th-t block",
+                        isCurrent ? "font-bold" : "font-medium",
+                      )}
                     >
                       {vr.n}
                     </span>
-                    <span
-                      style={{
-                        fontSize: 11,
-                        fontFamily: FN.m,
-                        color: c.t3,
-                      }}
-                    >
-                      {vr.d}
-                    </span>
+                    <span className="text-[11px] font-mono text-th-t3">{vr.d}</span>
                   </div>
                   {isCurrent && (
-                    <span
-                      style={{
-                        fontSize: 10,
-                        fontFamily: FN.m,
-                        fontWeight: 700,
-                        color: c.a,
-                      }}
-                    >
-                      CURRENT
-                    </span>
+                    <span className="text-[10px] font-mono font-bold text-th-a">CURRENT</span>
                   )}
                 </button>
               );
@@ -797,40 +401,26 @@ function HomePage() {
       )}
 
       {/* Week overview */}
-      <div style={{ marginBottom: 16 }}>
-        <div style={{ display: "flex", gap: 8, marginBottom: 6 }}>
-          <span style={pillStyle}>Cycle {prog.cycle}</span>
-          <span style={{ ...pillStyle, color: c.t3, background: c.s2 }}>{wd.l} Phase</span>
+      <div className="mb-4">
+        <div className="flex gap-2 mb-1.5">
+          <span className="text-[11px] font-mono font-bold text-th-a bg-th-ad px-3 py-1 rounded-full tracking-[.4px] uppercase">
+            Cycle {prog.cycle}
+          </span>
+          <span className="text-[11px] font-mono font-bold text-th-t3 bg-th-s2 px-3 py-1 rounded-full tracking-[.4px] uppercase">
+            {wd.l} Phase
+          </span>
         </div>
         <button
           onClick={() => setShowTemplPicker(true)}
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: 6,
-            background: "none",
-            border: "none",
-            padding: 0,
-            cursor: "pointer",
-            minHeight: 44,
-          }}
+          className="flex items-center gap-1.5 bg-none border-none p-0 cursor-pointer min-h-[44px]"
         >
-          <h1
-            style={{
-              fontSize: 24,
-              fontWeight: 800,
-              margin: 0,
-              color: c.t,
-            }}
-          >
-            {v.n}
-          </h1>
+          <h1 className="text-2xl font-extrabold m-0 text-th-t">{v.n}</h1>
           <svg
             width="14"
             height="14"
             viewBox="0 0 24 24"
             fill="none"
-            stroke={c.t4}
+            stroke="var(--color-th-t4)"
             strokeWidth="2.5"
           >
             <path d="M8 9l4 4 4-4" />
@@ -839,38 +429,18 @@ function HomePage() {
       </div>
 
       {/* Progress bar */}
-      <div
-        style={{
-          height: 4,
-          background: c.s2,
-          borderRadius: 2,
-          overflow: "hidden",
-          marginBottom: 4,
-        }}
-      >
+      <div className="h-1 bg-th-s2 rounded-sm overflow-hidden mb-1">
         <div
-          style={{
-            height: "100%",
-            width: `${(weekDone.length / LIFT_ORDER.length) * 100}%`,
-            background: c.a,
-            borderRadius: 2,
-            transition: "width .4s",
-          }}
+          className="h-full bg-th-a rounded-sm transition-[width] duration-400"
+          style={{ width: `${(weekDone.length / LIFT_ORDER.length) * 100}%` }}
         />
       </div>
-      <div style={{ fontSize: 12, color: c.t4, marginBottom: 16 }}>
+      <div className="text-[12px] text-th-t4 mb-4">
         {weekDone.length} of {LIFT_ORDER.length}
       </div>
 
       {/* Lift cards */}
-      <div
-        style={{
-          display: "flex",
-          flexDirection: "column",
-          gap: 6,
-          marginBottom: 24,
-        }}
-      >
+      <div className="flex flex-col gap-1.5 mb-6">
         {LIFT_ORDER.map((lid, i) => {
           const l = LIFTS.find((x) => x.id === lid)!;
           const isDone = doneLiftIds.includes(lid);
@@ -898,44 +468,27 @@ function HomePage() {
                     navigate({ to: "/workout" });
                   }
                 }}
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 12,
-                  background: isDone ? c.gd : c.s1,
-                  border: `1px solid ${isDone ? c.gb : c.b}`,
-                  borderRadius: 12,
-                  padding: "14px 16px",
-                  fontFamily: FN.s,
-                  textAlign: "left",
-                  cursor: isDone ? "default" : "pointer",
-                  width: "100%",
-                  boxSizing: "border-box",
-                  minHeight: 56,
-                }}
+                className={cn(
+                  "flex items-center gap-3 rounded-xl px-4 py-3.5 font-sans text-left w-full box-border min-h-[56px]",
+                  isDone
+                    ? "bg-th-gd border border-th-gb cursor-default"
+                    : "bg-th-s1 border border-th-b cursor-pointer",
+                )}
               >
-                <div style={checkStyle(isDone)}>
+                <div
+                  className={cn(
+                    "w-6 h-6 rounded-md border-2 flex items-center justify-center",
+                    isDone
+                      ? "border-th-g bg-th-g text-th-inv"
+                      : "border-th-t4 bg-transparent text-transparent",
+                  )}
+                >
                   {isDone && <Check size={13} strokeWidth={3} />}
                 </div>
-                <div style={{ flex: 1 }}>
-                  <span
-                    style={{
-                      fontSize: 16,
-                      fontWeight: 600,
-                      color: c.t,
-                    }}
-                  >
-                    {l.nm}
-                  </span>
+                <div className="flex-1">
+                  <span className="text-[16px] font-semibold text-th-t">{l.nm}</span>
                   {isDone && doneEntry && (
-                    <div
-                      style={{
-                        fontSize: 11,
-                        color: c.t3,
-                        fontFamily: FN.m,
-                        marginTop: 2,
-                      }}
-                    >
+                    <div className="text-[11px] text-th-t3 font-mono mt-0.5">
                       {new Date(doneEntry.dt).toLocaleDateString(undefined, {
                         month: "short",
                         day: "numeric",
@@ -950,7 +503,6 @@ function HomePage() {
                     min={minReps}
                     prGoal={goalR}
                     value={isDone ? doneReps : 0}
-                    c={c}
                     active={false}
                     activated={isDone}
                   />
@@ -972,33 +524,9 @@ function HomePage() {
             ? "Start Cycle " + (prog.cycle + 1)
             : "Start " + v2.wk[prog.week + 1].l + " Phase";
           return (
-            <div
-              style={{
-                background: c.ad,
-                border: "1px solid " + c.am,
-                borderRadius: 14,
-                padding: "20px 16px",
-                marginBottom: 24,
-                textAlign: "center",
-              }}
-            >
-              <div
-                style={{
-                  fontSize: 18,
-                  fontWeight: 800,
-                  color: c.a,
-                  marginBottom: 4,
-                }}
-              >
-                {wd.l} Complete
-              </div>
-              <div
-                style={{
-                  fontSize: 13,
-                  color: c.t2,
-                  marginBottom: 12,
-                }}
-              >
+            <div className="bg-th-ad border border-th-am rounded-[14px] px-4 py-5 mb-6 text-center">
+              <div className="text-[18px] font-extrabold text-th-a mb-1">{wd.l} Complete</div>
+              <div className="text-[13px] text-th-t2 mb-3">
                 {isDeload
                   ? "Recovery done. Next cycle starts fresh."
                   : weekPRs > 0
@@ -1006,7 +534,10 @@ function HomePage() {
                     : "All lifts logged"}
                 {!isDeload && isLastWeek ? " \u2022 Cycle complete!" : ""}
               </div>
-              <button onClick={handleAdvanceWeek} style={{ ...btnStyle(true), marginTop: 0 }}>
+              <button
+                onClick={handleAdvanceWeek}
+                className="w-full border-none rounded-xl px-6 py-4 text-[16px] font-bold font-sans cursor-pointer flex items-center justify-center gap-2 min-h-[52px] bg-th-a text-th-inv"
+              >
                 {nextLabel}
               </button>
             </div>

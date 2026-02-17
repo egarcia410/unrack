@@ -1,6 +1,4 @@
 import { useState, useEffect, useRef } from "react";
-import type { ThemeColors } from "../types";
-import { FN } from "../constants/theme";
 import { ConfettiBurst } from "./confetti-burst";
 
 interface PRRingProps {
@@ -8,12 +6,11 @@ interface PRRingProps {
   min: number;
   prGoal: number | null;
   value: number;
-  c: ThemeColors;
   active: boolean;
   activated: boolean;
 }
 
-export function PRRing({ size, min, prGoal, value, c, active, activated }: PRRingProps) {
+export function PRRing({ size, min, prGoal, value, active, activated }: PRRingProps) {
   const r = size / 2 - 4,
     cx = size / 2,
     cy = size / 2,
@@ -29,18 +26,18 @@ export function PRRing({ size, min, prGoal, value, c, active, activated }: PRRin
   const atMin = !empty && !zeroReps && value === min;
   const underMin = !empty && !zeroReps && value < min;
   const clr = empty
-    ? c.t4
+    ? "var(--color-th-t4)"
     : zeroReps
-      ? c.r
+      ? "var(--color-th-r)"
       : isPR
-        ? c.go
+        ? "var(--color-th-go)"
         : aboveMin
-          ? c.pr
+          ? "var(--color-th-pr)"
           : atMin
-            ? c.g
+            ? "var(--color-th-g)"
             : underMin
-              ? c.r
-              : c.g;
+              ? "var(--color-th-r)"
+              : "var(--color-th-g)";
   const prevPRRef = useRef(false);
   const [showConfetti, setShowConfetti] = useState(false);
   useEffect(() => {
@@ -53,17 +50,9 @@ export function PRRing({ size, min, prGoal, value, c, active, activated }: PRRin
     prevPRRef.current = !!isPR;
   }, [isPR]);
   return (
-    <div
-      style={{
-        position: "relative",
-        width: size,
-        height: size,
-        flexShrink: 0,
-        overflow: "visible",
-      }}
-    >
-      <svg width={size} height={size} style={{ transform: "rotate(-90deg)" }}>
-        <circle cx={cx} cy={cy} r={r} fill="none" stroke={c.s3} strokeWidth={sw} />
+    <div className="relative shrink-0 overflow-visible" style={{ width: size, height: size }}>
+      <svg width={size} height={size} className="-rotate-90">
+        <circle cx={cx} cy={cy} r={r} fill="none" stroke="var(--color-th-s3)" strokeWidth={sw} />
         <circle
           cx={cx}
           cy={cy}
@@ -74,41 +63,17 @@ export function PRRing({ size, min, prGoal, value, c, active, activated }: PRRin
           strokeDasharray={circ}
           strokeDashoffset={empty ? circ : off}
           strokeLinecap="round"
-          style={{
-            transition: "stroke-dashoffset .4s,stroke .3s",
-          }}
+          className="transition-[stroke-dashoffset,stroke] duration-[400ms,300ms]"
         />
       </svg>
       {isPR && (
-        <div
-          style={{
-            position: "absolute",
-            inset: -4,
-            borderRadius: "50%",
-            animation: "gold-glow 1.5s ease-in-out infinite",
-            pointerEvents: "none",
-          }}
-        />
+        <div className="absolute -inset-1 rounded-full animate-gold-glow pointer-events-none" />
       )}
       {showConfetti && active && <ConfettiBurst size={size} />}
-      <div
-        style={{
-          position: "absolute",
-          inset: 0,
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-          justifyContent: "center",
-        }}
-      >
+      <div className="absolute inset-0 flex flex-col items-center justify-center">
         <span
-          style={{
-            fontSize: Math.round(size * 0.28),
-            fontWeight: 800,
-            fontFamily: FN.m,
-            color: clr,
-            lineHeight: 1,
-          }}
+          className="font-extrabold font-mono leading-none"
+          style={{ fontSize: Math.round(size * 0.28), color: clr }}
         >
           {empty ? min + "+" : value}
         </span>

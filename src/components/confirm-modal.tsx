@@ -1,95 +1,33 @@
-import type { ThemeColors, ThemeMode } from "../types";
-import { FN } from "../constants/theme";
-
 interface ConfirmModalProps {
   msg: string;
   sub: string;
   onYes: () => void;
   onNo: () => void;
-  c: ThemeColors;
-  mode: ThemeMode;
   yesLabel?: string;
 }
 
-export function ConfirmModal({ msg, sub, onYes, onNo, c, mode, yesLabel }: ConfirmModalProps) {
+export function ConfirmModal({ msg, sub, onYes, onNo, yesLabel }: ConfirmModalProps) {
   return (
     <div
       onClick={onNo}
-      style={{
-        position: "fixed",
-        inset: 0,
-        zIndex: 9999,
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        background: "rgba(0,0,0,0.6)",
-      }}
+      className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60"
     >
       <div
         onClick={(e) => e.stopPropagation()}
-        style={{
-          background: c.s1,
-          border: `1px solid ${c.b}`,
-          borderRadius: 16,
-          padding: 24,
-          maxWidth: 320,
-          width: "85%",
-        }}
+        className="bg-th-s1 border border-th-b rounded-2xl p-6 max-w-[320px] w-[85%]"
       >
-        <div
-          style={{
-            fontSize: 17,
-            fontWeight: 700,
-            color: c.t,
-            marginBottom: 6,
-          }}
-        >
-          {msg}
-        </div>
-        <div
-          style={{
-            fontSize: 13,
-            color: c.t3,
-            marginBottom: 20,
-            lineHeight: 1.5,
-          }}
-        >
-          {sub}
-        </div>
-        <div style={{ display: "flex", gap: 8 }}>
+        <div className="text-[17px] font-bold text-th-t mb-1.5">{msg}</div>
+        <div className="text-[13px] text-th-t3 mb-5 leading-normal">{sub}</div>
+        <div className="flex gap-2">
           <button
             onClick={onNo}
-            style={{
-              flex: 1,
-              padding: "14px 0",
-              borderRadius: 10,
-              border: `1px solid ${c.b}`,
-              background: c.s2,
-              color: c.t,
-              fontSize: 15,
-              fontWeight: 600,
-              fontFamily: FN.s,
-              cursor: "pointer",
-              minHeight: 48,
-            }}
+            className="flex-1 py-3.5 rounded-[10px] border border-th-b bg-th-s2 text-th-t text-[15px] font-semibold font-sans cursor-pointer min-h-[48px]"
           >
             Cancel
           </button>
           <button
             onClick={onYes}
-            style={{
-              flex: 1,
-              padding: "14px 0",
-              borderRadius: 10,
-              border: "none",
-              background: c.r,
-              color: mode === "dark" ? "#111" : "#fff",
-              fontSize: 15,
-              fontWeight: 600,
-              fontFamily: FN.s,
-              cursor: "pointer",
-              minHeight: 48,
-            }}
+            className="flex-1 py-3.5 rounded-[10px] border-none bg-th-r text-th-inv text-[15px] font-semibold font-sans cursor-pointer min-h-[48px]"
           >
             {yesLabel || "Delete"}
           </button>

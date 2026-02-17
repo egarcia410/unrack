@@ -1,13 +1,10 @@
 import { useState, useEffect } from "react";
-import type { ThemeColors } from "../types";
-import { FN } from "../constants/theme";
 
 interface LiveClockProps {
   start: number;
-  c: ThemeColors;
 }
 
-export function LiveClock({ start, c }: LiveClockProps) {
+export function LiveClock({ start }: LiveClockProps) {
   const [now, setNow] = useState(Date.now());
   useEffect(() => {
     const t = setInterval(() => setNow(Date.now()), 1000);
@@ -17,15 +14,7 @@ export function LiveClock({ start, c }: LiveClockProps) {
   const m = Math.floor(elapsed / 60),
     s = elapsed % 60;
   return (
-    <span
-      style={{
-        fontSize: 15,
-        fontFamily: FN.m,
-        fontWeight: 600,
-        color: c.t3,
-        marginLeft: 14,
-      }}
-    >
+    <span className="text-[15px] font-mono font-semibold text-th-t3 ml-3.5">
       {m}:{String(s).padStart(2, "0")}
     </span>
   );

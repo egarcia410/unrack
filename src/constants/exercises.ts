@@ -41,11 +41,11 @@ export const CAT_LABELS: Record<string, string> = {
   "legs/core": "Legs/Core",
 };
 
-export const CAT_COLORS = (c: { pr: string; a: string; y: string }) => ({
-  push: c.pr,
-  pull: c.a,
-  "legs/core": c.y,
-});
+export const CAT_COLORS: Record<string, string> = {
+  push: "var(--color-th-pr)",
+  pull: "var(--color-th-a)",
+  "legs/core": "var(--color-th-y)",
+};
 
 export const FATIGUE: Record<string, string[]> = {
   squat: ["legs/core"],
