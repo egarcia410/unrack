@@ -1,0 +1,10 @@
+pre-commit:
+  parallel: true
+  jobs:
+    - name: lint
+      glob: "*.{js,ts,jsx,tsx}"
+      run: pnpm oxlint {staged_files}
+
+    - name: format
+      glob: "*.{js,ts,jsx,tsx,css,html,json}"
+      run: pnpm oxfmt --write {staged_files} && git add {staged_files}
