@@ -1,29 +1,29 @@
 import type { Exercise, AccWeek } from "../types";
 
 export const EXERCISE_LIB: Exercise[] = [
-  { id: "dips", nm: "Dips", cat: "push", bw: true },
-  { id: "pushup", nm: "Push-Ups", cat: "push", bw: true },
-  { id: "cgbp", nm: "Close-Grip Bench", cat: "push", bw: false, inc: 5 },
-  { id: "lmpress", nm: "Landmine Press", cat: "push", bw: false, inc: 5 },
-  { id: "dbpress", nm: "DB Bench Press", cat: "push", bw: false, inc: 5 },
-  { id: "dbincline", nm: "DB Incline Press", cat: "push", bw: false, inc: 5 },
-  { id: "tripush", nm: "Tricep Pushdown", cat: "push", bw: false, inc: 5 },
-  { id: "chinup", nm: "Chin-Ups", cat: "pull", bw: true },
-  { id: "pullup", nm: "Pull-Ups", cat: "pull", bw: true },
-  { id: "bbrow", nm: "Barbell Row", cat: "pull", bw: false, inc: 5 },
-  { id: "dbrow", nm: "Dumbbell Row", cat: "pull", bw: false, inc: 5 },
-  { id: "lmrow", nm: "Landmine Row", cat: "pull", bw: false, inc: 5 },
-  { id: "facepull", nm: "Face Pulls", cat: "pull", bw: false, inc: 5 },
-  { id: "latpull", nm: "Lat Pulldown", cat: "pull", bw: false, inc: 5 },
-  { id: "curls", nm: "Curls", cat: "pull", bw: false, inc: 5 },
-  { id: "rdl", nm: "Romanian Deadlift", cat: "legs/core", bw: false, inc: 10 },
-  { id: "frontsq", nm: "Front Squat", cat: "legs/core", bw: false, inc: 10 },
-  { id: "goodam", nm: "Good Morning", cat: "legs/core", bw: false, inc: 5 },
-  { id: "lunge", nm: "Lunges", cat: "legs/core", bw: false, inc: 5 },
-  { id: "bss", nm: "Bulgarian Split Squat", cat: "legs/core", bw: false, inc: 5 },
-  { id: "hangleg", nm: "Hanging Leg Raise", cat: "legs/core", bw: true },
-  { id: "abwheel", nm: "Ab Wheel", cat: "legs/core", bw: true },
-  { id: "backraise", nm: "Back Raise", cat: "legs/core", bw: true },
+  { id: "dips", name: "Dips", category: "push", isBodyweight: true },
+  { id: "pushup", name: "Push-Ups", category: "push", isBodyweight: true },
+  { id: "cgbp", name: "Close-Grip Bench", category: "push", isBodyweight: false, inc: 5 },
+  { id: "lmpress", name: "Landmine Press", category: "push", isBodyweight: false, inc: 5 },
+  { id: "dbpress", name: "DB Bench Press", category: "push", isBodyweight: false, inc: 5 },
+  { id: "dbincline", name: "DB Incline Press", category: "push", isBodyweight: false, inc: 5 },
+  { id: "tripush", name: "Tricep Pushdown", category: "push", isBodyweight: false, inc: 5 },
+  { id: "chinup", name: "Chin-Ups", category: "pull", isBodyweight: true },
+  { id: "pullup", name: "Pull-Ups", category: "pull", isBodyweight: true },
+  { id: "bbrow", name: "Barbell Row", category: "pull", isBodyweight: false, inc: 5 },
+  { id: "dbrow", name: "Dumbbell Row", category: "pull", isBodyweight: false, inc: 5 },
+  { id: "lmrow", name: "Landmine Row", category: "pull", isBodyweight: false, inc: 5 },
+  { id: "facepull", name: "Face Pulls", category: "pull", isBodyweight: false, inc: 5 },
+  { id: "latpull", name: "Lat Pulldown", category: "pull", isBodyweight: false, inc: 5 },
+  { id: "curls", name: "Curls", category: "pull", isBodyweight: false, inc: 5 },
+  { id: "rdl", name: "Romanian Deadlift", category: "legs/core", isBodyweight: false, inc: 10 },
+  { id: "frontsq", name: "Front Squat", category: "legs/core", isBodyweight: false, inc: 10 },
+  { id: "goodam", name: "Good Morning", category: "legs/core", isBodyweight: false, inc: 5 },
+  { id: "lunge", name: "Lunges", category: "legs/core", isBodyweight: false, inc: 5 },
+  { id: "bss", name: "Bulgarian Split Squat", category: "legs/core", isBodyweight: false, inc: 5 },
+  { id: "hangleg", name: "Hanging Leg Raise", category: "legs/core", isBodyweight: true },
+  { id: "abwheel", name: "Ab Wheel", category: "legs/core", isBodyweight: true },
+  { id: "backraise", name: "Back Raise", category: "legs/core", isBodyweight: true },
 ];
 
 export const DEFAULT_ACC: Record<string, string[]> = {
@@ -54,11 +54,11 @@ export const FATIGUE: Record<string, string[]> = {
   ohp: ["push"],
 };
 
-export const AW: AccWeek[] = [
-  { s: 4, r: 10, pct: 0.6, lb: "Volume" },
-  { s: 4, r: 8, pct: 0.67, lb: "Moderate" },
-  { s: 4, r: 6, pct: 0.75, lb: "Intensity" },
-  { s: 3, r: 10, pct: 0.5, lb: "Deload" },
+export const ASSISTANCE_WEEKS: AccWeek[] = [
+  { sets: 4, reps: 10, percentage: 0.6, label: "Volume" },
+  { sets: 4, reps: 8, percentage: 0.67, label: "Moderate" },
+  { sets: 4, reps: 6, percentage: 0.75, label: "Intensity" },
+  { sets: 3, reps: 10, percentage: 0.5, label: "Deload" },
 ];
 
 export const BW_BASE = 8;

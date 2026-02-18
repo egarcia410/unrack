@@ -1,12 +1,13 @@
+import { useEffect } from "react";
 import { createFileRoute, useNavigate, redirect } from "@tanstack/react-router";
 import { Check, Clock, Settings, Sun, Moon, Minus, Plus } from "lucide-react";
 import { useProgramStore } from "../stores/program-store";
 import { useWorkoutStore } from "../stores/workout-store";
 import { useUIStore, useTheme } from "../stores/ui-store";
-import { VARS, LIFTS, LIFT_ORDER } from "../constants/program";
-import { AW } from "../constants/exercises";
-import { rnd, calcWeight } from "../lib/calc";
-import { getAccForLift } from "../lib/exercises";
+import { VARIANTS, LIFTS, LIFT_ORDER } from "../constants/program";
+import { ASSISTANCE_WEEKS } from "../constants/exercises";
+import { roundToNearest, calcWeight } from "../lib/calc";
+import { getAssistanceForLift } from "../lib/exercises";
 import { cn } from "../lib/cn";
 import { ConfirmModal } from "../components/confirm-modal";
 import { Celebration } from "../components/celebration";
@@ -53,19 +54,23 @@ function HomePage() {
   const setEditAcc = useUIStore((s) => s.setEditAcc);
   const updateEditAcc = useUIStore((s) => s.updateEditAcc);
 
+  useEffect(() => {
+    if (!prog) navigate({ to: "/setup" });
+  }, [prog, navigate]);
+
   if (!prog) return null;
 
-  const v = VARS[prog.variant],
-    wd = v.wk[prog.week];
-  const weekDone = prog.wk.filter((w) => w.cy === prog.cycle && w.wk === prog.week);
-  const doneLiftIds = weekDone.map((w) => w.lf);
+  const variant = VARIANTS[prog.variant],
+    weekDef = variant.weeks[prog.week];
+  const weekDone = prog.workouts.filter((w) => w.cycle === prog.cycle && w.week === prog.week);
+  const doneLiftIds = weekDone.map((w) => w.lift);
 
   const allUsedAccs = () => {
     if (!prog) return [];
     const seen = new Set<string>();
-    const result: ReturnType<typeof getAccForLift> = [];
-    LIFT_ORDER.forEach((lid) => {
-      getAccForLift(lid, prog).forEach((a) => {
+    const result: ReturnType<typeof getAssistanceForLift> = [];
+    LIFT_ORDER.forEach((liftId) => {
+      getAssistanceForLift(liftId, prog).forEach((a) => {
         if (!seen.has(a.id)) {
           seen.add(a.id);
           result.push(a);
@@ -80,8 +85,8 @@ function HomePage() {
     if (result.type === "cycle") {
       setCeleb({
         type: "cycle",
-        msg: result.msg!,
-        sub: result.sub!,
+        message: result.message!,
+        subtitle: result.subtitle!,
       });
     }
   };
@@ -99,9 +104,13 @@ function HomePage() {
           {...celeb}
           onDone={() => setCeleb(null)}
           onAction={
-            celeb._lid
+            celeb._liftId
               ? async () => {
-                  await adjustTmAfterWarn(celeb._lid!, celeb._sugE1!, celeb._sugTM!);
+                  await adjustTmAfterWarn(
+                    celeb._liftId!,
+                    celeb._suggestedOneRepMax!,
+                    celeb._suggestedTrainingMax!,
+                  );
                   setCeleb(null);
                 }
               : undefined
@@ -159,15 +168,16 @@ function HomePage() {
           </div>
           <div className={cn("flex flex-col gap-1.5", editE1 ? "mb-3" : "mb-5")}>
             {LIFTS.map((l) => {
-              const curE1 = editE1 ? parseFloat(editE1[l.id]) || 0 : prog.e1[l.id];
-              const derivedTM = curE1 > 0 ? rnd(curE1 * (prog.tmPct / 100)) : 0;
+              const curE1 = editE1 ? parseFloat(editE1[l.id]) || 0 : prog.oneRepMaxes[l.id];
+              const derivedTM =
+                curE1 > 0 ? roundToNearest(curE1 * (prog.trainingMaxPercent / 100)) : 0;
               return (
                 <div
                   key={l.id}
                   className="flex justify-between items-center bg-th-s2 rounded-lg px-3 py-2 min-h-[44px]"
                 >
                   <div>
-                    <span className="text-[13px] font-semibold text-th-t">{l.nm}</span>
+                    <span className="text-[13px] font-semibold text-th-t">{l.name}</span>
                     {derivedTM > 0 && (
                       <span className="text-[10px] font-mono text-th-a block">TM {derivedTM}</span>
                     )}
@@ -176,14 +186,14 @@ function HomePage() {
                     <input
                       type="number"
                       inputMode="numeric"
-                      value={editE1 ? editE1[l.id] || "" : prog.e1[l.id] || ""}
+                      value={editE1 ? editE1[l.id] || "" : prog.oneRepMaxes[l.id] || ""}
                       onChange={(e) => {
                         const val = e.target.value;
                         updateEditE1((p) => {
                           const prev =
                             p ||
                             Object.fromEntries(
-                              Object.entries(prog.e1).map(([k, v]) => [k, String(v)]),
+                              Object.entries(prog.oneRepMaxes).map(([k, v]) => [k, String(v)]),
                             );
                           return {
                             ...prev,
@@ -211,26 +221,27 @@ function HomePage() {
             </button>
           )}
 
-          {allUsedAccs().some((a) => !a.bw) && (
+          {allUsedAccs().some((a) => !a.isBodyweight) && (
             <>
               <div className="text-[12px] font-bold text-th-t3 uppercase tracking-[.5px] mb-2">
                 Assistance
               </div>
               <div className={cn("flex flex-col gap-1.5", editAcc ? "mb-3" : "mb-5")}>
                 {allUsedAccs()
-                  .filter((a) => !a.bw)
+                  .filter((a) => !a.isBodyweight)
                   .map((a) => {
-                    const wm = prog.accMax?.[a.id] || 0;
+                    const wm = prog.assistanceMaximums?.[a.id] || 0;
                     const curVal = editAcc ? parseFloat(String(editAcc[a.id])) || 0 : wm;
-                    const phasePct = (AW[prog.week] || AW[0]).pct;
-                    const phaseWt = curVal > 0 ? rnd(curVal * phasePct) : 0;
+                    const phasePct = (ASSISTANCE_WEEKS[prog.week] || ASSISTANCE_WEEKS[0])
+                      .percentage;
+                    const phaseWt = curVal > 0 ? roundToNearest(curVal * phasePct) : 0;
                     return (
                       <div
                         key={a.id}
                         className="flex justify-between items-center bg-th-s2 rounded-lg px-3 py-2 min-h-[44px]"
                       >
                         <div>
-                          <span className="text-[13px] font-semibold text-th-t">{a.nm}</span>
+                          <span className="text-[13px] font-semibold text-th-t">{a.name}</span>
                           {phaseWt > 0 && (
                             <span className="text-[10px] font-mono text-th-a block">
                               Phase weight: {phaseWt}
@@ -248,10 +259,12 @@ function HomePage() {
                               updateEditAcc((p) => {
                                 const base: Record<string, string | number> = {};
                                 allUsedAccs()
-                                  .filter((x) => !x.bw)
+                                  .filter((x) => !x.isBodyweight)
                                   .forEach((x) => {
                                     base[x.id] =
-                                      p?.[x.id] !== undefined ? p[x.id] : prog.accMax?.[x.id] || 0;
+                                      p?.[x.id] !== undefined
+                                        ? p[x.id]
+                                        : prog.assistanceMaximums?.[x.id] || 0;
                                   });
                                 return { ...base, [a.id]: val };
                               });
@@ -322,19 +335,19 @@ function HomePage() {
               </div>
               <div className="flex items-center gap-4">
                 <button
-                  onClick={() => changeTmPct(prog.tmPct - 5)}
+                  onClick={() => changeTmPct(prog.trainingMaxPercent - 5)}
                   className="w-12 h-12 rounded-[10px] border border-th-b bg-th-s2 text-th-t3 cursor-pointer flex items-center justify-center"
                 >
                   <Minus size={18} />
                 </button>
                 <div className="flex-1 text-center">
                   <span className="text-4xl font-extrabold font-mono text-th-a leading-none">
-                    {prog.tmPct}
+                    {prog.trainingMaxPercent}
                   </span>
                   <span className="text-[16px] font-semibold text-th-t3">%</span>
                 </div>
                 <button
-                  onClick={() => changeTmPct(prog.tmPct + 5)}
+                  onClick={() => changeTmPct(prog.trainingMaxPercent + 5)}
                   className="w-12 h-12 rounded-[10px] border border-th-b bg-th-s2 text-th-t3 cursor-pointer flex items-center justify-center"
                 >
                   <Plus size={18} />
@@ -360,7 +373,7 @@ function HomePage() {
       {showTemplPicker && (
         <BottomSheet title="Template" onClose={() => setShowTemplPicker(false)}>
           <div className="p-0">
-            {Object.entries(VARS).map(([k, vr]) => {
+            {Object.entries(VARIANTS).map(([k, vr]) => {
               const isCurrent = k === prog.variant;
               return (
                 <button
@@ -386,9 +399,9 @@ function HomePage() {
                         isCurrent ? "font-bold" : "font-medium",
                       )}
                     >
-                      {vr.n}
+                      {vr.name}
                     </span>
-                    <span className="text-[11px] font-mono text-th-t3">{vr.d}</span>
+                    <span className="text-[11px] font-mono text-th-t3">{vr.description}</span>
                   </div>
                   {isCurrent && (
                     <span className="text-[10px] font-mono font-bold text-th-a">CURRENT</span>
@@ -407,14 +420,14 @@ function HomePage() {
             Cycle {prog.cycle}
           </span>
           <span className="text-[11px] font-mono font-bold text-th-t3 bg-th-s2 px-3 py-1 rounded-full tracking-[.4px] uppercase">
-            {wd.l} Phase
+            {weekDef.label} Phase
           </span>
         </div>
         <button
           onClick={() => setShowTemplPicker(true)}
           className="flex items-center gap-1.5 bg-none border-none p-0 cursor-pointer min-h-[44px]"
         >
-          <h1 className="text-2xl font-extrabold m-0 text-th-t">{v.n}</h1>
+          <h1 className="text-2xl font-extrabold m-0 text-th-t">{variant.name}</h1>
           <svg
             width="14"
             height="14"
@@ -441,26 +454,30 @@ function HomePage() {
 
       {/* Lift cards */}
       <div className="flex flex-col gap-1.5 mb-6">
-        {LIFT_ORDER.map((lid, i) => {
-          const l = LIFTS.find((x) => x.id === lid)!;
-          const isDone = doneLiftIds.includes(lid);
-          const amrapSet = wd.s.find((x) => String(x.r).includes("+"));
-          const amW = amrapSet ? calcWeight(prog.tms[lid], amrapSet.p) : 0;
-          const doneEntry = weekDone.find((w) => w.lf === lid);
+        {LIFT_ORDER.map((liftId, i) => {
+          const lift = LIFTS.find((x) => x.id === liftId)!;
+          const isDone = doneLiftIds.includes(liftId);
+          const amrapSet = weekDef.sets.find((x) => String(x.reps).includes("+"));
+          const amrapWeight = amrapSet
+            ? calcWeight(prog.trainingMaxes[liftId], amrapSet.percentage)
+            : 0;
+          const doneEntry = weekDone.find((w) => w.lift === liftId);
           let doneReps = 0;
-          if (doneEntry?.am) {
-            Object.values(doneEntry.am).forEach((v) => {
+          if (doneEntry?.amrapReps) {
+            Object.values(doneEntry.amrapReps).forEach((v) => {
               const n = parseInt(v);
               if (n > 0) doneReps = n;
             });
           }
-          const prevE1 = doneEntry?.ne1 ? doneEntry.ne1.old : prog.e1[lid];
-          const goalR =
-            amrapSet && prevE1 ? Math.max(1, Math.ceil((prevE1 / amW - 1) * 30) + 1) : null;
-          const minReps = amrapSet ? parseInt(String(amrapSet.r).replace("+", "")) || 1 : 1;
+          const prevE1 = doneEntry?.newOneRepMax
+            ? doneEntry.newOneRepMax.old
+            : prog.oneRepMaxes[liftId];
+          const goalReps =
+            amrapSet && prevE1 ? Math.max(1, Math.ceil((prevE1 / amrapWeight - 1) * 30) + 1) : null;
+          const minReps = amrapSet ? parseInt(String(amrapSet.reps).replace("+", "")) || 1 : 1;
 
           return (
-            <div key={lid + i}>
+            <div key={liftId + i}>
               <button
                 onClick={() => {
                   if (!isDone) {
@@ -486,14 +503,16 @@ function HomePage() {
                   {isDone && <Check size={13} strokeWidth={3} />}
                 </div>
                 <div className="flex-1">
-                  <span className="text-[16px] font-semibold text-th-t">{l.nm}</span>
+                  <span className="text-[16px] font-semibold text-th-t">{lift.name}</span>
                   {isDone && doneEntry && (
                     <div className="text-[11px] text-th-t3 font-mono mt-0.5">
-                      {new Date(doneEntry.dt).toLocaleDateString(undefined, {
+                      {new Date(doneEntry.datetime).toLocaleDateString(undefined, {
                         month: "short",
                         day: "numeric",
                       })}
-                      {doneEntry.dur ? ` \u00B7 ${Math.floor(doneEntry.dur / 60)} min` : ""}
+                      {doneEntry.duration
+                        ? ` \u00B7 ${Math.floor(doneEntry.duration / 60)} min`
+                        : ""}
                     </div>
                   )}
                 </div>
@@ -501,7 +520,7 @@ function HomePage() {
                   <PRRing
                     size={36}
                     min={minReps}
-                    prGoal={goalR}
+                    prGoal={goalReps}
                     value={isDone ? doneReps : 0}
                     active={false}
                     activated={isDone}
@@ -516,16 +535,18 @@ function HomePage() {
       {/* Week complete banner */}
       {weekDone.length >= LIFT_ORDER.length &&
         (() => {
-          const weekPRs = weekDone.filter((w) => w.ne1).length;
-          const v2 = VARS[prog.variant];
-          const isLastWeek = prog.week >= v2.wk.length - 1;
-          const isDeload = !wd.s.some((s) => String(s.r).includes("+"));
+          const weekPRs = weekDone.filter((w) => w.newOneRepMax).length;
+          const currentVariant = VARIANTS[prog.variant];
+          const isLastWeek = prog.week >= currentVariant.weeks.length - 1;
+          const isDeload = !weekDef.sets.some((s) => String(s.reps).includes("+"));
           const nextLabel = isLastWeek
             ? "Start Cycle " + (prog.cycle + 1)
-            : "Start " + v2.wk[prog.week + 1].l + " Phase";
+            : "Start " + currentVariant.weeks[prog.week + 1].label + " Phase";
           return (
             <div className="bg-th-ad border border-th-am rounded-[14px] px-4 py-5 mb-6 text-center">
-              <div className="text-[18px] font-extrabold text-th-a mb-1">{wd.l} Complete</div>
+              <div className="text-[18px] font-extrabold text-th-a mb-1">
+                {weekDef.label} Complete
+              </div>
               <div className="text-[13px] text-th-t2 mb-3">
                 {isDeload
                   ? "Recovery done. Next cycle starts fresh."

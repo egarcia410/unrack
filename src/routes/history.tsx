@@ -18,36 +18,40 @@ function HistoryPage() {
 
   if (!prog) return null;
 
-  const prRecords = prog.wk.filter((w) => w.ne1).map((w) => ({ ...w.ne1!, dt: w.dt, cy: w.cy }));
+  const prRecords = prog.workouts
+    .filter((w) => w.newOneRepMax)
+    .map((w) => ({ ...w.newOneRepMax!, datetime: w.datetime, cycle: w.cycle }));
   const liftData = LIFTS.map((l) => {
-    const prs = prRecords.filter((p) => p.lift === l.id).sort((a, b) => a.dt - b.dt);
-    const vals = prs.map((p) => p.nw);
-    const current = prog.e1[l.id];
+    const prs = prRecords.filter((p) => p.lift === l.id).sort((a, b) => a.datetime - b.datetime);
+    const vals = prs.map((p) => p.newValue);
+    const current = prog.oneRepMaxes[l.id];
     const first = vals.length > 0 ? vals[0] : current;
     const best = vals.length > 0 ? Math.max(...vals) : current;
     const lastPR = prs.length > 0 ? prs[prs.length - 1] : null;
     return {
       lift: l,
-      e1: current,
+      oneRepMax: current,
       gain: current - first,
       best,
       lastPR,
       prCount: prs.length,
     };
   });
-  const recent = prog.wk
+  const recent = prog.workouts
     .slice(-8)
     .reverse()
     .map((w) => {
-      const l = LIFTS.find((x) => x.id === w.lf);
-      const amKey = Object.keys(w.am || {}).find((k) => w.am[k] !== undefined && w.am[k] !== "");
-      const d = new Date(w.dt);
+      const lift = LIFTS.find((x) => x.id === w.lift);
+      const amKey = Object.keys(w.amrapReps || {}).find(
+        (k) => w.amrapReps[k] !== undefined && w.amrapReps[k] !== "",
+      );
+      const date = new Date(w.datetime);
       return {
-        lift: l,
-        dayStr: `${d.getMonth() + 1}/${d.getDate()}`,
-        amReps: amKey != null ? parseInt(w.am[amKey]) || 0 : null,
-        hadPR: !!w.ne1,
-        dur: w.dur || 0,
+        lift,
+        dayStr: `${date.getMonth() + 1}/${date.getDate()}`,
+        amReps: amKey != null ? parseInt(w.amrapReps[amKey]) || 0 : null,
+        hadPR: !!w.newOneRepMax,
+        duration: w.duration || 0,
       };
     });
 
@@ -71,9 +75,11 @@ function HistoryPage() {
           <div key={ld.lift.id} className="bg-th-s1 border border-th-b rounded-xl px-4 py-3.5">
             <div className="flex justify-between items-center">
               <div>
-                <span className="text-[16px] font-bold text-th-t">{ld.lift.nm}</span>
+                <span className="text-[16px] font-bold text-th-t">{ld.lift.name}</span>
                 <div className="flex items-baseline gap-2 mt-0.5">
-                  <span className="text-2xl font-extrabold font-mono text-th-t">{ld.e1}</span>
+                  <span className="text-2xl font-extrabold font-mono text-th-t">
+                    {ld.oneRepMax}
+                  </span>
                   <span className="text-[12px] text-th-t4 font-mono">{prog.unit}</span>
                   {ld.gain > 0 && (
                     <span className="text-[12px] font-mono font-bold text-th-g">+{ld.gain}</span>
@@ -81,7 +87,7 @@ function HistoryPage() {
                 </div>
               </div>
               <div className="text-right">
-                {ld.best > ld.e1 && (
+                {ld.best > ld.oneRepMax && (
                   <div className="text-[11px] font-mono text-th-t3">
                     Best: <span className="font-bold text-th-go">{ld.best}</span>
                   </div>
@@ -96,10 +102,10 @@ function HistoryPage() {
             {ld.lastPR && (
               <div className="mt-2 pt-2 border-t border-th-b flex justify-between items-center">
                 <span className="text-[11px] text-th-t3 font-mono">
-                  Last PR: {ld.lastPR.old} {"\u2192"} {ld.lastPR.nw}
+                  Last PR: {ld.lastPR.old} {"\u2192"} {ld.lastPR.newValue}
                 </span>
                 <span className="text-[11px] font-mono font-bold text-th-go">
-                  {ld.lastPR.w}x{ld.lastPR.reps}
+                  {ld.lastPR.weight}x{ld.lastPR.reps}
                 </span>
               </div>
             )}
@@ -112,31 +118,33 @@ function HistoryPage() {
             Recent Workouts
           </div>
           <div className="flex flex-col gap-1 mb-6">
-            {recent.map((r, i) => (
+            {recent.map((entry, i) => (
               <div
                 key={i}
                 className="flex items-center gap-3 bg-th-s1 border border-th-b rounded-[10px] px-4 py-2.5 min-h-[48px]"
               >
-                <span className="text-[12px] font-mono text-th-t4 min-w-[36px]">{r.dayStr}</span>
-                <span className="text-[14px] font-semibold text-th-t flex-1">
-                  {r.lift?.nm || "?"}
+                <span className="text-[12px] font-mono text-th-t4 min-w-[36px]">
+                  {entry.dayStr}
                 </span>
-                {r.dur > 0 && (
+                <span className="text-[14px] font-semibold text-th-t flex-1">
+                  {entry.lift?.name || "?"}
+                </span>
+                {entry.duration > 0 && (
                   <span className="text-[11px] font-mono text-th-t4">
-                    {Math.floor(r.dur / 60)}m
+                    {Math.floor(entry.duration / 60)}m
                   </span>
                 )}
-                {r.amReps !== null && (
+                {entry.amReps !== null && (
                   <span
                     className={cn(
                       "text-[13px] font-mono font-bold",
-                      r.hadPR ? "text-th-go" : r.amReps === 0 ? "text-th-r" : "text-th-t3",
+                      entry.hadPR ? "text-th-go" : entry.amReps === 0 ? "text-th-r" : "text-th-t3",
                     )}
                   >
-                    {r.amReps} reps
+                    {entry.amReps} reps
                   </span>
                 )}
-                {r.hadPR && (
+                {entry.hadPR && (
                   <span className="text-[10px] font-mono font-bold text-th-go bg-th-god px-2 py-0.5 rounded-full">
                     PR
                   </span>

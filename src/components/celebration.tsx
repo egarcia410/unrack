@@ -4,8 +4,8 @@ import { cn } from "../lib/cn";
 
 interface CelebrationProps {
   type: "done" | "pr" | "cycle" | "warn";
-  msg: string;
-  sub: string;
+  message: string;
+  subtitle: string;
   onDone: () => void;
   onAction?: () => void;
   actionLabel?: string;
@@ -14,8 +14,8 @@ interface CelebrationProps {
 
 export function Celebration({
   type,
-  msg,
-  sub,
+  message,
+  subtitle,
   onDone,
   onAction,
   actionLabel,
@@ -54,12 +54,12 @@ export function Celebration({
             type === "warn" ? "text-th-r" : "text-th-t",
           )}
         >
-          {msg}
+          {message}
         </div>
         <div
           className={cn("text-[13px] text-th-t2 leading-normal", type === "warn" ? "mb-4" : "mb-0")}
         >
-          {sub}
+          {subtitle}
         </div>
         {type === "warn" && onAction && (
           <>

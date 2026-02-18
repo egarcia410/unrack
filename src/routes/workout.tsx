@@ -3,10 +3,20 @@ import { ChevronLeft, Check } from "lucide-react";
 import { useProgramStore } from "../stores/program-store";
 import { useWorkoutStore } from "../stores/workout-store";
 import { useUIStore, useTheme } from "../stores/ui-store";
-import { VARS, LIFTS, LIFT_ORDER } from "../constants/program";
-import { EXERCISE_LIB, CATS, CAT_LABELS, CAT_COLORS, AW } from "../constants/exercises";
+import { VARIANTS, LIFTS, LIFT_ORDER } from "../constants/program";
+import {
+  EXERCISE_LIB,
+  CATS,
+  CAT_LABELS,
+  CAT_COLORS,
+  ASSISTANCE_WEEKS,
+} from "../constants/exercises";
 import { calcWeight, epley, smartRest } from "../lib/calc";
-import { getAccForLift, accDiscovered, getRx } from "../lib/exercises";
+import {
+  getAssistanceForLift,
+  isAssistanceDiscovered,
+  getAssistancePrescription,
+} from "../lib/exercises";
 import { cn } from "../lib/cn";
 import { RestTimer } from "../components/rest-timer";
 import { LiveClock } from "../components/live-clock";
@@ -56,45 +66,62 @@ function WorkoutPage() {
 
   if (!prog) return null;
 
-  const v = VARS[prog.variant],
-    wd = v.wk[activeWeek];
-  const lid = LIFT_ORDER[activeDay % LIFT_ORDER.length];
-  const lift = LIFTS.find((l) => l.id === lid)!;
-  const tm = prog.tms[lid];
-  const accs = getAccForLift(lid, prog);
+  const variant = VARIANTS[prog.variant],
+    weekDef = variant.weeks[activeWeek];
+  const liftId = LIFT_ORDER[activeDay % LIFT_ORDER.length];
+  const lift = LIFTS.find((l) => l.id === liftId)!;
+  const tm = prog.trainingMaxes[liftId];
+  const accs = getAssistanceForLift(liftId, prog);
 
-  let supp: Array<{ r: number; p: number; k: string }> = [];
-  if (v.sp) for (let i = 0; i < v.sp.n; i++) supp.push({ r: v.sp.r, p: v.sp.p, k: `s${i}` });
-  else if (v.spW) {
-    const sw = v.spW[activeWeek];
-    for (let i = 0; i < sw.n; i++) supp.push({ r: sw.r, p: sw.p, k: `s${i}` });
-  } else if (v.fl)
-    for (let i = 0; i < v.fl.n; i++) supp.push({ r: v.fl.r, p: wd.s[0].p, k: `s${i}` });
-  else if (v.sl)
-    for (let i = 0; i < v.sl.n; i++) supp.push({ r: v.sl.r, p: wd.s[1].p, k: `s${i}` });
+  let supp: Array<{ reps: number; percentage: number; key: string }> = [];
+  if (variant.supplemental)
+    for (let i = 0; i < variant.supplemental.numSets; i++)
+      supp.push({
+        reps: variant.supplemental.reps,
+        percentage: variant.supplemental.percentage,
+        key: `s${i}`,
+      });
+  else if (variant.supplementalWeekly) {
+    const weeklySupp = variant.supplementalWeekly[activeWeek];
+    for (let i = 0; i < weeklySupp.numSets; i++)
+      supp.push({ reps: weeklySupp.reps, percentage: weeklySupp.percentage, key: `s${i}` });
+  } else if (variant.firstSetLast)
+    for (let i = 0; i < variant.firstSetLast.numSets; i++)
+      supp.push({
+        reps: variant.firstSetLast.reps,
+        percentage: weekDef.sets[0].percentage,
+        key: `s${i}`,
+      });
+  else if (variant.secondSetLast)
+    for (let i = 0; i < variant.secondSetLast.numSets; i++)
+      supp.push({
+        reps: variant.secondSetLast.reps,
+        percentage: weekDef.sets[1].percentage,
+        key: `s${i}`,
+      });
 
   const warmup = [
-    { r: 5, p: 0.4 },
-    { r: 5, p: 0.5 },
-    { r: 3, p: 0.6 },
+    { reps: 5, percentage: 0.4 },
+    { reps: 5, percentage: 0.5 },
+    { reps: 3, percentage: 0.6 },
   ];
-  const amrapSet = wd.s.find((s) => String(s.r).includes("+"));
-  const amrapWeight = amrapSet ? calcWeight(tm, amrapSet.p) : 0;
+  const amrapSet = weekDef.sets.find((s) => String(s.reps).includes("+"));
+  const amrapWeight = amrapSet ? calcWeight(tm, amrapSet.percentage) : 0;
   const goalReps =
-    amrapSet && prog.e1[lid]
-      ? Math.max(1, Math.ceil((prog.e1[lid] / amrapWeight - 1) * 30) + 1)
+    amrapSet && prog.oneRepMaxes[liftId]
+      ? Math.max(1, Math.ceil((prog.oneRepMaxes[liftId] / amrapWeight - 1) * 30) + 1)
       : null;
 
   const allWarmup = warmup.every((_, i) => checked[`w${i}`]);
-  const allMain = wd.s.every((_, i) => checked[`m${i}`]);
-  const allSupp = supp.every((s) => checked[s.k]);
+  const allMain = weekDef.sets.every((_, i) => checked[`m${i}`]);
+  const allSupp = supp.every((s) => checked[s.key]);
   const allAcc = accs.every((a) => {
-    if (!accDiscovered(a, prog)) {
+    if (!isAssistanceDiscovered(a, prog)) {
       const log = accLog[a.id];
-      const weekRx = AW[activeWeek] || AW[0];
-      return (accSets[a.id] || 0) >= weekRx.s && log && parseFloat(log.w || "0") > 0;
+      const weekRx = ASSISTANCE_WEEKS[activeWeek] || ASSISTANCE_WEEKS[0];
+      return (accSets[a.id] || 0) >= weekRx.sets && log && parseFloat(log.w || "0") > 0;
     }
-    const rx = getRx(a, activeWeek, prog, lid);
+    const rx = getAssistancePrescription(a, activeWeek, prog, liftId);
     return (accSets[a.id] || 0) >= rx.sets;
   });
   const canFinish = allWarmup && allMain && allSupp && allAcc;
@@ -104,25 +131,25 @@ function WorkoutPage() {
     ...warmup.map((w, i) => ({
       key: `w${i}`,
       type: "warmup",
-      intensity: w.p,
+      intensity: w.percentage,
       isDeload,
     })),
-    ...wd.s.map((s, i) => ({
+    ...weekDef.sets.map((s, i) => ({
       key: `m${i}`,
       type: "main",
-      intensity: s.p,
+      intensity: s.percentage,
       isDeload,
     })),
     ...supp.map((s) => ({
-      key: s.k,
+      key: s.key,
       type: "supp",
-      intensity: s.p,
+      intensity: s.percentage,
       isDeload,
     })),
     ...accs.map((a) => ({
       key: `a_${a.id}`,
-      type: a.bw ? "acc_bw" : "acc_wt",
-      intensity: (AW[activeWeek] || AW[0]).pct,
+      type: a.isBodyweight ? "acc_bw" : "acc_wt",
+      intensity: (ASSISTANCE_WEEKS[activeWeek] || ASSISTANCE_WEEKS[0]).percentage,
       isDeload,
     })),
   ];
@@ -138,13 +165,13 @@ function WorkoutPage() {
     });
     setCeleb({
       type: result.celebType,
-      msg: result.celebMsg,
-      sub: result.celebSub,
+      message: result.celebMsg,
+      subtitle: result.celebSub,
       actionLabel: result.actionLabel,
       actionSub: result.actionSub,
-      _lid: result._lid,
-      _sugE1: result._sugE1,
-      _sugTM: result._sugTM,
+      _liftId: result._liftId,
+      _suggestedOneRepMax: result._suggestedOneRepMax,
+      _suggestedTrainingMax: result._suggestedTrainingMax,
     });
     navigate({ to: "/" });
   };
@@ -157,7 +184,7 @@ function WorkoutPage() {
           <BottomSheet title="Swap Exercise" onClose={() => setSwapSlot(null)} maxHeight="70vh">
             {CATS.map((cat) => {
               const catColor = CAT_COLORS[cat as keyof typeof CAT_COLORS];
-              const exercises = EXERCISE_LIB.filter((e) => e.cat === cat);
+              const exercises = EXERCISE_LIB.filter((e) => e.category === cat);
               return (
                 <div key={cat} className="mb-3">
                   <div
@@ -168,9 +195,9 @@ function WorkoutPage() {
                   </div>
                   {exercises.map((e) => {
                     const isCurrent = e.id === swapSlot.currentId;
-                    const hasMax = !e.bw && (prog.accMax?.[e.id] || 0) > 0;
-                    const rx = getRx(e, activeWeek, prog, swapSlot.liftId);
-                    const isNew = !e.bw && !hasMax;
+                    const hasMax = !e.isBodyweight && (prog.assistanceMaximums?.[e.id] || 0) > 0;
+                    const rx = getAssistancePrescription(e, activeWeek, prog, swapSlot.liftId);
+                    const isNew = !e.isBodyweight && !hasMax;
                     return (
                       <button
                         key={e.id}
@@ -199,14 +226,14 @@ function WorkoutPage() {
                             isCurrent ? "font-bold" : "font-medium",
                           )}
                         >
-                          {e.nm}
+                          {e.name}
                         </span>
                         {isCurrent && (
                           <span className="text-[10px] font-mono font-bold text-th-a">CURRENT</span>
                         )}
                         {!isCurrent && hasMax && (
                           <span className="text-[12px] font-mono font-bold text-th-pr bg-th-prd px-2.5 py-0.5 rounded-full">
-                            {rx.wt} {prog.unit}
+                            {rx.weight} {prog.unit}
                           </span>
                         )}
                         {!isCurrent && isNew && (
@@ -231,24 +258,24 @@ function WorkoutPage() {
             <ChevronLeft size={18} />
           </button>
           <span className="text-[11px] font-mono font-bold text-th-a bg-th-ad px-3 py-1 rounded-full tracking-[.4px] uppercase">
-            C{prog.cycle} {wd.t}
+            C{prog.cycle} {weekDef.title}
           </span>
         </div>
 
         {showTimer && (
           <RestTimer
-            dur={timerInfo.dur}
+            duration={timerInfo.duration}
             timerKey={timerKey}
             onDismiss={dismissTimer}
-            why={timerInfo.why}
+            reason={timerInfo.reason}
           />
         )}
 
         <div className="text-center py-1 pb-5">
-          <h1 className="text-[28px] font-extrabold my-0.5 tracking-tight">{lift.nm}</h1>
+          <h1 className="text-[28px] font-extrabold my-0.5 tracking-tight">{lift.name}</h1>
           <div className="flex justify-center gap-3.5">
             <span className="text-[14px] font-mono text-th-a font-semibold">TM {tm}</span>
-            <span className="text-[14px] font-mono text-th-t3">1RM {prog.e1[lid]}</span>
+            <span className="text-[14px] font-mono text-th-t3">1RM {prog.oneRepMaxes[liftId]}</span>
           </div>
         </div>
 
@@ -267,10 +294,10 @@ function WorkoutPage() {
                 <SetRow
                   key={k}
                   done={!!checked[k]}
-                  weight={calcWeight(tm, w.p)}
+                  weight={calcWeight(tm, w.percentage)}
                   unit={prog.unit}
-                  reps={w.r}
-                  pct={w.p}
+                  reps={w.reps}
+                  pct={w.percentage}
                   onClick={() => onSetCheck(k, allSets)}
                 />
               );
@@ -287,36 +314,40 @@ function WorkoutPage() {
         />
         {!collapsed.main && (
           <div className="flex flex-col gap-1 mb-6">
-            {wd.s.map((set, i) => {
+            {weekDef.sets.map((set, i) => {
               const k = `m${i}`;
-              const d = checked[k];
-              const isA = String(set.r).includes("+");
+              const done = checked[k];
+              const isAmrap = String(set.reps).includes("+");
 
-              if (isA) {
-                const minR = parseInt(String(set.r).replace("+", "")) || 1;
+              if (isAmrap) {
+                const minReps = parseInt(String(set.reps).replace("+", "")) || 1;
                 const amDone = !!checked[k];
                 const entered = parseInt(amrapReps[k]) || 0;
                 const curE1 = entered > 0 ? epley(amrapWeight, entered) : 0;
-                const prevE1Val = prog.e1[lid] || 0;
+                const prevE1Val = prog.oneRepMaxes[liftId] || 0;
                 const isPR = amDone && entered > 0 && goalReps && entered >= goalReps;
                 const activateAmrap = () => {
                   if (!amDone) {
                     setChecked((p) => ({ ...p, [k]: true }));
                     setAmrapReps((p) => ({
                       ...p,
-                      [k]: String(minR),
+                      [k]: String(minReps),
                     }));
                     const amIdx = allSets.findIndex((s) => s.key === k);
-                    let ns: (typeof allSets)[number] | null = null;
+                    let nextSet: (typeof allSets)[number] | null = null;
                     for (let j = amIdx + 1; j < allSets.length; j++) {
                       if (!checked[allSets[j].key]) {
-                        ns = allSets[j];
+                        nextSet = allSets[j];
                         break;
                       }
                     }
-                    if (ns) {
+                    if (nextSet) {
                       useWorkoutStore.setState({
-                        timerInfo: smartRest(ns.type, ns.intensity || 0, ns.isDeload || false),
+                        timerInfo: smartRest(
+                          nextSet.type,
+                          nextSet.intensity || 0,
+                          nextSet.isDeload || false,
+                        ),
                         showTimer: true,
                         timerKey: useWorkoutStore.getState().timerKey + 1,
                       });
@@ -325,10 +356,10 @@ function WorkoutPage() {
                 };
                 const stepDown = () => {
                   if (!amDone) return;
-                  const nv = Math.max(0, (parseInt(amrapReps[k]) || 0) - 1);
+                  const newVal = Math.max(0, (parseInt(amrapReps[k]) || 0) - 1);
                   setAmrapReps((p) => ({
                     ...p,
-                    [k]: String(nv),
+                    [k]: String(newVal),
                   }));
                 };
                 const stepUp = () => {
@@ -342,17 +373,17 @@ function WorkoutPage() {
                   }));
                 };
 
-                const borderClr = !amDone
+                const borderColor = !amDone
                   ? "var(--color-th-t4)"
                   : entered <= 0
                     ? "var(--color-th-r)"
                     : isPR
                       ? "var(--color-th-go)"
-                      : entered > minR
+                      : entered > minReps
                         ? "var(--color-th-pr)"
-                        : entered === minR
+                        : entered === minReps
                           ? "var(--color-th-g)"
-                          : entered < minR
+                          : entered < minReps
                             ? "var(--color-th-r)"
                             : "var(--color-th-g)";
 
@@ -363,7 +394,7 @@ function WorkoutPage() {
                         "rounded-[14px] p-4 transition-all duration-[250ms]",
                         isPR ? "bg-th-god animate-gold-glow" : "bg-th-s1",
                       )}
-                      style={{ border: `2px solid ${borderClr}` }}
+                      style={{ border: `2px solid ${borderColor}` }}
                     >
                       {!amDone ? (
                         <button
@@ -386,7 +417,7 @@ function WorkoutPage() {
                           </div>
                           <PRRing
                             size={58}
-                            min={minR}
+                            min={minReps}
                             prGoal={goalReps}
                             value={0}
                             active={true}
@@ -408,7 +439,7 @@ function WorkoutPage() {
                             </button>
                             <PRRing
                               size={80}
-                              min={minR}
+                              min={minReps}
                               prGoal={goalReps}
                               value={entered}
                               active={true}
@@ -436,11 +467,11 @@ function WorkoutPage() {
               return (
                 <SetRow
                   key={k}
-                  done={!!d}
-                  weight={calcWeight(tm, set.p)}
+                  done={!!done}
+                  weight={calcWeight(tm, set.percentage)}
                   unit={prog.unit}
-                  reps={set.r}
-                  pct={set.p}
+                  reps={set.reps}
+                  pct={set.percentage}
                   onClick={() => onSetCheck(k, allSets)}
                 />
               );
@@ -470,13 +501,13 @@ function WorkoutPage() {
               <div className="flex flex-col gap-1 mb-6">
                 {supp.map((s) => (
                   <SetRow
-                    key={s.k}
-                    done={!!checked[s.k]}
-                    weight={calcWeight(tm, s.p)}
+                    key={s.key}
+                    done={!!checked[s.key]}
+                    weight={calcWeight(tm, s.percentage)}
                     unit={prog.unit}
-                    reps={s.r}
-                    pct={s.p}
-                    onClick={() => onSetCheck(s.k, allSets)}
+                    reps={s.reps}
+                    pct={s.percentage}
+                    onClick={() => onSetCheck(s.key, allSets)}
                   />
                 ))}
               </div>
@@ -494,17 +525,17 @@ function WorkoutPage() {
         {!collapsed.acc && (
           <div className="flex flex-col gap-1.5 mb-6">
             {accs.map((a) => {
-              const discovered = accDiscovered(a, prog);
+              const discovered = isAssistanceDiscovered(a, prog);
               const log = accLog[a.id] || {};
 
               if (discovered) {
-                const rx = getRx(a, activeWeek, prog, lid);
+                const rx = getAssistancePrescription(a, activeWeek, prog, liftId);
                 const done = (accSets[a.id] || 0) >= rx.sets;
                 const setsDone = accSets[a.id] || 0;
                 const rxText =
                   rx.type === "bw"
                     ? `${rx.sets}\u00D7${rx.reps}`
-                    : `${rx.sets}\u00D7${rx.reps}${rx.wt && rx.wt > 0 ? " @ " + rx.wt + " " + prog.unit : ""}`;
+                    : `${rx.sets}\u00D7${rx.reps}${rx.weight && rx.weight > 0 ? " @ " + rx.weight + " " + prog.unit : ""}`;
 
                 return (
                   <div
@@ -517,7 +548,7 @@ function WorkoutPage() {
                     <button
                       onClick={() =>
                         setSwapSlot({
-                          liftId: lid,
+                          liftId,
                           slot: a.slot!,
                           currentId: a.id,
                         })
@@ -525,7 +556,7 @@ function WorkoutPage() {
                       className="flex items-center justify-between w-full box-border bg-none border-none p-0 cursor-pointer mb-2.5 min-h-[44px]"
                     >
                       <div className="flex items-baseline gap-1.5 min-w-0 flex-1">
-                        <span className="text-[15px] font-semibold text-th-t">{a.nm}</span>
+                        <span className="text-[15px] font-semibold text-th-t">{a.name}</span>
                         <svg
                           width="12"
                           height="12"
@@ -556,8 +587,9 @@ function WorkoutPage() {
                                     tapAccSet(
                                       a.id,
                                       rx.sets,
-                                      a.bw ? "acc_bw" : "acc_wt",
-                                      (AW[activeWeek] || AW[0]).pct,
+                                      a.isBodyweight ? "acc_bw" : "acc_wt",
+                                      (ASSISTANCE_WEEKS[activeWeek] || ASSISTANCE_WEEKS[0])
+                                        .percentage,
                                       isDeload,
                                     )
                                 : isLast
@@ -593,11 +625,11 @@ function WorkoutPage() {
               }
 
               // Undiscovered accessory
-              const weekRx = AW[activeWeek] || AW[0];
+              const weekRx = ASSISTANCE_WEEKS[activeWeek] || ASSISTANCE_WEEKS[0];
               const hasWeight = parseFloat(log.w || "0") > 0;
               const ftSetsDone = accSets[a.id] || 0;
-              const ftAllSets = ftSetsDone >= weekRx.s;
-              const ftComplete = ftAllSets && (a.bw || hasWeight);
+              const ftAllSets = ftSetsDone >= weekRx.sets;
+              const ftComplete = ftAllSets && (a.isBodyweight || hasWeight);
 
               return (
                 <div
@@ -610,7 +642,7 @@ function WorkoutPage() {
                   <button
                     onClick={() =>
                       setSwapSlot({
-                        liftId: lid,
+                        liftId,
                         slot: a.slot!,
                         currentId: a.id,
                       })
@@ -618,7 +650,7 @@ function WorkoutPage() {
                     className="flex items-center justify-between w-full box-border bg-none border-none p-0 cursor-pointer mb-1 min-h-[44px]"
                   >
                     <div className="flex items-baseline gap-1.5 min-w-0 flex-1">
-                      <span className="text-[15px] font-semibold text-th-t">{a.nm}</span>
+                      <span className="text-[15px] font-semibold text-th-t">{a.name}</span>
                       <svg
                         width="12"
                         height="12"
@@ -632,17 +664,19 @@ function WorkoutPage() {
                       </svg>
                     </div>
                     <span className="text-[13px] font-mono font-semibold text-th-y shrink-0 ml-2">
-                      {weekRx.s}
+                      {weekRx.sets}
                       {"\u00D7"}
-                      {weekRx.r}
+                      {weekRx.reps}
                     </span>
                   </button>
                   <div className="text-[12px] text-th-t3 mb-2.5">
-                    {a.bw
+                    {a.isBodyweight
                       ? "Max reps with good form each set."
-                      : "Same weight all " + weekRx.s + " sets. Leave 1\u20132 reps in the tank."}
+                      : "Same weight all " +
+                        weekRx.sets +
+                        " sets. Leave 1\u20132 reps in the tank."}
                   </div>
-                  {!a.bw && (
+                  {!a.isBodyweight && (
                     <div className="flex items-center gap-2 mb-2.5">
                       <span className="text-[13px] font-semibold text-th-t">Weight:</span>
                       <input
@@ -655,17 +689,17 @@ function WorkoutPage() {
                             ...p,
                             [a.id]: { w: e.target.value },
                           }));
-                          const v = parseFloat(e.target.value) > 0;
-                          if (v && ftAllSets)
+                          const hasValue = parseFloat(e.target.value) > 0;
+                          if (hasValue && ftAllSets)
                             setChecked((p) => ({
                               ...p,
                               [`a_${a.id}`]: true,
                             }));
                           else
                             setChecked((p) => {
-                              const n = { ...p };
-                              delete n[`a_${a.id}`];
-                              return n;
+                              const next = { ...p };
+                              delete next[`a_${a.id}`];
+                              return next;
                             });
                         }}
                         className="w-[90px] px-2 py-2.5 text-[18px] font-bold bg-th-s2 border border-th-bm rounded-lg text-th-t font-mono outline-none box-border text-center"
@@ -674,7 +708,7 @@ function WorkoutPage() {
                     </div>
                   )}
                   <div className="flex items-center gap-2">
-                    {Array.from({ length: weekRx.s }, (_, si) => {
+                    {Array.from({ length: weekRx.sets }, (_, si) => {
                       const filled = si < ftSetsDone;
                       const isNext = si === ftSetsDone;
                       const isLast = si === ftSetsDone - 1;
@@ -686,12 +720,15 @@ function WorkoutPage() {
                               ? () => {
                                   tapAccSet(
                                     a.id,
-                                    weekRx.s,
-                                    a.bw ? "acc_bw" : "acc_wt",
-                                    weekRx.pct,
+                                    weekRx.sets,
+                                    a.isBodyweight ? "acc_bw" : "acc_wt",
+                                    weekRx.percentage,
                                     isDeload,
                                   );
-                                  if (ftSetsDone + 1 >= weekRx.s && (a.bw || hasWeight)) {
+                                  if (
+                                    ftSetsDone + 1 >= weekRx.sets &&
+                                    (a.isBodyweight || hasWeight)
+                                  ) {
                                     setChecked((p) => ({
                                       ...p,
                                       [`a_${a.id}`]: true,
@@ -699,7 +736,7 @@ function WorkoutPage() {
                                   }
                                 }
                               : isLast
-                                ? () => untapAccSet(a.id, weekRx.s)
+                                ? () => untapAccSet(a.id, weekRx.sets)
                                 : undefined
                           }
                           className={cn(
@@ -723,7 +760,7 @@ function WorkoutPage() {
                       );
                     })}
                     <span className="text-[12px] font-mono text-th-t3 ml-1">
-                      {ftSetsDone}/{weekRx.s}
+                      {ftSetsDone}/{weekRx.sets}
                     </span>
                   </div>
                 </div>
@@ -740,16 +777,18 @@ function WorkoutPage() {
         let accSetsDone = 0,
           accSetsTotal = 0;
         accs.forEach((a) => {
-          const disc = accDiscovered(a, prog);
-          const rx = disc ? getRx(a, activeWeek, prog, lid) : { sets: (AW[activeWeek] || AW[0]).s };
+          const disc = isAssistanceDiscovered(a, prog);
+          const rx = disc
+            ? getAssistancePrescription(a, activeWeek, prog, liftId)
+            : { sets: (ASSISTANCE_WEEKS[activeWeek] || ASSISTANCE_WEEKS[0]).sets };
           accSetsTotal += rx.sets;
           accSetsDone += accSets[a.id] || 0;
         });
         const warmupDone = warmup.filter((_, i) => checked[`w${i}`]).length;
-        const mainDone = wd.s.filter((_, i) => checked[`m${i}`]).length;
-        const suppDone = supp.filter((s) => checked[s.k]).length;
+        const mainDone = weekDef.sets.filter((_, i) => checked[`m${i}`]).length;
+        const suppDone = supp.filter((s) => checked[s.key]).length;
         const done = warmupDone + mainDone + suppDone + accSetsDone;
-        const total = warmup.length + wd.s.length + supp.length + accSetsTotal;
+        const total = warmup.length + weekDef.sets.length + supp.length + accSetsTotal;
 
         return (
           <div className="fixed bottom-0 left-0 right-0 z-20 transition-all duration-300">

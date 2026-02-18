@@ -2,52 +2,52 @@ export type ThemeMode = "dark" | "light";
 
 export interface Lift {
   id: string;
-  nm: string;
-  sh: string;
-  inc: number;
+  name: string;
+  shorthand: string;
+  increment: number;
 }
 
 export interface WeekSet {
-  r: number | string;
-  p: number;
+  reps: number | string;
+  percentage: number;
 }
 
 export interface WeekDef {
-  l: string;
-  t: string;
-  s: WeekSet[];
+  label: string;
+  title: string;
+  sets: WeekSet[];
 }
 
 export interface SupplementalDef {
-  n: number;
-  r: number;
-  p: number;
+  numSets: number;
+  reps: number;
+  percentage: number;
 }
 
 export interface Variant {
-  n: string;
-  d: string;
-  wk: WeekDef[];
-  sp?: SupplementalDef;
-  spW?: SupplementalDef[];
-  fl?: { n: number; r: number };
-  sl?: { n: number; r: number };
+  name: string;
+  description: string;
+  weeks: WeekDef[];
+  supplemental?: SupplementalDef;
+  supplementalWeekly?: SupplementalDef[];
+  firstSetLast?: { numSets: number; reps: number };
+  secondSetLast?: { numSets: number; reps: number };
 }
 
 export interface Exercise {
   id: string;
-  nm: string;
-  cat: string;
-  bw: boolean;
+  name: string;
+  category: string;
+  isBodyweight: boolean;
   inc?: number;
   slot?: number;
 }
 
 export interface AccWeek {
-  s: number;
-  r: number;
-  pct: number;
-  lb: string;
+  sets: number;
+  reps: number;
+  percentage: number;
+  label: string;
 }
 
 export interface AccRx {
@@ -55,58 +55,73 @@ export interface AccRx {
   sets: number;
   reps: number;
   total?: number;
-  lb: string;
+  label: string;
   base?: number;
   pct?: number;
-  wt?: number;
-  mx?: number;
+  weight?: number;
+  maximum?: number;
   fatigued?: boolean;
 }
 
 export interface WorkoutEntry {
-  cy: number;
-  wk: number;
-  dy: number;
-  lf: string;
-  dt: number;
-  dur: number;
-  am: Record<string, string>;
-  al: Record<string, { w?: string }>;
-  ne1: { lift: string; old: number; nw: number; reps: number; w: number } | null;
+  cycle: number;
+  week: number;
+  day: number;
+  lift: string;
+  datetime: number;
+  duration: number;
+  amrapReps: Record<string, string>;
+  assistanceLog: Record<string, { w?: string }>;
+  newOneRepMax: {
+    lift: string;
+    old: number;
+    newValue: number;
+    reps: number;
+    weight: number;
+  } | null;
 }
 
 export interface ProgramData {
   variant: string;
   unit: "lb" | "kg";
-  tmPct: number;
-  tms: Record<string, number>;
-  e1: Record<string, number>;
+  trainingMaxPercent: number;
+  trainingMaxes: Record<string, number>;
+  oneRepMaxes: Record<string, number>;
   cycle: number;
   week: number;
-  wk: WorkoutEntry[];
-  aH: Record<string, Array<{ dt?: number; cy?: number; wk?: number; w?: number; bw?: boolean }>>;
-  accMax: Record<string, number>;
-  bwBase: Record<string, number>;
-  accSlots?: Record<string, string[]>;
-  customEx?: Record<string, Exercise>;
+  workouts: WorkoutEntry[];
+  assistanceHistory: Record<
+    string,
+    Array<{
+      datetime?: number;
+      cycle?: number;
+      week?: number;
+      weight?: number;
+      isBodyweight?: boolean;
+    }>
+  >;
+  assistanceMaximums: Record<string, number>;
+  bodyweightBaselines: Record<string, number>;
+  assistanceSlots?: Record<string, string[]>;
+  customExercises?: Record<string, Exercise>;
   mode?: ThemeMode;
-  ts: number;
+  timestamp: number;
 }
 
 export interface RestInfo {
-  dur: number;
-  why: string;
+  duration: number;
+  reason: string;
 }
 
 export interface CelebState {
   type: "done" | "pr" | "cycle" | "warn";
-  msg: string;
-  sub: string;
+  message: string;
+  subtitle: string;
   actionLabel?: string;
   actionSub?: string;
-  _lid?: string;
-  _sugE1?: number;
-  _sugTM?: number;
+  _liftId?: string;
+  _suggestedOneRepMax?: number;
+  _suggestedTrainingMax?: number;
 }
 
 export interface SwapSlot {

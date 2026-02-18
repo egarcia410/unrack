@@ -12,18 +12,18 @@ export function ConfettiBurst({ size }: ConfettiBurstProps) {
       const angle = (i / 10) * Math.PI * 2 + (Math.random() * 0.4 - 0.2);
       const dist = size * 0.7 + Math.random() * size * 0.5;
       return {
-        tx: Math.round(Math.cos(angle) * dist),
-        ty: Math.round(Math.sin(angle) * dist),
+        translateX: Math.round(Math.cos(angle) * dist),
+        translateY: Math.round(Math.sin(angle) * dist),
         color: CONFETTI_COLORS[i % CONFETTI_COLORS.length],
         delay: Math.round(Math.random() * 80),
-        sz: 3 + Math.round(Math.random() * 3),
+        size: 3 + Math.round(Math.random() * 3),
       };
     }),
   ).current;
   const css = particles
     .map(
       (p, i) =>
-        `@keyframes cf${id}${i}{0%{transform:translate(0,0) scale(1);opacity:1}70%{opacity:1}100%{transform:translate(${p.tx}px,${p.ty}px) scale(0);opacity:0}}`,
+        `@keyframes cf${id}${i}{0%{transform:translate(0,0) scale(1);opacity:1}70%{opacity:1}100%{transform:translate(${p.translateX}px,${p.translateY}px) scale(0);opacity:0}}`,
     )
     .join("");
   return (
@@ -37,12 +37,12 @@ export function ConfettiBurst({ size }: ConfettiBurstProps) {
               position: "absolute",
               left: "50%",
               top: "50%",
-              width: p.sz,
-              height: p.sz,
-              borderRadius: p.sz > 4 ? "1px" : "50%",
+              width: p.size,
+              height: p.size,
+              borderRadius: p.size > 4 ? "1px" : "50%",
               background: p.color,
-              marginLeft: -p.sz / 2,
-              marginTop: -p.sz / 2,
+              marginLeft: -p.size / 2,
+              marginTop: -p.size / 2,
               animation: `cf${id}${i} 0.65s ${p.delay}ms ease-out forwards`,
             }}
           />

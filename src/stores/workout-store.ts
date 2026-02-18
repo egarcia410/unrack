@@ -55,7 +55,7 @@ export const useWorkoutStore = create<WorkoutState>((set, get) => ({
   collapsed: {},
   timerKey: 0,
   showTimer: false,
-  timerInfo: { dur: 90, why: "" },
+  timerInfo: { duration: 90, reason: "" },
   swapSlot: null,
   workoutStart: null,
 
@@ -78,17 +78,17 @@ export const useWorkoutStore = create<WorkoutState>((set, get) => ({
     const next = { ...checked, [key]: !checked[key] };
     if (!checked[key]) {
       const idx = allSets.findIndex((s) => s.key === key);
-      let ns: (typeof allSets)[number] | null = null;
+      let nextSet: (typeof allSets)[number] | null = null;
       for (let i = idx + 1; i < allSets.length; i++) {
         if (!next[allSets[i].key]) {
-          ns = allSets[i];
+          nextSet = allSets[i];
           break;
         }
       }
-      if (ns) {
+      if (nextSet) {
         set({
           checked: next,
-          timerInfo: smartRest(ns.type, ns.intensity || 0, ns.isDeload || false),
+          timerInfo: smartRest(nextSet.type, nextSet.intensity || 0, nextSet.isDeload || false),
           showTimer: true,
           timerKey: get().timerKey + 1,
         });
@@ -160,7 +160,7 @@ export const useWorkoutStore = create<WorkoutState>((set, get) => ({
       collapsed: {},
       showTimer: false,
       timerKey: 0,
-      timerInfo: { dur: 90, why: "" },
+      timerInfo: { duration: 90, reason: "" },
       swapSlot: null,
       workoutStart: null,
     }),

@@ -4,21 +4,21 @@ import { cn } from "../lib/cn";
 import { playTimerDone } from "../lib/audio";
 
 interface RestTimerProps {
-  dur: number;
+  duration: number;
   timerKey: number;
   onDismiss: () => void;
-  why?: string;
+  reason?: string;
 }
 
-export function RestTimer({ dur, timerKey, onDismiss, why }: RestTimerProps) {
-  const [left, setLeft] = useState(dur);
+export function RestTimer({ duration, timerKey, onDismiss, reason }: RestTimerProps) {
+  const [left, setLeft] = useState(duration);
   const [paused, setPaused] = useState(false);
   const played = useRef(false);
   useEffect(() => {
-    setLeft(dur);
+    setLeft(duration);
     setPaused(false);
     played.current = false;
-  }, [timerKey, dur]);
+  }, [timerKey, duration]);
   useEffect(() => {
     if (!paused && left > 0) {
       const t = setTimeout(() => setLeft((l) => l - 1), 1000);
@@ -31,10 +31,10 @@ export function RestTimer({ dur, timerKey, onDismiss, why }: RestTimerProps) {
       playTimerDone();
     }
   }, [left]);
-  const fmt = (s: number) => `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
+  const formatTime = (s: number) => `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
   const done = left <= 0;
   const urgent = !done && left <= 10;
-  const pct = dur > 0 ? ((dur - left) / dur) * 100 : 100;
+  const pct = duration > 0 ? ((duration - left) / duration) * 100 : 100;
   return (
     <div
       className={cn(
@@ -52,7 +52,7 @@ export function RestTimer({ dur, timerKey, onDismiss, why }: RestTimerProps) {
               done ? "text-th-inv animate-timer-pulse" : "text-th-t",
             )}
           >
-            {done ? "GO!" : fmt(left)}
+            {done ? "GO!" : formatTime(left)}
           </div>
           <div
             className={cn(
@@ -61,7 +61,7 @@ export function RestTimer({ dur, timerKey, onDismiss, why }: RestTimerProps) {
             )}
             style={done ? { color: "rgba(0,0,0,0.5)" } : undefined}
           >
-            {done ? "Next set ready" : why || "Rest"}
+            {done ? "Next set ready" : reason || "Rest"}
           </div>
         </div>
         <div className="flex gap-1.5 shrink-0">

@@ -2,20 +2,20 @@ import type { Exercise, AccRx, ProgramData } from "../types";
 import {
   EXERCISE_LIB,
   DEFAULT_ACC,
-  AW,
+  ASSISTANCE_WEEKS,
   BW_BASE,
   BW_DELOAD_DROP,
   FATIGUE,
 } from "../constants/exercises";
 import { CAT_MIGRATE } from "../constants/migrations";
-import { rnd } from "./calc";
+import { roundToNearest } from "./calc";
 
-export function findEx(id: string): Exercise | undefined {
+export function findExercise(id: string): Exercise | undefined {
   return EXERCISE_LIB.find((e) => e.id === id);
 }
 
-export function getAccForLift(liftId: string, prog: ProgramData | null): Exercise[] {
-  let slots = prog?.accSlots?.[liftId] || DEFAULT_ACC[liftId];
+export function getAssistanceForLift(liftId: string, prog: ProgramData | null): Exercise[] {
+  let slots = prog?.assistanceSlots?.[liftId] || DEFAULT_ACC[liftId];
   // Migrate from old object format {push:"id",pull:"id","legs/core":"id"} to array
   if (slots && !Array.isArray(slots)) {
     const obj = slots as unknown as Record<string, string>;
@@ -26,53 +26,58 @@ export function getAccForLift(liftId: string, prog: ProgramData | null): Exercis
     ];
   }
   return slots.map((exId, i) => {
-    let ex: Exercise | undefined = EXERCISE_LIB.find((e) => e.id === exId);
-    if (!ex && prog?.customEx?.[exId]) ex = prog.customEx[exId];
-    if (!ex) ex = EXERCISE_LIB[i]; // fallback
-    return { ...ex, slot: i };
+    let exercise: Exercise | undefined = EXERCISE_LIB.find((e) => e.id === exId);
+    if (!exercise && prog?.customExercises?.[exId]) exercise = prog.customExercises[exId];
+    if (!exercise) exercise = EXERCISE_LIB[i]; // fallback
+    return { ...exercise, slot: i };
   });
 }
 
-export function getAllAccs(prog: ProgramData | null): Exercise[] {
+export function getAllAssistanceExercises(prog: ProgramData | null): Exercise[] {
   const all = [...EXERCISE_LIB];
-  if (prog?.customEx)
-    Object.values(prog.customEx).forEach((e) => {
+  if (prog?.customExercises)
+    Object.values(prog.customExercises).forEach((e) => {
       if (!all.find((x) => x.id === e.id)) all.push(e);
     });
   return all;
 }
 
-export function accDiscovered(acc: Exercise, prog: ProgramData | null): boolean {
-  return acc.bw || (prog?.accMax?.[acc.id] || 0) > 0;
+export function isAssistanceDiscovered(acc: Exercise, prog: ProgramData | null): boolean {
+  return acc.isBodyweight || (prog?.assistanceMaximums?.[acc.id] || 0) > 0;
 }
 
-export function getRx(acc: Exercise, weekIdx: number, prog: ProgramData, liftId?: string): AccRx {
-  if (acc.bw) {
-    const base = prog.bwBase?.[acc.id] || BW_BASE;
-    const isD = weekIdx === 3;
-    const reps = isD ? Math.max(3, base - BW_DELOAD_DROP) : base;
+export function getAssistancePrescription(
+  acc: Exercise,
+  weekIdx: number,
+  prog: ProgramData,
+  liftId?: string,
+): AccRx {
+  if (acc.isBodyweight) {
+    const base = prog.bodyweightBaselines?.[acc.id] || BW_BASE;
+    const isDeload = weekIdx === 3;
+    const reps = isDeload ? Math.max(3, base - BW_DELOAD_DROP) : base;
     return {
       type: "bw",
       sets: 4,
       reps,
       total: reps * 4,
-      lb: isD ? "Deload" : "Working",
+      label: isDeload ? "Deload" : "Working",
       base,
     };
   }
-  const w = AW[weekIdx] || AW[0];
-  const mx = prog.accMax?.[acc.id] || 0;
-  const cat = CAT_MIGRATE[acc.cat] || acc.cat;
-  const fatigued = !!(liftId && FATIGUE[liftId] && FATIGUE[liftId].includes(cat));
-  const fatPct = fatigued ? 0.9 : 1;
+  const week = ASSISTANCE_WEEKS[weekIdx] || ASSISTANCE_WEEKS[0];
+  const maximum = prog.assistanceMaximums?.[acc.id] || 0;
+  const category = CAT_MIGRATE[acc.category] || acc.category;
+  const fatigued = !!(liftId && FATIGUE[liftId] && FATIGUE[liftId].includes(category));
+  const fatiguePct = fatigued ? 0.9 : 1;
   return {
     type: "wt",
-    sets: w.s,
-    reps: w.r,
-    pct: w.pct,
-    wt: mx > 0 ? rnd(mx * w.pct * fatPct) : 0,
-    lb: w.lb + (fatigued ? " *" : ""),
-    mx,
+    sets: week.sets,
+    reps: week.reps,
+    pct: week.percentage,
+    weight: maximum > 0 ? roundToNearest(maximum * week.percentage * fatiguePct) : 0,
+    label: week.label + (fatigued ? " *" : ""),
+    maximum,
     fatigued,
   };
 }

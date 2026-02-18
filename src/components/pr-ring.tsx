@@ -11,21 +11,21 @@ interface PRRingProps {
 }
 
 export function PRRing({ size, min, prGoal, value, active, activated }: PRRingProps) {
-  const r = size / 2 - 4,
+  const radius = size / 2 - 4,
     cx = size / 2,
     cy = size / 2,
-    sw = active ? 3.5 : 2.5,
-    circ = 2 * Math.PI * r;
+    strokeWidth = active ? 3.5 : 2.5,
+    circumference = 2 * Math.PI * radius;
   const empty = !activated && value <= 0;
   const zeroReps = activated && value <= 0;
   const cap = prGoal || min;
   const pct = empty ? 0 : zeroReps ? 0 : Math.min(value / cap, 1);
-  const off = circ - pct * circ;
+  const off = circumference - pct * circumference;
   const isPR = !empty && !zeroReps && prGoal && value >= prGoal;
   const aboveMin = !empty && !zeroReps && value > min && !isPR;
   const atMin = !empty && !zeroReps && value === min;
   const underMin = !empty && !zeroReps && value < min;
-  const clr = empty
+  const strokeColor = empty
     ? "var(--color-th-t4)"
     : zeroReps
       ? "var(--color-th-r)"
@@ -52,16 +52,23 @@ export function PRRing({ size, min, prGoal, value, active, activated }: PRRingPr
   return (
     <div className="relative shrink-0 overflow-visible" style={{ width: size, height: size }}>
       <svg width={size} height={size} className="-rotate-90">
-        <circle cx={cx} cy={cy} r={r} fill="none" stroke="var(--color-th-s3)" strokeWidth={sw} />
         <circle
           cx={cx}
           cy={cy}
-          r={r}
+          r={radius}
           fill="none"
-          stroke={clr}
-          strokeWidth={isPR ? sw + 1 : sw}
-          strokeDasharray={circ}
-          strokeDashoffset={empty ? circ : off}
+          stroke="var(--color-th-s3)"
+          strokeWidth={strokeWidth}
+        />
+        <circle
+          cx={cx}
+          cy={cy}
+          r={radius}
+          fill="none"
+          stroke={strokeColor}
+          strokeWidth={isPR ? strokeWidth + 1 : strokeWidth}
+          strokeDasharray={circumference}
+          strokeDashoffset={empty ? circumference : off}
           strokeLinecap="round"
           className="transition-[stroke-dashoffset,stroke] duration-[400ms,300ms]"
         />
@@ -73,7 +80,7 @@ export function PRRing({ size, min, prGoal, value, active, activated }: PRRingPr
       <div className="absolute inset-0 flex flex-col items-center justify-center">
         <span
           className="font-extrabold font-mono leading-none"
-          style={{ fontSize: Math.round(size * 0.28), color: clr }}
+          style={{ fontSize: Math.round(size * 0.28), color: strokeColor }}
         >
           {empty ? min + "+" : value}
         </span>
