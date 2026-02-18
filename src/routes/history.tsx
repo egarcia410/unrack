@@ -1,6 +1,6 @@
 import { createFileRoute, useNavigate, redirect } from "@tanstack/react-router";
 import { ChevronLeft } from "lucide-react";
-import { useProgramStore } from "../stores/program-store";
+import { useProgramStore, useProg } from "../stores/program-store";
 import { LIFTS } from "../constants/program";
 import { cn } from "../lib/cn";
 
@@ -14,7 +14,7 @@ export const Route = createFileRoute("/history")({
 
 function HistoryPage() {
   const navigate = useNavigate();
-  const prog = useProgramStore((s) => s.prog);
+  const prog = useProg();
 
   if (!prog) return null;
 

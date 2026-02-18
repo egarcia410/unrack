@@ -1,5 +1,9 @@
 export type ThemeMode = "dark" | "light";
 
+export type TemplateId = "classic" | "bbb" | "bbbC" | "fsl" | "ssl";
+
+export type Unit = "lb" | "kg";
+
 export interface Lift {
   id: string;
   name: string;
@@ -24,7 +28,7 @@ export interface SupplementalDef {
   percentage: number;
 }
 
-export interface Variant {
+export interface Template {
   name: string;
   description: string;
   weeks: WeekDef[];
@@ -82,8 +86,8 @@ export interface WorkoutEntry {
 }
 
 export interface ProgramData {
-  variant: string;
-  unit: "lb" | "kg";
+  template: TemplateId;
+  unit: Unit;
   trainingMaxPercent: number;
   trainingMaxes: Record<string, number>;
   oneRepMaxes: Record<string, number>;

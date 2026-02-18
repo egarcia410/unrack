@@ -1,9 +1,9 @@
 import { createFileRoute, useNavigate, redirect } from "@tanstack/react-router";
 import { ChevronLeft, Check } from "lucide-react";
-import { useProgramStore } from "../stores/program-store";
+import { useProg, useProgramActions } from "../stores/program-store";
 import { useWorkoutStore } from "../stores/workout-store";
-import { useUIStore, useTheme } from "../stores/ui-store";
-import { VARIANTS, LIFTS, LIFT_ORDER } from "../constants/program";
+import { useUIStore } from "../stores/ui-store";
+import { TEMPLATES, LIFTS, LIFT_ORDER } from "../constants/program";
 import {
   EXERCISE_LIB,
   CATS,
@@ -34,12 +34,9 @@ export const Route = createFileRoute("/workout")({
 });
 
 function WorkoutPage() {
-  const { mode } = useTheme();
-  void mode;
   const navigate = useNavigate();
-  const prog = useProgramStore((s) => s.prog);
-  const finishWorkout = useProgramStore((s) => s.finishWorkout);
-  const swapExercise = useProgramStore((s) => s.swapExercise);
+  const prog = useProg();
+  const { workoutFinished, exerciseSwapped } = useProgramActions();
   const setCeleb = useUIStore((s) => s.setCeleb);
 
   const activeWeek = useWorkoutStore((s) => s.activeWeek);
@@ -66,7 +63,7 @@ function WorkoutPage() {
 
   if (!prog) return null;
 
-  const variant = VARIANTS[prog.variant],
+  const variant = TEMPLATES[prog.template],
     weekDef = variant.weeks[activeWeek];
   const liftId = LIFT_ORDER[activeDay % LIFT_ORDER.length];
   const lift = LIFTS.find((l) => l.id === liftId)!;
@@ -155,7 +152,7 @@ function WorkoutPage() {
   ];
 
   const handleFinish = async () => {
-    const result = await finishWorkout({
+    const result = await workoutFinished({
       activeWeek,
       activeDay,
       amrapReps,
@@ -203,7 +200,7 @@ function WorkoutPage() {
                         key={e.id}
                         onClick={() => {
                           if (!isCurrent)
-                            swapExercise(swapSlot.liftId, swapSlot.slot, e.id).then(() =>
+                            exerciseSwapped(swapSlot.liftId, swapSlot.slot, e.id).then(() =>
                               setSwapSlot(null),
                             );
                         }}
@@ -489,9 +486,9 @@ function WorkoutPage() {
               onToggle={() => toggleCollapse("supp")}
               extra={
                 <span className="text-th-t4">
-                  {prog.variant === "bbb" || prog.variant === "bbbC"
+                  {prog.template === "bbb" || prog.template === "bbbC"
                     ? "BBB"
-                    : prog.variant === "fsl"
+                    : prog.template === "fsl"
                       ? "FSL"
                       : "SSL"}
                 </span>

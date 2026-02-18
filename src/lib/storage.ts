@@ -26,6 +26,7 @@ export function migratePropertyNames(data: Record<string, unknown>): Record<stri
     accSlots: "assistanceSlots",
     customEx: "customExercises",
     ts: "timestamp",
+    variant: "template",
   };
 
   // Only migrate if old keys are present (not already migrated)

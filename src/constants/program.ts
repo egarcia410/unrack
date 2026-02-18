@@ -1,6 +1,6 @@
-import type { Variant, Lift } from "../types";
+import type { Template, TemplateId, Lift } from "../types";
 
-export const VARIANTS: Record<string, Variant> = {
+export const TEMPLATES: Record<TemplateId, Template> = {
   classic: {
     name: "5/3/1 Classic",
     description: "Original 3 working sets",

@@ -1,14 +1,14 @@
 import { useEffect } from "react";
 import { createRootRoute, Outlet } from "@tanstack/react-router";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { useProgramStore } from "../stores/program-store";
+import { useLoading, useProgramActions } from "../stores/program-store";
 import { initTheme } from "../stores/ui-store";
 
 const queryClient = new QueryClient();
 
 function RootLayout() {
-  const loading = useProgramStore((s) => s.loading);
-  const loadProgram = useProgramStore((s) => s.loadProgram);
+  const loading = useLoading();
+  const { loadProgram } = useProgramActions();
 
   useEffect(() => {
     initTheme();

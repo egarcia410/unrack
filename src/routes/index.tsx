@@ -1,10 +1,11 @@
 import { useEffect } from "react";
 import { createFileRoute, useNavigate, redirect } from "@tanstack/react-router";
 import { Check, Clock, Settings, Sun, Moon, Minus, Plus } from "lucide-react";
-import { useProgramStore } from "../stores/program-store";
+import { useProgramStore, useProg, useProgramActions } from "../stores/program-store";
 import { useWorkoutStore } from "../stores/workout-store";
 import { useUIStore, useTheme } from "../stores/ui-store";
-import { VARIANTS, LIFTS, LIFT_ORDER } from "../constants/program";
+import { TEMPLATES, LIFTS, LIFT_ORDER } from "../constants/program";
+import type { TemplateId } from "../types";
 import { ASSISTANCE_WEEKS } from "../constants/exercises";
 import { roundToNearest, calcWeight } from "../lib/calc";
 import { getAssistanceForLift } from "../lib/exercises";
@@ -25,16 +26,18 @@ export const Route = createFileRoute("/")({
 function HomePage() {
   const { mode } = useTheme();
   const navigate = useNavigate();
-  const prog = useProgramStore((s) => s.prog);
-  const resetAll = useProgramStore((s) => s.resetAll);
-  const swapVariant = useProgramStore((s) => s.swapVariant);
-  const toggleUnit = useProgramStore((s) => s.toggleUnit);
-  const toggleMode = useProgramStore((s) => s.toggleMode);
-  const changeTmPct = useProgramStore((s) => s.changeTmPct);
-  const saveE1Edits = useProgramStore((s) => s.saveE1Edits);
-  const saveAccEdits = useProgramStore((s) => s.saveAccEdits);
-  const advanceWeek = useProgramStore((s) => s.advanceWeek);
-  const adjustTmAfterWarn = useProgramStore((s) => s.adjustTmAfterWarn);
+  const prog = useProg();
+  const {
+    programReset,
+    templateChanged,
+    unitToggled,
+    modeToggled,
+    trainingMaxPercentChanged,
+    oneRepMaxesSaved,
+    assistanceMaximumsSaved,
+    weekAdvanced,
+    trainingMaxAdjusted,
+  } = useProgramActions();
   const startWorkout = useWorkoutStore((s) => s.startWorkout);
   const celeb = useUIStore((s) => s.celeb);
   const setCeleb = useUIStore((s) => s.setCeleb);
@@ -60,7 +63,7 @@ function HomePage() {
 
   if (!prog) return null;
 
-  const variant = VARIANTS[prog.variant],
+  const variant = TEMPLATES[prog.template],
     weekDef = variant.weeks[prog.week];
   const weekDone = prog.workouts.filter((w) => w.cycle === prog.cycle && w.week === prog.week);
   const doneLiftIds = weekDone.map((w) => w.lift);
@@ -81,7 +84,7 @@ function HomePage() {
   };
 
   const handleAdvanceWeek = async () => {
-    const result = await advanceWeek();
+    const result = await weekAdvanced();
     if (result.type === "cycle") {
       setCeleb({
         type: "cycle",
@@ -92,7 +95,7 @@ function HomePage() {
   };
 
   const handleResetAll = async () => {
-    await resetAll();
+    await programReset();
     setShowConfirm(false);
     navigate({ to: "/setup" });
   };
@@ -106,7 +109,7 @@ function HomePage() {
           onAction={
             celeb._liftId
               ? async () => {
-                  await adjustTmAfterWarn(
+                  await trainingMaxAdjusted(
                     celeb._liftId!,
                     celeb._suggestedOneRepMax!,
                     celeb._suggestedTrainingMax!,
@@ -151,7 +154,7 @@ function HomePage() {
           <div className="flex justify-between items-center mb-5">
             <div className="text-[12px] font-bold text-th-t3 uppercase tracking-[.5px]">Theme</div>
             <button
-              onClick={toggleMode}
+              onClick={modeToggled}
               className="flex items-center gap-2 bg-th-s2 border border-th-b rounded-[10px] px-3.5 py-2 cursor-pointer min-h-[44px]"
             >
               <span className="text-th-t3 flex">
@@ -212,7 +215,7 @@ function HomePage() {
           {editE1 && (
             <button
               onClick={async () => {
-                await saveE1Edits(editE1);
+                await oneRepMaxesSaved(editE1);
                 setEditE1(null);
               }}
               className="w-full p-3 rounded-[10px] border-none bg-th-a text-th-inv text-[14px] font-bold font-sans cursor-pointer min-h-[44px] mb-5"
@@ -280,7 +283,7 @@ function HomePage() {
               {editAcc && (
                 <button
                   onClick={async () => {
-                    await saveAccEdits(editAcc);
+                    await assistanceMaximumsSaved(editAcc);
                     setEditAcc(null);
                   }}
                   className="w-full p-3 rounded-[10px] border-none bg-th-a text-th-inv text-[14px] font-bold font-sans cursor-pointer min-h-[44px] mb-5"
@@ -317,7 +320,7 @@ function HomePage() {
                   <button
                     key={u}
                     onClick={() => {
-                      if (prog.unit !== u) toggleUnit();
+                      if (prog.unit !== u) unitToggled();
                     }}
                     className={cn(
                       "rounded-[10px] p-3 text-[14px] font-sans cursor-pointer text-center min-h-[44px]",
@@ -335,7 +338,7 @@ function HomePage() {
               </div>
               <div className="flex items-center gap-4">
                 <button
-                  onClick={() => changeTmPct(prog.trainingMaxPercent - 5)}
+                  onClick={() => trainingMaxPercentChanged(prog.trainingMaxPercent - 5)}
                   className="w-12 h-12 rounded-[10px] border border-th-b bg-th-s2 text-th-t3 cursor-pointer flex items-center justify-center"
                 >
                   <Minus size={18} />
@@ -347,7 +350,7 @@ function HomePage() {
                   <span className="text-[16px] font-semibold text-th-t3">%</span>
                 </div>
                 <button
-                  onClick={() => changeTmPct(prog.trainingMaxPercent + 5)}
+                  onClick={() => trainingMaxPercentChanged(prog.trainingMaxPercent + 5)}
                   className="w-12 h-12 rounded-[10px] border border-th-b bg-th-s2 text-th-t3 cursor-pointer flex items-center justify-center"
                 >
                   <Plus size={18} />
@@ -373,12 +376,12 @@ function HomePage() {
       {showTemplPicker && (
         <BottomSheet title="Template" onClose={() => setShowTemplPicker(false)}>
           <div className="p-0">
-            {Object.entries(VARIANTS).map(([k, vr]) => {
-              const isCurrent = k === prog.variant;
+            {Object.entries(TEMPLATES).map(([k, vr]) => {
+              const isCurrent = k === prog.template;
               return (
                 <button
                   key={k}
-                  onClick={() => swapVariant(k)}
+                  onClick={() => templateChanged(k as TemplateId)}
                   className={cn(
                     "flex items-center w-full box-border px-3.5 py-3 rounded-xl text-left min-h-[52px] mb-1 gap-3",
                     isCurrent
@@ -536,7 +539,7 @@ function HomePage() {
       {weekDone.length >= LIFT_ORDER.length &&
         (() => {
           const weekPRs = weekDone.filter((w) => w.newOneRepMax).length;
-          const currentVariant = VARIANTS[prog.variant];
+          const currentVariant = TEMPLATES[prog.template];
           const isLastWeek = prog.week >= currentVariant.weeks.length - 1;
           const isDeload = !weekDef.sets.some((s) => String(s.reps).includes("+"));
           const nextLabel = isLastWeek
