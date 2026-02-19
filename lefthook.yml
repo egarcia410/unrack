@@ -13,3 +13,5 @@ commit-msg:
   jobs:
     - name: conventional-commit
       run: 'head -1 {1} | grep -qE "^(feat|fix|perf|refactor|docs|style|chore|test|ci|build|revert)(\(.+\))?!?: .+"'
+    - name: require-body
+      run: 'msg=$(sed "/^#/d" {1}) && test -z "$(echo "$msg" | sed -n "2p")" && test -n "$(echo "$msg" | sed -n "3p")"'
