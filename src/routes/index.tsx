@@ -1,5 +1,5 @@
-import { useEffect } from "react";
 import { createFileRoute, useNavigate, redirect } from "@tanstack/react-router";
+import { Form } from "@base-ui/react/form";
 import { Check, Clock, Settings, Sun, Moon, Minus, Plus } from "lucide-react";
 import { useProgramStore, hasProgramData } from "../stores/program-store";
 import { useWorkoutStore } from "../stores/workout-store";
@@ -14,6 +14,8 @@ import { ConfirmModal } from "../components/confirm-modal";
 import { Celebration } from "../components/celebration";
 import { BottomSheet } from "../components/bottom-sheet";
 import { PRRing } from "../components/pr-ring";
+import { LiftInputRow } from "../components/lift-input-row";
+import { WeightInput } from "../components/weight-input";
 
 export const Route = createFileRoute("/")({
   beforeLoad: () => {
@@ -25,7 +27,7 @@ export const Route = createFileRoute("/")({
 function HomePage() {
   const mode = useUIStore.mode();
   const navigate = useNavigate();
-  const prog = useProgramStore.prog();
+  const prog = useProgramStore();
   const {
     programReset,
     templateChanged,
@@ -58,19 +60,12 @@ function HomePage() {
     updateEditAssistance,
   } = useUIStore.actions();
 
-  useEffect(() => {
-    if (!prog) navigate({ to: "/setup" });
-  }, [prog, navigate]);
-
-  if (!prog) return null;
-
   const variant = TEMPLATES[prog.template],
     weekDef = variant.weeks[prog.week];
   const weekDone = prog.workouts.filter((w) => w.cycle === prog.cycle && w.week === prog.week);
   const doneLiftIds = weekDone.map((w) => w.lift);
 
   const allUsedAccs = () => {
-    if (!prog) return [];
     const seen = new Set<string>();
     const result: ReturnType<typeof getAssistanceForLift> = [];
     LIFT_ORDER.forEach((liftId) => {
@@ -167,67 +162,55 @@ function HomePage() {
             </button>
           </div>
 
-          <div className="text-[12px] font-bold text-th-t3 uppercase tracking-[.5px] mb-2">
-            1 Rep Maxes
-          </div>
-          <div className={cn("flex flex-col gap-1.5", editOneRepMax ? "mb-3" : "mb-5")}>
-            {LIFTS.map((l) => {
-              const curE1 = editOneRepMax
-                ? parseFloat(editOneRepMax[l.id]) || 0
-                : prog.oneRepMaxes[l.id];
-              const derivedTM =
-                curE1 > 0 ? roundToNearest(curE1 * (prog.trainingMaxPercent / 100)) : 0;
-              return (
-                <div
-                  key={l.id}
-                  className="flex justify-between items-center bg-th-s2 rounded-lg px-3 py-2 min-h-[44px]"
-                >
-                  <div>
-                    <span className="text-[13px] font-semibold text-th-t">{l.name}</span>
-                    {derivedTM > 0 && (
-                      <span className="text-[10px] font-mono text-th-a block">TM {derivedTM}</span>
-                    )}
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <input
-                      type="number"
-                      inputMode="numeric"
-                      value={
-                        editOneRepMax ? editOneRepMax[l.id] || "" : prog.oneRepMaxes[l.id] || ""
-                      }
-                      onChange={(e) => {
-                        const val = e.target.value;
-                        updateEditOneRepMax((p) => {
-                          const prev =
-                            p ||
-                            Object.fromEntries(
-                              Object.entries(prog.oneRepMaxes).map(([k, v]) => [k, String(v)]),
-                            );
-                          return {
-                            ...prev,
-                            [l.id]: val,
-                          };
-                        });
-                      }}
-                      className="w-[70px] px-1.5 py-2 text-[16px] font-bold text-right bg-th-s2 border border-th-bm rounded-lg text-th-t font-mono outline-none box-border"
-                    />
-                    <span className="text-[12px] text-th-t4 font-mono">{prog.unit}</span>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-          {editOneRepMax && (
-            <button
-              onClick={async () => {
+          <Form
+            onSubmit={async (event) => {
+              event.preventDefault();
+              if (editOneRepMax) {
                 await oneRepMaxesSaved(editOneRepMax);
                 setEditOneRepMax(null);
-              }}
-              className="w-full p-3 rounded-[10px] border-none bg-th-a text-th-inv text-[14px] font-bold font-sans cursor-pointer min-h-[44px] mb-5"
-            >
-              Save 1RMs
-            </button>
-          )}
+              }
+            }}
+          >
+            <div className="text-[12px] font-bold text-th-t3 uppercase tracking-[.5px] mb-2">
+              1 Rep Maxes
+            </div>
+            <div className={cn("flex flex-col gap-1.5", editOneRepMax ? "mb-3" : "mb-5")}>
+              {LIFTS.map((l) => (
+                <LiftInputRow
+                  key={l.id}
+                  liftId={l.id}
+                  liftName={l.name}
+                  value={
+                    editOneRepMax
+                      ? (editOneRepMax[l.id] ?? String(prog.oneRepMaxes[l.id]))
+                      : String(prog.oneRepMaxes[l.id])
+                  }
+                  onChange={(val) => {
+                    updateEditOneRepMax((p) => {
+                      const prev =
+                        p ||
+                        Object.fromEntries(
+                          Object.entries(prog.oneRepMaxes).map(([k, v]) => [k, String(v)]),
+                        );
+                      return {
+                        ...prev,
+                        [l.id]: val,
+                      };
+                    });
+                  }}
+                  unit={prog.unit}
+                />
+              ))}
+            </div>
+            {editOneRepMax && (
+              <button
+                type="submit"
+                className="w-full p-3 rounded-[10px] border-none bg-th-a text-th-inv text-[14px] font-bold font-sans cursor-pointer min-h-[44px] mb-5"
+              >
+                Save 1RMs
+              </button>
+            )}
+          </Form>
 
           {allUsedAccs().some((a) => !a.isBodyweight) && (
             <>
@@ -258,31 +241,27 @@ function HomePage() {
                             </span>
                           )}
                         </div>
-                        <div className="flex items-center gap-1">
-                          <input
-                            type="number"
-                            inputMode="numeric"
-                            placeholder="0"
-                            value={editAssistance ? editAssistance[a.id] || "" : wm || ""}
-                            onChange={(e) => {
-                              const val = e.target.value;
-                              updateEditAssistance((p) => {
-                                const base: Record<string, string | number> = {};
-                                allUsedAccs()
-                                  .filter((x) => !x.isBodyweight)
-                                  .forEach((x) => {
-                                    base[x.id] =
-                                      p?.[x.id] !== undefined
-                                        ? p[x.id]
-                                        : prog.assistanceMaximums?.[x.id] || 0;
-                                  });
-                                return { ...base, [a.id]: val };
-                              });
-                            }}
-                            className="w-[70px] px-1.5 py-2 text-[16px] font-bold text-right bg-th-s2 border border-th-bm rounded-lg text-th-t font-mono outline-none box-border"
-                          />
-                          <span className="text-[12px] text-th-t4 font-mono">{prog.unit}</span>
-                        </div>
+                        <WeightInput
+                          inputId={`assistance-${a.id}`}
+                          value={
+                            editAssistance ? String(editAssistance[a.id] || "") : String(wm || "")
+                          }
+                          onChange={(val) => {
+                            updateEditAssistance((p) => {
+                              const base: Record<string, string | number> = {};
+                              allUsedAccs()
+                                .filter((x) => !x.isBodyweight)
+                                .forEach((x) => {
+                                  base[x.id] =
+                                    p?.[x.id] !== undefined
+                                      ? p[x.id]
+                                      : prog.assistanceMaximums?.[x.id] || 0;
+                                });
+                              return { ...base, [a.id]: val };
+                            });
+                          }}
+                          unit={prog.unit}
+                        />
                       </div>
                     );
                   })}

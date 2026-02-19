@@ -1,27 +1,12 @@
 import { Button } from "@base-ui/react/button";
-import { Field } from "@base-ui/react/field";
 import { Form } from "@base-ui/react/form";
-import { NumberField } from "@base-ui/react/number-field";
 import { createFileRoute, redirect, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { LIFTS } from "../constants/program";
-import { calcTM } from "../lib/calc";
+import { LiftInputRow } from "../components/lift-input-row";
 import { useProgramStore, hasProgramData } from "../stores/program-store";
 
-export const Route = createFileRoute("/setup")({
-  beforeLoad: () => {
-    if (hasProgramData()) throw redirect({ to: "/" });
-  },
-  component: SetupPage,
-});
-
-function validateOneRepMax(value: unknown) {
-  if (typeof value === "number" && (!Number.isInteger(value) || value < 1))
-    return "Enter a whole number above zero";
-  return null;
-}
-
-function SetupPage() {
+const SetupPage = () => {
   const { programCreated } = useProgramStore.actions();
   const unit = useProgramStore.unit();
   const navigate = useNavigate();
@@ -49,57 +34,16 @@ function SetupPage() {
         }}
       >
         <div className="flex flex-col gap-1.5 mb-6">
-          {LIFTS.map((lift) => {
-            const inputValue = oneRepMaxes[lift.id];
-            const parsed = Number(inputValue);
-            const trainingMax = parsed >= 1 ? calcTM(parsed, 90) : 0;
-            return (
-              <Field.Root key={lift.id} name={lift.id} validate={validateOneRepMax}>
-                <div className="flex justify-between items-center bg-th-s1 border border-th-b has-[output]:border-th-r transition-colors rounded-xl px-4 py-3 min-h-14">
-                  <div>
-                    <Field.Label className="text-sm font-semibold text-th-t">
-                      {lift.name}
-                    </Field.Label>
-                    <div className="h-4 flex items-center">
-                      {trainingMax > 0 ? (
-                        <span className="text-xs text-th-a font-mono">
-                          TM = {trainingMax} {unit}
-                        </span>
-                      ) : (
-                        <>
-                          <Field.Error match="valueMissing" className="text-xs text-th-r font-mono">
-                            Enter your 1 rep max
-                          </Field.Error>
-                          <Field.Error match="customError" className="text-xs text-th-r font-mono">
-                            Enter a whole number above zero
-                          </Field.Error>
-                        </>
-                      )}
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <NumberField.Root id={lift.id} min={1} allowOutOfRange required>
-                      <NumberField.Input
-                        inputMode="numeric"
-                        placeholder="0"
-                        value={inputValue}
-                        onChange={(e) => {
-                          if (!/^\d*$/.test(e.target.value)) return;
-                          const val = String(parseInt(e.target.value, 10) || "");
-                          setOneRepMaxes((prev) => ({
-                            ...prev,
-                            [lift.id]: val,
-                          }));
-                        }}
-                        className="w-20 px-2 py-2.5 text-lg font-bold text-right bg-th-s2 border border-th-bm rounded-lg text-th-t font-mono outline-none box-border [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                      />
-                    </NumberField.Root>
-                    <span className="text-sm text-th-t4 font-mono">{unit}</span>
-                  </div>
-                </div>
-              </Field.Root>
-            );
-          })}
+          {LIFTS.map((lift) => (
+            <LiftInputRow
+              key={lift.id}
+              liftId={lift.id}
+              liftName={lift.name}
+              value={oneRepMaxes[lift.id]}
+              onChange={(val) => setOneRepMaxes((prev) => ({ ...prev, [lift.id]: val }))}
+              unit={unit}
+            />
+          ))}
         </div>
         <Button
           type="submit"
@@ -110,4 +54,11 @@ function SetupPage() {
       </Form>
     </div>
   );
-}
+};
+
+export const Route = createFileRoute("/setup")({
+  beforeLoad: () => {
+    if (hasProgramData()) throw redirect({ to: "/" });
+  },
+  component: SetupPage,
+});

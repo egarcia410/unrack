@@ -14,8 +14,8 @@ export function findExercise(id: string): Exercise | undefined {
   return EXERCISE_LIB.find((e) => e.id === id);
 }
 
-export function getAssistanceForLift(liftId: string, prog: ProgramData | null): Exercise[] {
-  let slots = prog?.assistanceSlots?.[liftId] || DEFAULT_ACC[liftId];
+export function getAssistanceForLift(liftId: string, prog: ProgramData): Exercise[] {
+  let slots = prog.assistanceSlots?.[liftId] || DEFAULT_ACC[liftId];
   // Migrate from old object format {push:"id",pull:"id","legs/core":"id"} to array
   if (slots && !Array.isArray(slots)) {
     const obj = slots as unknown as Record<string, string>;
@@ -27,23 +27,23 @@ export function getAssistanceForLift(liftId: string, prog: ProgramData | null): 
   }
   return slots.map((exId, i) => {
     let exercise: Exercise | undefined = EXERCISE_LIB.find((e) => e.id === exId);
-    if (!exercise && prog?.customExercises?.[exId]) exercise = prog.customExercises[exId];
+    if (!exercise && prog.customExercises?.[exId]) exercise = prog.customExercises[exId];
     if (!exercise) exercise = EXERCISE_LIB[i]; // fallback
     return { ...exercise, slot: i };
   });
 }
 
-export function getAllAssistanceExercises(prog: ProgramData | null): Exercise[] {
+export function getAllAssistanceExercises(prog: ProgramData): Exercise[] {
   const all = [...EXERCISE_LIB];
-  if (prog?.customExercises)
+  if (prog.customExercises)
     Object.values(prog.customExercises).forEach((e) => {
       if (!all.find((x) => x.id === e.id)) all.push(e);
     });
   return all;
 }
 
-export function isAssistanceDiscovered(acc: Exercise, prog: ProgramData | null): boolean {
-  return acc.isBodyweight || (prog?.assistanceMaximums?.[acc.id] || 0) > 0;
+export function isAssistanceDiscovered(acc: Exercise, prog: ProgramData): boolean {
+  return acc.isBodyweight || (prog.assistanceMaximums?.[acc.id] || 0) > 0;
 }
 
 export function getAssistancePrescription(

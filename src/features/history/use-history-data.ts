@@ -28,9 +28,7 @@ export type RecentWorkoutEntry = {
 };
 
 export const useHistoryData = () => {
-  const programData = useProgramStore.prog();
-
-  if (!programData) return null;
+  const programData = useProgramStore();
 
   const personalRecords = programData.workouts
     .filter((workout) => workout.newOneRepMax)

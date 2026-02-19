@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import type { ProgramData, TemplateId, Unit } from "../types";
+import type { ProgramData, TemplateId, Unit, WorkoutEntry, Exercise } from "../types";
 import { LIFTS, LIFT_ORDER, TEMPLATES } from "../constants/program";
 import { ASSISTANCE_WEEKS } from "../constants/exercises";
 import { roundToNearest, epley, calcWeight } from "../lib/calc";
@@ -54,15 +54,60 @@ type ProgramActions = {
 };
 
 type ProgramState = {
-  prog: ProgramData | null;
-  loading: boolean;
+  template: TemplateId;
   unit: Unit;
+  trainingMaxPercent: number;
+  trainingMaxes: Record<string, number>;
+  oneRepMaxes: Record<string, number>;
+  cycle: number;
+  week: number;
+  workouts: WorkoutEntry[];
+  assistanceHistory: Record<
+    string,
+    Array<{
+      datetime?: number;
+      cycle?: number;
+      week?: number;
+      weight?: number;
+      isBodyweight?: boolean;
+    }>
+  >;
+  assistanceMaximums: Record<string, number>;
+  bodyweightBaselines: Record<string, number>;
+  assistanceSlots?: Record<string, string[]>;
+  customExercises?: Record<string, Exercise>;
+  timestamp: number;
+  loading: boolean;
 };
 
 const initialState: ProgramState = {
-  prog: null,
-  loading: true,
+  template: "fsl",
   unit: inferUnit(),
+  trainingMaxPercent: 90,
+  trainingMaxes: {},
+  oneRepMaxes: {},
+  cycle: 1,
+  week: 0,
+  workouts: [],
+  assistanceHistory: {},
+  assistanceMaximums: {},
+  bodyweightBaselines: {},
+  timestamp: 0,
+  loading: true,
+};
+
+const toProgramData = (state: ProgramState): ProgramData => {
+  const { loading: _, ...data } = state;
+  return { ...data, mode: useUIStore.getState().mode };
+};
+
+const save = async (
+  state: ProgramState,
+  set: (s: Partial<ProgramState>) => void,
+  updates: Partial<ProgramState>,
+) => {
+  set(updates);
+  await saveData(toProgramData({ ...state, ...updates }));
 };
 
 export const useProgramStore = createSelectors(
@@ -73,164 +118,121 @@ export const useProgramStore = createSelectors(
       loadProgram: async () => {
         const saved = await loadData();
         if (saved) {
-          set({ prog: saved, unit: saved.unit });
-          if (saved.mode) useUIStore.getState().actions.setMode(saved.mode);
+          const { mode, ...programFields } = saved;
+          set({ ...programFields });
+          if (mode) useUIStore.getState().actions.setMode(mode);
         }
         set({ loading: false });
       },
 
       programCreated: async (oneRepMaxes) => {
-        const { unit } = get();
-        const mode = useUIStore.getState().mode;
-        const trainingMaxPercent = 90;
-        const template: TemplateId = "fsl";
+        const state = get();
 
         const parsedOneRepMaxes: Record<string, number> = {};
         const trainingMaxes: Record<string, number> = {};
         LIFTS.forEach((lift) => {
           const orm = parseFloat(oneRepMaxes[lift.id]) || 0;
           parsedOneRepMaxes[lift.id] = orm;
-          trainingMaxes[lift.id] = roundToNearest(orm * (trainingMaxPercent / 100));
+          trainingMaxes[lift.id] = roundToNearest(orm * (state.trainingMaxPercent / 100));
         });
 
-        const program: ProgramData = {
-          template,
-          unit,
-          trainingMaxPercent,
+        await save(state, set, {
           trainingMaxes,
           oneRepMaxes: parsedOneRepMaxes,
-          cycle: 1,
-          week: 0,
-          workouts: [],
-          assistanceHistory: {},
-          assistanceMaximums: {},
-          bodyweightBaselines: {},
-          mode,
           timestamp: Date.now(),
-        };
-        await saveData(program);
-        set({ prog: program });
+        });
       },
 
       programReset: async () => {
         await clearData();
-        set({ prog: null });
+        set({ ...initialState, loading: false });
       },
 
       templateChanged: async (templateId) => {
-        const { prog } = get();
-        if (!prog) return;
-        const updated = { ...prog, template: templateId };
-        set({ prog: updated });
-        await saveData(updated);
+        await save(get(), set, { template: templateId });
       },
 
       exerciseSwapped: async (liftId, slotIdx, newExId) => {
-        const { prog } = get();
-        if (!prog) return;
-        const current = prog.assistanceSlots || {};
+        const state = get();
+        const current = state.assistanceSlots || {};
         const defaults = (await import("../constants/exercises")).DEFAULT_ACC;
         const liftSlots = [...(current[liftId] || defaults[liftId])];
         liftSlots[slotIdx] = newExId;
-        const updated = { ...prog, assistanceSlots: { ...current, [liftId]: liftSlots } };
-        set({ prog: updated });
-        await saveData(updated);
+        await save(state, set, { assistanceSlots: { ...current, [liftId]: liftSlots } });
       },
 
       unitToggled: async () => {
-        const { prog } = get();
-        if (!prog) return;
-        const newUnit: Unit = prog.unit === "lb" ? "kg" : "lb";
+        const state = get();
+        const newUnit: Unit = state.unit === "lb" ? "kg" : "lb";
         const factor = newUnit === "kg" ? 0.453592 : 2.20462;
         const newOneRepMaxes: Record<string, number> = {};
         const newTrainingMaxes: Record<string, number> = {};
         const newAssistanceMaximums: Record<string, number> = {};
         LIFTS.forEach((lift) => {
-          newOneRepMaxes[lift.id] = roundToNearest(prog.oneRepMaxes[lift.id] * factor);
+          newOneRepMaxes[lift.id] = roundToNearest(state.oneRepMaxes[lift.id] * factor);
           newTrainingMaxes[lift.id] = roundToNearest(
-            newOneRepMaxes[lift.id] * (prog.trainingMaxPercent / 100),
+            newOneRepMaxes[lift.id] * (state.trainingMaxPercent / 100),
           );
         });
-        Object.entries(prog.assistanceMaximums || {}).forEach(([k, v]) => {
+        Object.entries(state.assistanceMaximums || {}).forEach(([k, v]) => {
           newAssistanceMaximums[k] = roundToNearest(v * factor);
         });
-        const updated = {
-          ...prog,
+        await save(state, set, {
           unit: newUnit,
           oneRepMaxes: newOneRepMaxes,
           trainingMaxes: newTrainingMaxes,
           assistanceMaximums: newAssistanceMaximums,
-        };
-        set({ prog: updated, unit: newUnit });
-        await saveData(updated);
+        });
       },
 
       modeToggled: async () => {
-        const { prog } = get();
+        const state = get();
         const uiStore = useUIStore.getState();
         const next = uiStore.mode === "dark" ? ("light" as const) : ("dark" as const);
         uiStore.actions.setMode(next);
-        if (prog) {
-          const updated = { ...prog, mode: next };
-          set({ prog: updated });
-          await saveData(updated);
-        }
+        await save(state, set, {});
       },
 
       trainingMaxPercentChanged: async (newPct) => {
-        const { prog } = get();
-        if (!prog) return;
+        const state = get();
         const clamped = Math.max(80, Math.min(95, newPct));
         const newTrainingMaxes: Record<string, number> = {};
         LIFTS.forEach((lift) => {
-          newTrainingMaxes[lift.id] = roundToNearest(prog.oneRepMaxes[lift.id] * (clamped / 100));
+          newTrainingMaxes[lift.id] = roundToNearest(state.oneRepMaxes[lift.id] * (clamped / 100));
         });
-        const updated = { ...prog, trainingMaxPercent: clamped, trainingMaxes: newTrainingMaxes };
-        set({ prog: updated });
-        await saveData(updated);
+        await save(state, set, { trainingMaxPercent: clamped, trainingMaxes: newTrainingMaxes });
       },
 
       oneRepMaxesSaved: async (editOneRepMax) => {
-        const { prog } = get();
-        if (!prog) return;
+        const state = get();
         const newOneRepMaxes: Record<string, number> = {};
         const newTrainingMaxes: Record<string, number> = {};
         LIFTS.forEach((lift) => {
-          const val = parseFloat(editOneRepMax[lift.id]) || prog.oneRepMaxes[lift.id] || 0;
+          const val = parseFloat(editOneRepMax[lift.id]) || state.oneRepMaxes[lift.id] || 0;
           newOneRepMaxes[lift.id] = val;
-          newTrainingMaxes[lift.id] = roundToNearest(val * (prog.trainingMaxPercent / 100));
+          newTrainingMaxes[lift.id] = roundToNearest(val * (state.trainingMaxPercent / 100));
         });
-        const updated = { ...prog, oneRepMaxes: newOneRepMaxes, trainingMaxes: newTrainingMaxes };
-        set({ prog: updated });
-        await saveData(updated);
+        await save(state, set, { oneRepMaxes: newOneRepMaxes, trainingMaxes: newTrainingMaxes });
       },
 
       assistanceMaximumsSaved: async (editAssistance) => {
-        const { prog } = get();
-        if (!prog) return;
-        const newMaximums = { ...prog.assistanceMaximums };
+        const state = get();
+        const newMaximums = { ...state.assistanceMaximums };
         Object.entries(editAssistance).forEach(([id, val]) => {
           newMaximums[id] = parseInt(String(val)) || 0;
         });
-        const updated = { ...prog, assistanceMaximums: newMaximums };
-        set({ prog: updated });
-        await saveData(updated);
+        await save(state, set, { assistanceMaximums: newMaximums });
       },
 
       workoutFinished: async ({ activeWeek, activeDay, amrapReps, accLog, workoutStart }) => {
-        const { prog } = get();
-        if (!prog)
-          return {
-            celebType: "done" as const,
-            celebMsg: "Error",
-            celebSub: "No program",
-          };
-        const template = TEMPLATES[prog.template];
+        const state = get();
+        const programData = toProgramData(state);
+        const template = TEMPLATES[state.template];
         const weekDef = template.weeks[activeWeek];
         const liftId = LIFT_ORDER[activeDay % LIFT_ORDER.length];
         const lift = LIFTS.find((l) => l.id === liftId)!;
-        const tm = prog.trainingMaxes[liftId];
-        const accs = getAssistanceForLift(liftId, prog);
+        const tm = state.trainingMaxes[liftId];
+        const accs = getAssistanceForLift(liftId, programData);
 
         const amrapSet = weekDef.sets.find((s) => String(s.reps).includes("+"));
         const amrapIdx = amrapSet ? weekDef.sets.indexOf(amrapSet) : -1;
@@ -245,25 +247,25 @@ export const useProgramStore = createSelectors(
         if (amrapSet && repsHit > 0) {
           const weight = calcWeight(tm, amrapSet.percentage);
           const est = epley(weight, repsHit);
-          if (est > prog.oneRepMaxes[liftId])
+          if (est > state.oneRepMaxes[liftId])
             newOneRepMax = {
               lift: liftId,
-              old: prog.oneRepMaxes[liftId],
+              old: state.oneRepMaxes[liftId],
               newValue: est,
               reps: repsHit,
               weight,
             };
         }
 
-        const assistanceHistory = { ...prog.assistanceHistory };
-        const assistanceMaximums = { ...prog.assistanceMaximums };
-        const bodyweightBaselines = { ...prog.bodyweightBaselines };
+        const assistanceHistory = { ...state.assistanceHistory };
+        const assistanceMaximums = { ...state.assistanceMaximums };
+        const bodyweightBaselines = { ...state.bodyweightBaselines };
         accs.forEach((a) => {
           if (!assistanceHistory[a.id]) assistanceHistory[a.id] = [];
           if (a.isBodyweight) {
             assistanceHistory[a.id].push({
               datetime: Date.now(),
-              cycle: prog.cycle,
+              cycle: state.cycle,
               week: activeWeek,
               isBodyweight: true,
             });
@@ -273,7 +275,7 @@ export const useProgramStore = createSelectors(
               assistanceHistory[a.id].push({
                 weight: parseFloat(log.w || "0"),
                 datetime: Date.now(),
-                cycle: prog.cycle,
+                cycle: state.cycle,
                 week: activeWeek,
               });
               if (!assistanceMaximums[a.id] || assistanceMaximums[a.id] === 0) {
@@ -288,7 +290,7 @@ export const useProgramStore = createSelectors(
 
         const durationSec = workoutStart ? Math.floor((Date.now() - workoutStart) / 1000) : 0;
         const entry = {
-          cycle: prog.cycle,
+          cycle: state.cycle,
           week: activeWeek,
           day: activeDay,
           lift: liftId,
@@ -298,18 +300,16 @@ export const useProgramStore = createSelectors(
           assistanceLog: { ...accLog },
           newOneRepMax,
         };
-        const allWorkouts = [...prog.workouts, entry];
-        const updates: Partial<ProgramData> = {
-          workouts: allWorkouts,
+        const updates: Partial<ProgramState> = {
+          workouts: [...state.workouts, entry],
           assistanceHistory,
           assistanceMaximums,
           bodyweightBaselines,
         };
         if (newOneRepMax)
-          updates.oneRepMaxes = { ...prog.oneRepMaxes, [liftId]: newOneRepMax.newValue };
-        const next = { ...prog, ...updates } as ProgramData;
-        set({ prog: next });
-        await saveData(next);
+          updates.oneRepMaxes = { ...state.oneRepMaxes, [liftId]: newOneRepMax.newValue };
+        await save(state, set, updates);
+        const next = { ...state, ...updates };
 
         const durationMin = Math.floor(durationSec / 60);
         const durationFmt = durationMin > 0 ? durationMin + " min" : "< 1 min";
@@ -328,7 +328,7 @@ export const useProgramStore = createSelectors(
               celebMsg: "Missed AMRAP",
               celebSub: `0 reps at ${amrapWeight} ${next.unit}`,
               actionLabel: `Adjust TM to ${suggestedTrainingMax}`,
-              actionSub: `1RM: ${next.oneRepMaxes[liftId]} \u2192 ${suggestedOneRepMax} ${next.unit}`,
+              actionSub: `1RM: ${next.oneRepMaxes![liftId]} \u2192 ${suggestedOneRepMax} ${next.unit}`,
               _liftId: liftId,
               _suggestedOneRepMax: suggestedOneRepMax,
               _suggestedTrainingMax: suggestedTrainingMax,
@@ -343,7 +343,7 @@ export const useProgramStore = createSelectors(
               celebMsg: "Below Target",
               celebSub: `${repsHit} rep${repsHit > 1 ? "s" : ""} at ${amrapWeight} ${next.unit} (needed ${minReps}+)`,
               actionLabel: `Adjust TM to ${suggestedTrainingMax}`,
-              actionSub: `1RM: ${next.oneRepMaxes[liftId]} \u2192 ${realOneRepMax} ${next.unit}`,
+              actionSub: `1RM: ${next.oneRepMaxes![liftId]} \u2192 ${realOneRepMax} ${next.unit}`,
               _liftId: liftId,
               _suggestedOneRepMax: realOneRepMax,
               _suggestedTrainingMax: suggestedTrainingMax,
@@ -364,80 +364,69 @@ export const useProgramStore = createSelectors(
       },
 
       weekAdvanced: async () => {
-        const { prog } = get();
-        if (!prog) return { type: "advance" as const };
-        const template = TEMPLATES[prog.template];
-        const nextWeek = prog.week + 1;
-        let updates: Partial<ProgramData>;
+        const state = get();
+        const programData = toProgramData(state);
+        const template = TEMPLATES[state.template];
+        const nextWeek = state.week + 1;
 
         if (nextWeek >= template.weeks.length) {
-          const newTrainingMaxes = { ...prog.trainingMaxes };
+          const newTrainingMaxes = { ...state.trainingMaxes };
           LIFTS.forEach((lift) => {
-            if (prog.oneRepMaxes[lift.id] > 0) {
+            if (state.oneRepMaxes[lift.id] > 0) {
               const tmFromOneRepMax = roundToNearest(
-                prog.oneRepMaxes[lift.id] * (prog.trainingMaxPercent / 100),
+                state.oneRepMaxes[lift.id] * (state.trainingMaxPercent / 100),
               );
               newTrainingMaxes[lift.id] = Math.max(
                 tmFromOneRepMax,
-                prog.trainingMaxes[lift.id] + lift.increment,
+                state.trainingMaxes[lift.id] + lift.increment,
               );
             } else {
-              newTrainingMaxes[lift.id] = prog.trainingMaxes[lift.id] + lift.increment;
+              newTrainingMaxes[lift.id] = state.trainingMaxes[lift.id] + lift.increment;
             }
           });
-          const newAssistanceMaximums = { ...prog.assistanceMaximums };
-          getAllAssistanceExercises(prog)
+          const newAssistanceMaximums = { ...state.assistanceMaximums };
+          getAllAssistanceExercises(programData)
             .filter((a) => !a.isBodyweight)
             .forEach((a) => {
               if (newAssistanceMaximums[a.id])
                 newAssistanceMaximums[a.id] = newAssistanceMaximums[a.id] + (a.inc || 5);
             });
-          const newBodyweightBaselines = { ...prog.bodyweightBaselines };
-          getAllAssistanceExercises(prog)
+          const newBodyweightBaselines = { ...state.bodyweightBaselines };
+          getAllAssistanceExercises(programData)
             .filter((a) => a.isBodyweight)
             .forEach((a) => {
               newBodyweightBaselines[a.id] = (newBodyweightBaselines[a.id] || 8) + 1;
             });
-          updates = {
-            cycle: prog.cycle + 1,
+          await save(state, set, {
+            cycle: state.cycle + 1,
             week: 0,
             trainingMaxes: newTrainingMaxes,
             assistanceMaximums: newAssistanceMaximums,
             bodyweightBaselines: newBodyweightBaselines,
-          };
-          const next = { ...prog, ...updates } as ProgramData;
-          set({ prog: next });
-          await saveData(next);
+          });
           return {
             type: "cycle" as const,
             message: "Cycle Complete!",
             subtitle: "TMs updated. Assistance progressed.",
           };
         } else {
-          updates = { week: nextWeek };
-          const next = { ...prog, ...updates } as ProgramData;
-          set({ prog: next });
-          await saveData(next);
+          await save(state, set, { week: nextWeek });
           return { type: "advance" as const };
         }
       },
 
       trainingMaxAdjusted: async (liftId, suggestedOneRepMax, suggestedTrainingMax) => {
-        const { prog } = get();
-        if (!prog) return;
-        const updated = {
-          ...prog,
-          oneRepMaxes: { ...prog.oneRepMaxes, [liftId]: suggestedOneRepMax },
-          trainingMaxes: { ...prog.trainingMaxes, [liftId]: suggestedTrainingMax },
-        };
-        set({ prog: updated });
-        await saveData(updated);
+        const state = get();
+        await save(state, set, {
+          oneRepMaxes: { ...state.oneRepMaxes, [liftId]: suggestedOneRepMax },
+          trainingMaxes: { ...state.trainingMaxes, [liftId]: suggestedTrainingMax },
+        });
       },
     },
   })),
 );
 
 export const hasProgramData = () => {
-  const { prog, loading } = useProgramStore.getState();
-  return !loading && !!prog;
+  const { timestamp, loading } = useProgramStore.getState();
+  return !loading && timestamp > 0;
 };

@@ -6,11 +6,7 @@ import { RecentWorkoutRow } from "../features/history/recent-workout-row";
 import { BackButton } from "../components/back-button";
 
 const HistoryPage = () => {
-  const historyData = useHistoryData();
-
-  if (!historyData) return null;
-
-  const { programData, liftProgressEntries, recentWorkouts } = historyData;
+  const { programData, liftProgressEntries, recentWorkouts } = useHistoryData();
 
   return (
     <div className="max-w-115 mx-auto px-4 py-3 pb-20">

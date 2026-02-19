@@ -24,6 +24,7 @@ import { SetRow } from "../components/set-row";
 import { SectionHeader } from "../components/section-header";
 import { BottomSheet } from "../components/bottom-sheet";
 import { PRRing } from "../components/pr-ring";
+import { WeightInput } from "../components/weight-input";
 import type { SetType } from "../types";
 
 export const Route = createFileRoute("/workout")({
@@ -35,7 +36,7 @@ export const Route = createFileRoute("/workout")({
 
 function WorkoutPage() {
   const navigate = useNavigate();
-  const prog = useProgramStore.prog();
+  const prog = useProgramStore();
   const { workoutFinished, exerciseSwapped } = useProgramStore.actions();
   const { setCeleb } = useUIStore.actions();
 
@@ -63,8 +64,6 @@ function WorkoutPage() {
     setChecked,
     activateTimer,
   } = useWorkoutStore.actions();
-
-  if (!prog) return null;
 
   const variant = TEMPLATES[prog.template],
     weekDef = variant.weeks[activeWeek];
@@ -675,17 +674,15 @@ function WorkoutPage() {
                   {!a.isBodyweight && (
                     <div className="flex items-center gap-2 mb-2.5">
                       <span className="text-[13px] font-semibold text-th-t">Weight:</span>
-                      <input
-                        type="number"
-                        inputMode="numeric"
-                        placeholder="0"
+                      <WeightInput
+                        inputId={`acc-weight-${a.id}`}
                         value={log.w || ""}
-                        onChange={(e) => {
+                        onChange={(val) => {
                           setAccLog((p) => ({
                             ...p,
-                            [a.id]: { w: e.target.value },
+                            [a.id]: { w: val },
                           }));
-                          const hasValue = parseFloat(e.target.value) > 0;
+                          const hasValue = parseFloat(val) > 0;
                           if (hasValue && ftAllSets)
                             setChecked((p) => ({
                               ...p,
@@ -698,9 +695,9 @@ function WorkoutPage() {
                               return next;
                             });
                         }}
-                        className="w-[90px] px-2 py-2.5 text-[18px] font-bold bg-th-s2 border border-th-bm rounded-lg text-th-t font-mono outline-none box-border text-center"
+                        unit={prog.unit}
+                        align="center"
                       />
-                      <span className="text-[13px] text-th-t4 font-mono">{prog.unit}</span>
                     </div>
                   )}
                   <div className="flex items-center gap-2">
