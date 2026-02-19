@@ -1,3 +1,5 @@
+import { Button } from "@base-ui/react/button";
+import { ChevronDown } from "lucide-react";
 import { cn } from "../lib/cn";
 
 type SectionHeaderProps = {
@@ -10,9 +12,9 @@ type SectionHeaderProps = {
 
 export const SectionHeader = ({ label, done, collapsed, onToggle, extra }: SectionHeaderProps) => {
   return (
-    <button
+    <Button
       onClick={onToggle}
-      className="text-[11px] font-bold uppercase tracking-[1px] text-th-t2 mb-2.5 flex items-center justify-between w-full box-border bg-none border-none cursor-pointer py-2 px-0 min-h-[44px]"
+      className="text-xs font-bold uppercase tracking-widest text-th-t2 mb-2.5 flex items-center justify-between w-full box-border bg-none border-none cursor-pointer py-2 px-0 min-h-11"
     >
       <span>
         {label}
@@ -20,15 +22,14 @@ export const SectionHeader = ({ label, done, collapsed, onToggle, extra }: Secti
       </span>
       <div className="flex gap-2 items-center">
         {extra}
-        <span
+        <ChevronDown
+          size={14}
           className={cn(
-            "text-[11px] text-th-t4 transition-transform duration-200",
+            "text-th-t4 transition-transform duration-200",
             collapsed ? "-rotate-90" : "rotate-0",
           )}
-        >
-          {"\u25BC"}
-        </span>
+        />
       </div>
-    </button>
+    </Button>
   );
 };

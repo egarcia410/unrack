@@ -22,7 +22,7 @@ import { RestTimer } from "../components/rest-timer";
 import { LiveClock } from "../components/live-clock";
 import { SetRow } from "../components/set-row";
 import { SectionHeader } from "../components/section-header";
-import { BottomSheet } from "../components/bottom-sheet";
+import { Drawer } from "../components/drawer";
 import { PRRing } from "../components/pr-ring";
 import { WeightInput } from "../components/weight-input";
 import type { SetType } from "../types";
@@ -179,9 +179,15 @@ function WorkoutPage() {
     <div>
       <div className="max-w-[460px] mx-auto px-4 py-3 pb-20">
         {/* Swap exercise sheet */}
-        {swapSlot && (
-          <BottomSheet title="Swap Exercise" onClose={() => setSwapSlot(null)} maxHeight="70vh">
-            {CATS.map((cat) => {
+        <Drawer
+          open={!!swapSlot}
+          onOpenChange={(open) => {
+            if (!open) setSwapSlot(null);
+          }}
+          title="Swap Exercise"
+        >
+          {swapSlot &&
+            CATS.map((cat) => {
               const catColor = CAT_COLORS[cat as keyof typeof CAT_COLORS];
               const exercises = EXERCISE_LIB.filter((e) => e.category === cat);
               return (
@@ -246,8 +252,7 @@ function WorkoutPage() {
                 </div>
               );
             })}
-          </BottomSheet>
-        )}
+        </Drawer>
 
         <div className="flex justify-between items-center py-2 pb-4 min-h-[44px]">
           <button
