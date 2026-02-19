@@ -1,9 +1,9 @@
-import { Button } from "@base-ui/react/button";
 import { Form } from "@base-ui/react/form";
 import { createFileRoute, redirect, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { LIFTS } from "../constants/program";
 import { LiftInputRow } from "../components/lift-input-row";
+import { PrimaryButton } from "../components/primary-button";
 import { useProgramStore, hasProgramData } from "../stores/program-store";
 
 const SetupPage = () => {
@@ -45,12 +45,7 @@ const SetupPage = () => {
             />
           ))}
         </div>
-        <Button
-          type="submit"
-          className="w-full border-none rounded-xl px-6 py-4 text-base font-bold font-sans cursor-pointer flex items-center justify-center gap-2 min-h-13 bg-th-a text-th-inv"
-        >
-          Start Program
-        </Button>
+        <PrimaryButton type="submit">Start Program</PrimaryButton>
       </Form>
     </div>
   );

@@ -10,6 +10,7 @@ import { ASSISTANCE_WEEKS } from "../constants/exercises";
 import { roundToNearest, calcWeight } from "../lib/calc";
 import { getAssistanceForLift } from "../lib/exercises";
 import { cn } from "../lib/cn";
+import { PrimaryButton } from "../components/primary-button";
 import { ConfirmModal } from "../components/confirm-modal";
 import { Celebration } from "../components/celebration";
 import { BottomSheet } from "../components/bottom-sheet";
@@ -203,12 +204,9 @@ function HomePage() {
               ))}
             </div>
             {editOneRepMax && (
-              <button
-                type="submit"
-                className="w-full p-3 rounded-[10px] border-none bg-th-a text-th-inv text-[14px] font-bold font-sans cursor-pointer min-h-[44px] mb-5"
-              >
+              <PrimaryButton type="submit" size="small" className="mb-5">
                 Save 1RMs
-              </button>
+              </PrimaryButton>
             )}
           </Form>
 
@@ -267,15 +265,16 @@ function HomePage() {
                   })}
               </div>
               {editAssistance && (
-                <button
+                <PrimaryButton
                   onClick={async () => {
                     await assistanceMaximumsSaved(editAssistance);
                     setEditAssistance(null);
                   }}
-                  className="w-full p-3 rounded-[10px] border-none bg-th-a text-th-inv text-[14px] font-bold font-sans cursor-pointer min-h-[44px] mb-5"
+                  size="small"
+                  className="mb-5"
                 >
                   Save Assistance
-                </button>
+                </PrimaryButton>
               )}
             </>
           )}
@@ -544,12 +543,7 @@ function HomePage() {
                     : "All lifts logged"}
                 {!isDeload && isLastWeek ? " \u2022 Cycle complete!" : ""}
               </div>
-              <button
-                onClick={handleAdvanceWeek}
-                className="w-full border-none rounded-xl px-6 py-4 text-[16px] font-bold font-sans cursor-pointer flex items-center justify-center gap-2 min-h-[52px] bg-th-a text-th-inv"
-              >
-                {nextLabel}
-              </button>
+              <PrimaryButton onClick={handleAdvanceWeek}>{nextLabel}</PrimaryButton>
             </div>
           );
         })()}
