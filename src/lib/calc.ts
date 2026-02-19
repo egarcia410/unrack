@@ -1,4 +1,4 @@
-import type { RestInfo } from "../types";
+import type { RestInfo, SetType } from "../types";
 
 export const roundToNearest = (w: number, n = 5) => Math.round(w / n) * n;
 
@@ -8,7 +8,7 @@ export const calcTM = (orm: number, tmPct: number) => roundToNearest(orm * (tmPc
 
 export const calcWeight = (tm: number, pct: number) => roundToNearest(tm * pct);
 
-export function smartRest(setType: string, intensity: number, isDeload: boolean): RestInfo {
+export const smartRest = (setType: SetType, intensity: number, isDeload: boolean): RestInfo => {
   if (isDeload) return { duration: 60, reason: "Deload phase" };
   if (setType === "warmup") return { duration: 60, reason: "Warm-up" };
   if (setType === "acc_bw") return { duration: 60, reason: "Bodyweight" };
@@ -21,4 +21,4 @@ export function smartRest(setType: string, intensity: number, isDeload: boolean)
   if (intensity >= 0.8) return { duration: 150, reason: "Hard set — CNS recovery" };
   if (intensity >= 0.7) return { duration: 120, reason: "Working weight" };
   return { duration: 90, reason: "Moderate intensity" };
-}
+};

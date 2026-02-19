@@ -1,9 +1,9 @@
 import { useEffect } from "react";
 import { createFileRoute, useNavigate, redirect } from "@tanstack/react-router";
 import { Check, Clock, Settings, Sun, Moon, Minus, Plus } from "lucide-react";
-import { useProgramStore, useProgramData, useProgramActions } from "../stores/program-store";
+import { useProgramStore, hasProgramData } from "../stores/program-store";
 import { useWorkoutStore } from "../stores/workout-store";
-import { useUIStore, useTheme } from "../stores/ui-store";
+import { useUIStore } from "../stores/ui-store";
 import { TEMPLATES, LIFTS, LIFT_ORDER } from "../constants/program";
 import type { TemplateId } from "../types";
 import { ASSISTANCE_WEEKS } from "../constants/exercises";
@@ -17,16 +17,15 @@ import { PRRing } from "../components/pr-ring";
 
 export const Route = createFileRoute("/")({
   beforeLoad: () => {
-    const { prog, loading } = useProgramStore.getState();
-    if (!loading && !prog) throw redirect({ to: "/setup" });
+    if (!hasProgramData()) throw redirect({ to: "/setup" });
   },
   component: HomePage,
 });
 
 function HomePage() {
-  const { mode } = useTheme();
+  const mode = useUIStore.mode();
   const navigate = useNavigate();
-  const prog = useProgramData();
+  const prog = useProgramStore.prog();
   const {
     programReset,
     templateChanged,
@@ -37,25 +36,27 @@ function HomePage() {
     assistanceMaximumsSaved,
     weekAdvanced,
     trainingMaxAdjusted,
-  } = useProgramActions();
-  const startWorkout = useWorkoutStore((s) => s.startWorkout);
-  const celeb = useUIStore((s) => s.celeb);
-  const setCeleb = useUIStore((s) => s.setCeleb);
-  const showConfirm = useUIStore((s) => s.showConfirm);
-  const setShowConfirm = useUIStore((s) => s.setShowConfirm);
-  const showSettings = useUIStore((s) => s.showSettings);
-  const closeSettings = useUIStore((s) => s.closeSettings);
-  const setShowSettings = useUIStore((s) => s.setShowSettings);
-  const showTemplPicker = useUIStore((s) => s.showTemplPicker);
-  const setShowTemplPicker = useUIStore((s) => s.setShowTemplPicker);
-  const settingsExpanded = useUIStore((s) => s.settingsExpanded);
-  const toggleSettingsExpanded = useUIStore((s) => s.toggleSettingsExpanded);
-  const editE1 = useUIStore((s) => s.editE1);
-  const setEditE1 = useUIStore((s) => s.setEditE1);
-  const updateEditE1 = useUIStore((s) => s.updateEditE1);
-  const editAcc = useUIStore((s) => s.editAcc);
-  const setEditAcc = useUIStore((s) => s.setEditAcc);
-  const updateEditAcc = useUIStore((s) => s.updateEditAcc);
+  } = useProgramStore.actions();
+  const { startWorkout } = useWorkoutStore.actions();
+  const celeb = useUIStore.celeb();
+  const showConfirm = useUIStore.showConfirm();
+  const showSettings = useUIStore.showSettings();
+  const showTemplPicker = useUIStore.showTemplPicker();
+  const settingsExpanded = useUIStore.settingsExpanded();
+  const editOneRepMax = useUIStore.editOneRepMax();
+  const editAssistance = useUIStore.editAssistance();
+  const {
+    setCeleb,
+    setShowConfirm,
+    closeSettings,
+    setShowSettings,
+    setShowTemplPicker,
+    toggleSettingsExpanded,
+    setEditOneRepMax,
+    updateEditOneRepMax,
+    setEditAssistance,
+    updateEditAssistance,
+  } = useUIStore.actions();
 
   useEffect(() => {
     if (!prog) navigate({ to: "/setup" });
@@ -169,9 +170,11 @@ function HomePage() {
           <div className="text-[12px] font-bold text-th-t3 uppercase tracking-[.5px] mb-2">
             1 Rep Maxes
           </div>
-          <div className={cn("flex flex-col gap-1.5", editE1 ? "mb-3" : "mb-5")}>
+          <div className={cn("flex flex-col gap-1.5", editOneRepMax ? "mb-3" : "mb-5")}>
             {LIFTS.map((l) => {
-              const curE1 = editE1 ? parseFloat(editE1[l.id]) || 0 : prog.oneRepMaxes[l.id];
+              const curE1 = editOneRepMax
+                ? parseFloat(editOneRepMax[l.id]) || 0
+                : prog.oneRepMaxes[l.id];
               const derivedTM =
                 curE1 > 0 ? roundToNearest(curE1 * (prog.trainingMaxPercent / 100)) : 0;
               return (
@@ -189,10 +192,12 @@ function HomePage() {
                     <input
                       type="number"
                       inputMode="numeric"
-                      value={editE1 ? editE1[l.id] || "" : prog.oneRepMaxes[l.id] || ""}
+                      value={
+                        editOneRepMax ? editOneRepMax[l.id] || "" : prog.oneRepMaxes[l.id] || ""
+                      }
                       onChange={(e) => {
                         const val = e.target.value;
-                        updateEditE1((p) => {
+                        updateEditOneRepMax((p) => {
                           const prev =
                             p ||
                             Object.fromEntries(
@@ -212,11 +217,11 @@ function HomePage() {
               );
             })}
           </div>
-          {editE1 && (
+          {editOneRepMax && (
             <button
               onClick={async () => {
-                await oneRepMaxesSaved(editE1);
-                setEditE1(null);
+                await oneRepMaxesSaved(editOneRepMax);
+                setEditOneRepMax(null);
               }}
               className="w-full p-3 rounded-[10px] border-none bg-th-a text-th-inv text-[14px] font-bold font-sans cursor-pointer min-h-[44px] mb-5"
             >
@@ -229,12 +234,14 @@ function HomePage() {
               <div className="text-[12px] font-bold text-th-t3 uppercase tracking-[.5px] mb-2">
                 Assistance
               </div>
-              <div className={cn("flex flex-col gap-1.5", editAcc ? "mb-3" : "mb-5")}>
+              <div className={cn("flex flex-col gap-1.5", editAssistance ? "mb-3" : "mb-5")}>
                 {allUsedAccs()
                   .filter((a) => !a.isBodyweight)
                   .map((a) => {
                     const wm = prog.assistanceMaximums?.[a.id] || 0;
-                    const curVal = editAcc ? parseFloat(String(editAcc[a.id])) || 0 : wm;
+                    const curVal = editAssistance
+                      ? parseFloat(String(editAssistance[a.id])) || 0
+                      : wm;
                     const phasePct = (ASSISTANCE_WEEKS[prog.week] || ASSISTANCE_WEEKS[0])
                       .percentage;
                     const phaseWt = curVal > 0 ? roundToNearest(curVal * phasePct) : 0;
@@ -256,10 +263,10 @@ function HomePage() {
                             type="number"
                             inputMode="numeric"
                             placeholder="0"
-                            value={editAcc ? editAcc[a.id] || "" : wm || ""}
+                            value={editAssistance ? editAssistance[a.id] || "" : wm || ""}
                             onChange={(e) => {
                               const val = e.target.value;
-                              updateEditAcc((p) => {
+                              updateEditAssistance((p) => {
                                 const base: Record<string, string | number> = {};
                                 allUsedAccs()
                                   .filter((x) => !x.isBodyweight)
@@ -280,11 +287,11 @@ function HomePage() {
                     );
                   })}
               </div>
-              {editAcc && (
+              {editAssistance && (
                 <button
                   onClick={async () => {
-                    await assistanceMaximumsSaved(editAcc);
-                    setEditAcc(null);
+                    await assistanceMaximumsSaved(editAssistance);
+                    setEditAssistance(null);
                   }}
                   className="w-full p-3 rounded-[10px] border-none bg-th-a text-th-inv text-[14px] font-bold font-sans cursor-pointer min-h-[44px] mb-5"
                 >

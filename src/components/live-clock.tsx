@@ -1,10 +1,10 @@
 import { useState, useEffect } from "react";
 
-interface LiveClockProps {
+type LiveClockProps = {
   start: number;
-}
+};
 
-export function LiveClock({ start }: LiveClockProps) {
+export const LiveClock = ({ start }: LiveClockProps) => {
   const [now, setNow] = useState(Date.now());
   useEffect(() => {
     const t = setInterval(() => setNow(Date.now()), 1000);
@@ -18,4 +18,4 @@ export function LiveClock({ start }: LiveClockProps) {
       {minutes}:{String(seconds).padStart(2, "0")}
     </span>
   );
-}
+};

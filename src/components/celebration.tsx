@@ -2,7 +2,7 @@ import { useEffect } from "react";
 import { Star } from "lucide-react";
 import { cn } from "../lib/cn";
 
-interface CelebrationProps {
+type CelebrationProps = {
   type: "done" | "pr" | "cycle" | "warn";
   message: string;
   subtitle: string;
@@ -10,9 +10,9 @@ interface CelebrationProps {
   onAction?: () => void;
   actionLabel?: string;
   actionSub?: string;
-}
+};
 
-export function Celebration({
+export const Celebration = ({
   type,
   message,
   subtitle,
@@ -20,7 +20,7 @@ export function Celebration({
   onAction,
   actionLabel,
   actionSub,
-}: CelebrationProps) {
+}: CelebrationProps) => {
   useEffect(() => {
     if (type !== "warn") {
       const t = setTimeout(onDone, 3500);
@@ -96,4 +96,4 @@ export function Celebration({
       </div>
     </div>
   );
-}
+};

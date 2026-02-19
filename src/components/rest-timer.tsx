@@ -3,14 +3,14 @@ import { ChevronRight, Pause } from "lucide-react";
 import { cn } from "../lib/cn";
 import { playTimerDone } from "../lib/audio";
 
-interface RestTimerProps {
+type RestTimerProps = {
   duration: number;
   timerKey: number;
   onDismiss: () => void;
   reason?: string;
-}
+};
 
-export function RestTimer({ duration, timerKey, onDismiss, reason }: RestTimerProps) {
+export const RestTimer = ({ duration, timerKey, onDismiss, reason }: RestTimerProps) => {
   const [left, setLeft] = useState(duration);
   const [paused, setPaused] = useState(false);
   const played = useRef(false);
@@ -111,4 +111,4 @@ export function RestTimer({ duration, timerKey, onDismiss, reason }: RestTimerPr
       </div>
     </div>
   );
-}
+};

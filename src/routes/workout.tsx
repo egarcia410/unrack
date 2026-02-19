@@ -1,7 +1,7 @@
 import { createFileRoute, useNavigate, redirect } from "@tanstack/react-router";
 import { ChevronLeft, Check } from "lucide-react";
-import { useProgramData, useProgramActions } from "../stores/program-store";
-import { useWorkoutStore } from "../stores/workout-store";
+import { useProgramStore } from "../stores/program-store";
+import { useWorkoutStore, hasActiveWorkout } from "../stores/workout-store";
 import { useUIStore } from "../stores/ui-store";
 import { TEMPLATES, LIFTS, LIFT_ORDER } from "../constants/program";
 import {
@@ -11,7 +11,7 @@ import {
   CAT_COLORS,
   ASSISTANCE_WEEKS,
 } from "../constants/exercises";
-import { calcWeight, epley, smartRest } from "../lib/calc";
+import { calcWeight, epley } from "../lib/calc";
 import {
   getAssistanceForLift,
   isAssistanceDiscovered,
@@ -24,42 +24,45 @@ import { SetRow } from "../components/set-row";
 import { SectionHeader } from "../components/section-header";
 import { BottomSheet } from "../components/bottom-sheet";
 import { PRRing } from "../components/pr-ring";
+import type { SetType } from "../types";
 
 export const Route = createFileRoute("/workout")({
   beforeLoad: () => {
-    const ws = useWorkoutStore.getState();
-    if (!ws.workoutStart) throw redirect({ to: "/" });
+    if (!hasActiveWorkout()) throw redirect({ to: "/" });
   },
   component: WorkoutPage,
 });
 
 function WorkoutPage() {
   const navigate = useNavigate();
-  const prog = useProgramData();
-  const { workoutFinished, exerciseSwapped } = useProgramActions();
-  const setCeleb = useUIStore((s) => s.setCeleb);
+  const prog = useProgramStore.prog();
+  const { workoutFinished, exerciseSwapped } = useProgramStore.actions();
+  const { setCeleb } = useUIStore.actions();
 
-  const activeWeek = useWorkoutStore((s) => s.activeWeek);
-  const activeDay = useWorkoutStore((s) => s.activeDay);
-  const checked = useWorkoutStore((s) => s.checked);
-  const amrapReps = useWorkoutStore((s) => s.amrapReps);
-  const accLog = useWorkoutStore((s) => s.accLog);
-  const accSets = useWorkoutStore((s) => s.accSets);
-  const collapsed = useWorkoutStore((s) => s.collapsed);
-  const showTimer = useWorkoutStore((s) => s.showTimer);
-  const timerInfo = useWorkoutStore((s) => s.timerInfo);
-  const timerKey = useWorkoutStore((s) => s.timerKey);
-  const swapSlot = useWorkoutStore((s) => s.swapSlot);
-  const workoutStart = useWorkoutStore((s) => s.workoutStart);
-  const onSetCheck = useWorkoutStore((s) => s.onSetCheck);
-  const setAmrapReps = useWorkoutStore((s) => s.setAmrapReps);
-  const toggleCollapse = useWorkoutStore((s) => s.toggleCollapse);
-  const setAccLog = useWorkoutStore((s) => s.setAccLog);
-  const tapAccSet = useWorkoutStore((s) => s.tapAccSet);
-  const untapAccSet = useWorkoutStore((s) => s.untapAccSet);
-  const dismissTimer = useWorkoutStore((s) => s.dismissTimer);
-  const setSwapSlot = useWorkoutStore((s) => s.setSwapSlot);
-  const setChecked = useWorkoutStore((s) => s.setChecked);
+  const activeWeek = useWorkoutStore.activeWeek();
+  const activeDay = useWorkoutStore.activeDay();
+  const checked = useWorkoutStore.checked();
+  const amrapReps = useWorkoutStore.amrapReps();
+  const accLog = useWorkoutStore.accLog();
+  const accSets = useWorkoutStore.accSets();
+  const collapsed = useWorkoutStore.collapsed();
+  const showTimer = useWorkoutStore.showTimer();
+  const timerInfo = useWorkoutStore.timerInfo();
+  const timerKey = useWorkoutStore.timerKey();
+  const swapSlot = useWorkoutStore.swapSlot();
+  const workoutStart = useWorkoutStore.workoutStart();
+  const {
+    onSetCheck,
+    setAmrapReps,
+    toggleCollapse,
+    setAccLog,
+    tapAccSet,
+    untapAccSet,
+    dismissTimer,
+    setSwapSlot,
+    setChecked,
+    activateTimer,
+  } = useWorkoutStore.actions();
 
   if (!prog) return null;
 
@@ -124,28 +127,28 @@ function WorkoutPage() {
   const canFinish = allWarmup && allMain && allSupp && allAcc;
   const isDeload = activeWeek === 3;
 
-  const allSets = [
+  const allSets: Array<{ key: string; type: SetType; intensity: number; isDeload: boolean }> = [
     ...warmup.map((w, i) => ({
       key: `w${i}`,
-      type: "warmup",
+      type: "warmup" as SetType,
       intensity: w.percentage,
       isDeload,
     })),
     ...weekDef.sets.map((s, i) => ({
       key: `m${i}`,
-      type: "main",
+      type: "main" as SetType,
       intensity: s.percentage,
       isDeload,
     })),
     ...supp.map((s) => ({
       key: s.key,
-      type: "supp",
+      type: "supp" as SetType,
       intensity: s.percentage,
       isDeload,
     })),
     ...accs.map((a) => ({
       key: `a_${a.id}`,
-      type: a.isBodyweight ? "acc_bw" : "acc_wt",
+      type: (a.isBodyweight ? "acc_bw" : "acc_wt") as SetType,
       intensity: (ASSISTANCE_WEEKS[activeWeek] || ASSISTANCE_WEEKS[0]).percentage,
       isDeload,
     })),
@@ -339,15 +342,11 @@ function WorkoutPage() {
                       }
                     }
                     if (nextSet) {
-                      useWorkoutStore.setState({
-                        timerInfo: smartRest(
-                          nextSet.type,
-                          nextSet.intensity || 0,
-                          nextSet.isDeload || false,
-                        ),
-                        showTimer: true,
-                        timerKey: useWorkoutStore.getState().timerKey + 1,
-                      });
+                      activateTimer(
+                        nextSet.type,
+                        nextSet.intensity || 0,
+                        nextSet.isDeload || false,
+                      );
                     }
                   }
                 };

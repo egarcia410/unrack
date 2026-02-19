@@ -1,13 +1,13 @@
 import type { ReactNode } from "react";
 
-interface BottomSheetProps {
+type BottomSheetProps = {
   title: string;
   onClose: () => void;
   children: ReactNode;
   maxHeight?: string;
-}
+};
 
-export function BottomSheet({ title, onClose, children, maxHeight = "85vh" }: BottomSheetProps) {
+export const BottomSheet = ({ title, onClose, children, maxHeight = "85vh" }: BottomSheetProps) => {
   return (
     <div
       onClick={onClose}
@@ -31,4 +31,4 @@ export function BottomSheet({ title, onClose, children, maxHeight = "85vh" }: Bo
       </div>
     </div>
   );
-}
+};

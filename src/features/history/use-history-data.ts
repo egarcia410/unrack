@@ -1,4 +1,4 @@
-import { useProgramData } from "../../stores/program-store";
+import { useProgramStore } from "../../stores/program-store";
 import { LIFTS } from "../../constants/program";
 import type { Lift } from "../../types";
 
@@ -28,7 +28,7 @@ export type RecentWorkoutEntry = {
 };
 
 export const useHistoryData = () => {
-  const programData = useProgramData();
+  const programData = useProgramStore.prog();
 
   if (!programData) return null;
 

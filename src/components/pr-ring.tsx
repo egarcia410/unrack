@@ -1,16 +1,16 @@
 import { useState, useEffect, useRef } from "react";
 import { ConfettiBurst } from "./confetti-burst";
 
-interface PRRingProps {
+type PRRingProps = {
   size: number;
   min: number;
   prGoal: number | null;
   value: number;
   active: boolean;
   activated: boolean;
-}
+};
 
-export function PRRing({ size, min, prGoal, value, active, activated }: PRRingProps) {
+export const PRRing = ({ size, min, prGoal, value, active, activated }: PRRingProps) => {
   const radius = size / 2 - 4,
     cx = size / 2,
     cy = size / 2,
@@ -87,4 +87,4 @@ export function PRRing({ size, min, prGoal, value, active, activated }: PRRingPr
       </div>
     </div>
   );
-}
+};

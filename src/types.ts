@@ -4,31 +4,35 @@ export type TemplateId = "classic" | "bbb" | "bbbC" | "fsl" | "ssl";
 
 export type Unit = "lb" | "kg";
 
-export interface Lift {
+export type SetType = "warmup" | "main" | "supp" | "acc_bw" | "acc_wt";
+
+export type WorkoutSection = "warmup" | "main" | "supp" | "acc";
+
+export type Lift = {
   id: string;
   name: string;
   shorthand: string;
   increment: number;
-}
+};
 
-export interface WeekSet {
+export type WeekSet = {
   reps: number | string;
   percentage: number;
-}
+};
 
-export interface WeekDef {
+export type WeekDef = {
   label: string;
   title: string;
   sets: WeekSet[];
-}
+};
 
-export interface SupplementalDef {
+export type SupplementalDef = {
   numSets: number;
   reps: number;
   percentage: number;
-}
+};
 
-export interface Template {
+export type Template = {
   name: string;
   description: string;
   weeks: WeekDef[];
@@ -36,25 +40,25 @@ export interface Template {
   supplementalWeekly?: SupplementalDef[];
   firstSetLast?: { numSets: number; reps: number };
   secondSetLast?: { numSets: number; reps: number };
-}
+};
 
-export interface Exercise {
+export type Exercise = {
   id: string;
   name: string;
   category: string;
   isBodyweight: boolean;
   inc?: number;
   slot?: number;
-}
+};
 
-export interface AccWeek {
+export type AccWeek = {
   sets: number;
   reps: number;
   percentage: number;
   label: string;
-}
+};
 
-export interface AccRx {
+export type AccRx = {
   type: "bw" | "wt";
   sets: number;
   reps: number;
@@ -65,9 +69,9 @@ export interface AccRx {
   weight?: number;
   maximum?: number;
   fatigued?: boolean;
-}
+};
 
-export interface WorkoutEntry {
+export type WorkoutEntry = {
   cycle: number;
   week: number;
   day: number;
@@ -83,9 +87,9 @@ export interface WorkoutEntry {
     reps: number;
     weight: number;
   } | null;
-}
+};
 
-export interface ProgramData {
+export type ProgramData = {
   template: TemplateId;
   unit: Unit;
   trainingMaxPercent: number;
@@ -110,14 +114,14 @@ export interface ProgramData {
   customExercises?: Record<string, Exercise>;
   mode?: ThemeMode;
   timestamp: number;
-}
+};
 
-export interface RestInfo {
+export type RestInfo = {
   duration: number;
   reason: string;
-}
+};
 
-export interface CelebState {
+export type CelebState = {
   type: "done" | "pr" | "cycle" | "warn";
   message: string;
   subtitle: string;
@@ -126,10 +130,10 @@ export interface CelebState {
   _liftId?: string;
   _suggestedOneRepMax?: number;
   _suggestedTrainingMax?: number;
-}
+};
 
-export interface SwapSlot {
+export type SwapSlot = {
   liftId: string;
   slot: number;
   currentId: string;
-}
+};

@@ -6,12 +6,11 @@ import { createFileRoute, redirect, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { LIFTS } from "../constants/program";
 import { calcTM } from "../lib/calc";
-import { useProgramActions, useProgramStore, useUnit } from "../stores/program-store";
+import { useProgramStore, hasProgramData } from "../stores/program-store";
 
 export const Route = createFileRoute("/setup")({
   beforeLoad: () => {
-    const prog = useProgramStore.getState().prog;
-    if (prog) throw redirect({ to: "/" });
+    if (hasProgramData()) throw redirect({ to: "/" });
   },
   component: SetupPage,
 });
@@ -23,8 +22,8 @@ function validateOneRepMax(value: unknown) {
 }
 
 function SetupPage() {
-  const { programCreated } = useProgramActions();
-  const unit = useUnit();
+  const { programCreated } = useProgramStore.actions();
+  const unit = useProgramStore.unit();
   const navigate = useNavigate();
   const [oneRepMaxes, setOneRepMaxes] = useState<Record<string, string>>({
     ohp: "",

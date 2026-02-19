@@ -1,5 +1,5 @@
 import { createFileRoute, redirect } from "@tanstack/react-router";
-import { useProgramStore } from "../stores/program-store";
+import { hasProgramData } from "../stores/program-store";
 import { useHistoryData } from "../features/history/use-history-data";
 import { LiftProgressCard } from "../features/history/lift-progress-card";
 import { RecentWorkoutRow } from "../features/history/recent-workout-row";
@@ -45,8 +45,7 @@ const HistoryPage = () => {
 
 export const Route = createFileRoute("/history")({
   beforeLoad: () => {
-    const { prog, loading } = useProgramStore.getState();
-    if (!loading && !prog) throw redirect({ to: "/setup" });
+    if (!hasProgramData()) throw redirect({ to: "/setup" });
   },
   component: HistoryPage,
 });

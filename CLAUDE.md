@@ -20,3 +20,11 @@
 - Use descriptive, self-documenting variable and property names
 - No single-character or heavily abbreviated names — code should be readable years later
 - Example: `trainingMax` not `tm`, `inputValue` not `val`, `oneRepMaxes` not `orms`
+
+## Zustand Stores
+- Wrap stores with `createSelectors` (`src/lib/create-selectors.ts`) — generates `store.field()` selectors
+- Consume state as `useXStore.field()`, actions as `useXStore.actions()`
+- Separate `type XState` (data) from `type XActions` (methods), nest actions under `actions` key
+- Extract `initialState` constant — reuse in store init and reset actions
+- Never use inline selectors (`useStore((s) => s.foo)`) in components
+- Never use `.getState()` outside store files — export static selectors for non-React contexts (route guards)

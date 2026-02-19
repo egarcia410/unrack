@@ -1,12 +1,12 @@
-interface ConfirmModalProps {
+type ConfirmModalProps = {
   msg: string;
   sub: string;
   onYes: () => void;
   onNo: () => void;
   yesLabel?: string;
-}
+};
 
-export function ConfirmModal({ msg, sub, onYes, onNo, yesLabel }: ConfirmModalProps) {
+export const ConfirmModal = ({ msg, sub, onYes, onNo, yesLabel }: ConfirmModalProps) => {
   return (
     <div
       onClick={onNo}
@@ -35,4 +35,4 @@ export function ConfirmModal({ msg, sub, onYes, onNo, yesLabel }: ConfirmModalPr
       </div>
     </div>
   );
-}
+};

@@ -1,7 +1,7 @@
 import { Check } from "lucide-react";
 import { cn } from "../lib/cn";
 
-interface SetRowProps {
+type SetRowProps = {
   done: boolean;
   weight: number;
   unit: string;
@@ -9,9 +9,9 @@ interface SetRowProps {
   pct: number;
   isAmrap?: boolean;
   onClick: () => void;
-}
+};
 
-export function SetRow({ done, weight, unit, reps, pct, isAmrap, onClick }: SetRowProps) {
+export const SetRow = ({ done, weight, unit, reps, pct, isAmrap, onClick }: SetRowProps) => {
   return (
     <button
       onClick={onClick}
@@ -36,4 +36,4 @@ export function SetRow({ done, weight, unit, reps, pct, isAmrap, onClick }: SetR
       <span className="text-[11px] font-mono text-th-t4 text-right">{Math.round(pct * 100)}%</span>
     </button>
   );
-}
+};

@@ -1,11 +1,11 @@
 import { useRef } from "react";
 import { CONFETTI_COLORS } from "../constants/theme";
 
-interface ConfettiBurstProps {
+type ConfettiBurstProps = {
   size: number;
-}
+};
 
-export function ConfettiBurst({ size }: ConfettiBurstProps) {
+export const ConfettiBurst = ({ size }: ConfettiBurstProps) => {
   const id = useRef(Math.random().toString(36).slice(2, 6)).current;
   const particles = useRef(
     Array.from({ length: 10 }, (_, i) => {
@@ -50,4 +50,4 @@ export function ConfettiBurst({ size }: ConfettiBurstProps) {
       </div>
     </>
   );
-}
+};

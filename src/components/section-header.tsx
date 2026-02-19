@@ -1,14 +1,14 @@
 import { cn } from "../lib/cn";
 
-interface SectionHeaderProps {
+type SectionHeaderProps = {
   label: string;
   done: boolean;
   collapsed: boolean;
   onToggle: () => void;
   extra?: React.ReactNode;
-}
+};
 
-export function SectionHeader({ label, done, collapsed, onToggle, extra }: SectionHeaderProps) {
+export const SectionHeader = ({ label, done, collapsed, onToggle, extra }: SectionHeaderProps) => {
   return (
     <button
       onClick={onToggle}
@@ -31,4 +31,4 @@ export function SectionHeader({ label, done, collapsed, onToggle, extra }: Secti
       </div>
     </button>
   );
-}
+};

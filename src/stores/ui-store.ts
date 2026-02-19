@@ -1,77 +1,89 @@
 import { create } from "zustand";
 import type { ThemeMode, CelebState } from "../types";
+import { createSelectors } from "../lib/create-selectors";
 
-interface EditE1State {
+type EditOneRepMaxState = {
   [liftId: string]: string;
-}
+};
 
-interface EditAccState {
+type EditAssistanceState = {
   [accId: string]: string | number;
-}
+};
 
-interface UIState {
+type UIState = {
   mode: ThemeMode;
   showConfirm: boolean;
   showSettings: boolean;
   settingsExpanded: boolean;
   showTemplPicker: boolean;
   celeb: CelebState | null;
-  editE1: EditE1State | null;
-  editAcc: EditAccState | null;
+  editOneRepMax: EditOneRepMaxState | null;
+  editAssistance: EditAssistanceState | null;
+};
 
+type UIActions = {
   setMode: (mode: ThemeMode) => void;
-  setShowConfirm: (v: boolean) => void;
-  setShowSettings: (v: boolean) => void;
-  setSettingsExpanded: (v: boolean) => void;
+  setShowConfirm: (show: boolean) => void;
+  setShowSettings: (show: boolean) => void;
+  setSettingsExpanded: (expanded: boolean) => void;
   toggleSettingsExpanded: () => void;
-  setShowTemplPicker: (v: boolean) => void;
-  setCeleb: (v: CelebState | null) => void;
-  setEditE1: (v: EditE1State | null) => void;
-  updateEditE1: (updater: (prev: EditE1State | null) => EditE1State | null) => void;
-  setEditAcc: (v: EditAccState | null) => void;
-  updateEditAcc: (updater: (prev: EditAccState | null) => EditAccState | null) => void;
+  setShowTemplPicker: (show: boolean) => void;
+  setCeleb: (celeb: CelebState | null) => void;
+  setEditOneRepMax: (edit: EditOneRepMaxState | null) => void;
+  updateEditOneRepMax: (
+    updater: (prev: EditOneRepMaxState | null) => EditOneRepMaxState | null,
+  ) => void;
+  setEditAssistance: (edit: EditAssistanceState | null) => void;
+  updateEditAssistance: (
+    updater: (prev: EditAssistanceState | null) => EditAssistanceState | null,
+  ) => void;
   closeSettings: () => void;
-}
+};
 
-export const useUIStore = create<UIState>((set) => ({
+const initialState: UIState = {
   mode: "dark",
   showConfirm: false,
   showSettings: false,
   settingsExpanded: false,
   showTemplPicker: false,
   celeb: null,
-  editE1: null,
-  editAcc: null,
+  editOneRepMax: null,
+  editAssistance: null,
+};
 
-  setMode: (mode) => {
-    document.documentElement.classList.toggle("dark", mode === "dark");
-    set({ mode });
-  },
-  setShowConfirm: (v) => set({ showConfirm: v }),
-  setShowSettings: (v) => set({ showSettings: v }),
-  setSettingsExpanded: (v) => set({ settingsExpanded: v }),
-  toggleSettingsExpanded: () => set((s) => ({ settingsExpanded: !s.settingsExpanded })),
-  setShowTemplPicker: (v) => set({ showTemplPicker: v }),
-  setCeleb: (v) => set({ celeb: v }),
-  setEditE1: (v) => set({ editE1: v }),
-  updateEditE1: (updater) => set((s) => ({ editE1: updater(s.editE1) })),
-  setEditAcc: (v) => set({ editAcc: v }),
-  updateEditAcc: (updater) => set((s) => ({ editAcc: updater(s.editAcc) })),
-  closeSettings: () =>
-    set({
-      showSettings: false,
-      editAcc: null,
-      editE1: null,
-      settingsExpanded: false,
-    }),
-}));
+export const useUIStore = createSelectors(
+  create<UIState & { actions: UIActions }>((set) => ({
+    ...initialState,
 
-export function initTheme() {
+    actions: {
+      setMode: (mode) => {
+        document.documentElement.classList.toggle("dark", mode === "dark");
+        set({ mode });
+      },
+      setShowConfirm: (show) => set({ showConfirm: show }),
+      setShowSettings: (show) => set({ showSettings: show }),
+      setSettingsExpanded: (expanded) => set({ settingsExpanded: expanded }),
+      toggleSettingsExpanded: () => set((state) => ({ settingsExpanded: !state.settingsExpanded })),
+      setShowTemplPicker: (show) => set({ showTemplPicker: show }),
+      setCeleb: (celeb) => set({ celeb }),
+      setEditOneRepMax: (edit) => set({ editOneRepMax: edit }),
+      updateEditOneRepMax: (updater) =>
+        set((state) => ({ editOneRepMax: updater(state.editOneRepMax) })),
+      setEditAssistance: (edit) => set({ editAssistance: edit }),
+      updateEditAssistance: (updater) =>
+        set((state) => ({ editAssistance: updater(state.editAssistance) })),
+      closeSettings: () =>
+        set({
+          showSettings: false,
+          editAssistance: null,
+          editOneRepMax: null,
+          settingsExpanded: false,
+        }),
+    },
+  })),
+);
+
+export const initTheme = () => {
   const mode = useUIStore.getState().mode;
   document.documentElement.classList.toggle("dark", mode === "dark");
-}
-
-export function useTheme(): { mode: ThemeMode } {
-  const mode = useUIStore((s) => s.mode);
-  return { mode };
-}
+};
