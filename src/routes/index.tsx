@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import { createFileRoute, useNavigate, redirect } from "@tanstack/react-router";
 import { Check, Clock, Settings, Sun, Moon, Minus, Plus } from "lucide-react";
-import { useProgramStore, useProg, useProgramActions } from "../stores/program-store";
+import { useProgramStore, useProgramData, useProgramActions } from "../stores/program-store";
 import { useWorkoutStore } from "../stores/workout-store";
 import { useUIStore, useTheme } from "../stores/ui-store";
 import { TEMPLATES, LIFTS, LIFT_ORDER } from "../constants/program";
@@ -26,7 +26,7 @@ export const Route = createFileRoute("/")({
 function HomePage() {
   const { mode } = useTheme();
   const navigate = useNavigate();
-  const prog = useProg();
+  const prog = useProgramData();
   const {
     programReset,
     templateChanged,

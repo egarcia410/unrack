@@ -1,6 +1,6 @@
 import { createFileRoute, useNavigate, redirect } from "@tanstack/react-router";
 import { ChevronLeft, Check } from "lucide-react";
-import { useProg, useProgramActions } from "../stores/program-store";
+import { useProgramData, useProgramActions } from "../stores/program-store";
 import { useWorkoutStore } from "../stores/workout-store";
 import { useUIStore } from "../stores/ui-store";
 import { TEMPLATES, LIFTS, LIFT_ORDER } from "../constants/program";
@@ -35,7 +35,7 @@ export const Route = createFileRoute("/workout")({
 
 function WorkoutPage() {
   const navigate = useNavigate();
-  const prog = useProg();
+  const prog = useProgramData();
   const { workoutFinished, exerciseSwapped } = useProgramActions();
   const setCeleb = useUIStore((s) => s.setCeleb);
 

@@ -8,6 +8,9 @@
     "nursery": "error",
     "restriction": "error"
   },
+  "rules": {
+    "typescript/consistent-type-definitions": ["error", "type"]
+  },
   "plugins": [
     "react",
     "typescript",

@@ -432,7 +432,7 @@ export const useProgramStore = create<ProgramState>((set, get) => ({
 }));
 
 // Exported selectors
-export const useProg = () => useProgramStore((s) => s.prog);
+export const useProgramData = () => useProgramStore((s) => s.prog);
 export const useUnit = () => useProgramStore((s) => s.unit);
 export const useLoading = () => useProgramStore((s) => s.loading);
 export const useProgramActions = () => useProgramStore((s) => s.actions);
