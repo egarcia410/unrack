@@ -8,3 +8,8 @@ pre-commit:
     - name: format
       glob: "*.{js,ts,jsx,tsx,css,html,json}"
       run: pnpm oxfmt --write {staged_files} && git add {staged_files}
+
+commit-msg:
+  jobs:
+    - name: conventional-commit
+      run: 'head -1 {1} | grep -qE "^(feat|fix|perf|refactor|docs|style|chore|test|ci|build|revert)(\(.+\))?!?: .+"'
