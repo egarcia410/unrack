@@ -3,7 +3,7 @@ pre-commit:
   jobs:
     - name: lint
       glob: "*.{js,ts,jsx,tsx}"
-      run: pnpm oxlint {staged_files}
+      run: pnpm oxlint --fix {staged_files} && git add {staged_files}
 
     - name: format
       glob: "*.{js,ts,jsx,tsx,css,html,json}"
