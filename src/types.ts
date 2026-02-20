@@ -6,8 +6,6 @@ export type Unit = "lb" | "kg";
 
 export type SetType = "warmup" | "main" | "supp" | "acc_bw" | "acc_wt";
 
-export type WorkoutSection = "warmup" | "main" | "supp" | "acc";
-
 export type Lift = {
   id: string;
   name: string;

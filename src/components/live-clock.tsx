@@ -14,7 +14,7 @@ export const LiveClock = ({ start }: LiveClockProps) => {
   const minutes = Math.floor(elapsed / 60),
     seconds = elapsed % 60;
   return (
-    <span className="text-[15px] font-mono font-semibold text-th-t3 ml-3.5">
+    <span className="text-sm font-mono font-semibold text-th-t3 ml-3.5">
       {minutes}:{String(seconds).padStart(2, "0")}
     </span>
   );

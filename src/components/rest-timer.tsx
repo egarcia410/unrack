@@ -1,40 +1,50 @@
 import { useState, useEffect, useRef } from "react";
-import { ChevronRight, Pause } from "lucide-react";
+import { ChevronRight, Pause, X } from "lucide-react";
 import { cn } from "../lib/cn";
 import { playTimerDone } from "../lib/audio";
+import { useWorkoutStore } from "../stores/workout-store";
+import { IconButton } from "./icon-button";
 
-type RestTimerProps = {
-  duration: number;
-  timerKey: number;
-  onDismiss: () => void;
-  reason?: string;
-};
+export const RestTimer = () => {
+  const showTimer = useWorkoutStore.showTimer();
+  const timerInfo = useWorkoutStore.timerInfo();
+  const timerKey = useWorkoutStore.timerKey();
+  const { dismissTimer } = useWorkoutStore.actions();
 
-export const RestTimer = ({ duration, timerKey, onDismiss, reason }: RestTimerProps) => {
+  const duration = timerInfo.duration;
+  const reason = timerInfo.reason;
+
   const [left, setLeft] = useState(duration);
   const [paused, setPaused] = useState(false);
   const played = useRef(false);
+
   useEffect(() => {
     setLeft(duration);
     setPaused(false);
     played.current = false;
   }, [timerKey, duration]);
+
   useEffect(() => {
     if (!paused && left > 0) {
       const t = setTimeout(() => setLeft((l) => l - 1), 1000);
       return () => clearTimeout(t);
     }
   }, [left, paused]);
+
   useEffect(() => {
     if (left <= 0 && !played.current) {
       played.current = true;
       playTimerDone();
     }
   }, [left]);
+
+  if (!showTimer) return null;
+
   const formatTime = (s: number) => `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
   const done = left <= 0;
   const urgent = !done && left <= 10;
   const pct = duration > 0 ? ((duration - left) / duration) * 100 : 100;
+
   return (
     <div
       className={cn(
@@ -48,55 +58,31 @@ export const RestTimer = ({ duration, timerKey, onDismiss, reason }: RestTimerPr
         <div className="flex-1 min-w-0">
           <div
             className={cn(
-              "text-[30px] font-extrabold font-mono leading-none",
+              "text-3xl font-extrabold font-mono leading-none",
               done ? "text-th-inv animate-timer-pulse" : "text-th-t",
             )}
           >
             {done ? "GO!" : formatTime(left)}
           </div>
-          <div
-            className={cn(
-              "text-[12px] font-semibold mt-[3px]",
-              done ? "text-th-inv/50" : "text-th-t3",
-            )}
-            style={done ? { color: "rgba(0,0,0,0.5)" } : undefined}
-          >
+          <div className={cn("text-xs font-semibold mt-1", done ? "text-black/50" : "text-th-t3")}>
             {done ? "Next set ready" : reason || "Rest"}
           </div>
         </div>
         <div className="flex gap-1.5 shrink-0">
           {!done && (
-            <button
-              onClick={() => setPaused(!paused)}
-              className="w-[44px] h-[44px] rounded-[10px] border border-th-b bg-th-s2 text-th-t3 cursor-pointer flex items-center justify-center"
-            >
+            <IconButton onClick={() => setPaused(!paused)}>
               {paused ? <ChevronRight size={18} /> : <Pause size={18} />}
-            </button>
+            </IconButton>
           )}
-          <button
-            onClick={onDismiss}
-            className={cn(
-              "w-[44px] h-[44px] rounded-[10px] cursor-pointer flex items-center justify-center text-[20px] leading-none",
-              done ? "border-transparent" : "border border-th-b bg-th-s2 text-th-t4",
-            )}
-            style={
-              done
-                ? {
-                    background: "rgba(0,0,0,0.1)",
-                    color: "rgba(0,0,0,0.5)",
-                    border: "1px solid transparent",
-                  }
-                : undefined
-            }
+          <IconButton
+            onClick={dismissTimer}
+            className={cn(done ? "border-transparent bg-black/10 text-black/50" : "")}
           >
-            {"\u00D7"}
-          </button>
+            <X size={18} />
+          </IconButton>
         </div>
       </div>
-      <div
-        className={cn("h-2 rounded overflow-hidden", done ? "" : "bg-th-s3")}
-        style={done ? { background: "rgba(0,0,0,0.15)" } : undefined}
-      >
+      <div className={cn("h-2 rounded overflow-hidden", done ? "bg-black/15" : "bg-th-s3")}>
         <div
           className="h-full rounded transition-[width] duration-1000 ease-linear"
           style={{

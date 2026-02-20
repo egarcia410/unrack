@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import type { RestInfo, SwapSlot, SetType, WorkoutSection } from "../types";
+import type { RestInfo, SwapSlot, SetType } from "../types";
 import { smartRest } from "../lib/calc";
 import { createSelectors } from "../lib/create-selectors";
 
@@ -10,7 +10,6 @@ type WorkoutState = {
   amrapReps: Record<string, string>;
   accLog: Record<string, { w?: string }>;
   accSets: Record<string, number>;
-  collapsed: Partial<Record<WorkoutSection, boolean>>;
   timerKey: number;
   showTimer: boolean;
   timerInfo: RestInfo;
@@ -30,7 +29,6 @@ type WorkoutActions = {
     }>,
   ) => void;
   setAmrapReps: (updater: (prev: Record<string, string>) => Record<string, string>) => void;
-  toggleCollapse: (section: WorkoutSection) => void;
   setAccLog: (
     updater: (prev: Record<string, { w?: string }>) => Record<string, { w?: string }>,
   ) => void;
@@ -56,7 +54,6 @@ const initialState: WorkoutState = {
   amrapReps: {},
   accLog: {},
   accSets: {},
-  collapsed: {},
   timerKey: 0,
   showTimer: false,
   timerInfo: { duration: 90, reason: "" },
@@ -105,11 +102,6 @@ export const useWorkoutStore = createSelectors(
       },
 
       setAmrapReps: (updater) => set((state) => ({ amrapReps: updater(state.amrapReps) })),
-
-      toggleCollapse: (section) =>
-        set((state) => ({
-          collapsed: { ...state.collapsed, [section]: !state.collapsed[section] },
-        })),
 
       setAccLog: (updater) => set((state) => ({ accLog: updater(state.accLog) })),
 
