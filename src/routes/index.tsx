@@ -1,5 +1,5 @@
 import { createFileRoute, redirect } from "@tanstack/react-router";
-import { hasProgramData } from "../stores/program-store";
+import { hasProgramData } from "../stores/app-store";
 import { Celebration } from "../components/celebration";
 import { DeleteConfirmDialog } from "../components/delete-confirm-dialog";
 import { HomeHeader } from "../features/home/home-header";

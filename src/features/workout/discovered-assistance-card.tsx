@@ -1,34 +1,28 @@
 import { Button } from "@base-ui/react/button";
 import { ChevronDown } from "lucide-react";
-import { useProgramStore } from "../../stores/program-store";
-import { useWorkoutStore } from "../../stores/workout-store";
-import { LIFT_ORDER } from "../../constants/program";
-import { ASSISTANCE_WEEKS } from "../../constants/exercises";
-import { getAssistanceForLift, getAssistancePrescription } from "../../lib/exercises";
+import { useAppStore } from "../../stores/app-store";
 import { cn } from "../../lib/cn";
 import { AssistanceSetButtons } from "./assistance-set-buttons";
-import type { Exercise } from "../../types";
+import {
+  useActiveLiftId,
+  useAccessoryExercise,
+  useAssistancePrescription,
+} from "./use-workout-selectors";
 
 type DiscoveredAssistanceCardProps = {
   exerciseIndex: number;
 };
 
 export const DiscoveredAssistanceCard = ({ exerciseIndex }: DiscoveredAssistanceCardProps) => {
-  const activeWeek = useWorkoutStore.activeWeek();
-  const activeDay = useWorkoutStore.activeDay();
-  const accSets = useWorkoutStore.accSets();
-  const { tapAccSet, untapAccSet, setSwapSlot } = useWorkoutStore.actions();
+  const accSets = useAppStore.accSets();
+  const { tapAccSet, untapAccSet, setSwapSlot } = useAppStore.actions();
 
-  const unit = useProgramStore.unit();
-
-  const liftId = LIFT_ORDER[activeDay % LIFT_ORDER.length];
-  const prog = useProgramStore.getState();
-  const accessories = getAssistanceForLift(liftId, prog);
-  const exercise = accessories[exerciseIndex] as Exercise;
-  const rx = getAssistancePrescription(exercise, activeWeek, prog, liftId);
+  const unit = useAppStore.unit();
+  const liftId = useActiveLiftId();
+  const exercise = useAccessoryExercise(exerciseIndex);
+  const rx = useAssistancePrescription(exerciseIndex);
   const setsDone = accSets[exercise.id] || 0;
   const done = setsDone >= rx.sets;
-  const isDeload = activeWeek === 3;
 
   const rxText =
     rx.type === "bw"
@@ -61,16 +55,8 @@ export const DiscoveredAssistanceCard = ({ exerciseIndex }: DiscoveredAssistance
       <AssistanceSetButtons
         exerciseId={exercise.id}
         totalSets={rx.sets}
-        onTapSet={() =>
-          tapAccSet(
-            exercise.id,
-            rx.sets,
-            exercise.isBodyweight ? "acc_bw" : "acc_wt",
-            (ASSISTANCE_WEEKS[activeWeek] || ASSISTANCE_WEEKS[0]).percentage,
-            isDeload,
-          )
-        }
-        onUntapSet={() => untapAccSet(exercise.id, rx.sets)}
+        onTapSet={() => tapAccSet(exercise.id)}
+        onUntapSet={() => untapAccSet(exercise.id)}
       />
     </div>
   );

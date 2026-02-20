@@ -1,36 +1,26 @@
 import { Minus, Plus, ArrowRight } from "lucide-react";
-import { useProgramStore } from "../../stores/program-store";
-import { useWorkoutStore } from "../../stores/workout-store";
-import { TEMPLATES, LIFT_ORDER } from "../../constants/program";
+import { useAppStore } from "../../stores/app-store";
 import { calcWeight, epley } from "../../lib/calc";
-import { getAssistanceForLift } from "../../lib/exercises";
 import { cn } from "../../lib/cn";
 import { PRRing } from "../../components/pr-ring";
 import { IconButton } from "../../components/icon-button";
 import { Button } from "@base-ui/react/button";
-import { buildSupplementalSets, buildAllSets } from "./workout-utils";
+import { useActiveLiftId, useActiveTrainingMax, useActiveWeekDef } from "./use-workout-selectors";
 
 type AmrapCardProps = {
   setIndex: number;
 };
 
 export const AmrapCard = ({ setIndex }: AmrapCardProps) => {
-  const template = useProgramStore.template();
-  const trainingMaxes = useProgramStore.trainingMaxes();
-  const oneRepMaxes = useProgramStore.oneRepMaxes();
-  const unit = useProgramStore.unit();
+  const unit = useAppStore.unit();
+  const oneRepMaxes = useAppStore.oneRepMaxes();
+  const trainingMax = useActiveTrainingMax();
+  const liftId = useActiveLiftId();
+  const weekDef = useActiveWeekDef();
 
-  const activeWeek = useWorkoutStore.activeWeek();
-  const activeDay = useWorkoutStore.activeDay();
-  const checked = useWorkoutStore.checked();
-  const amrapReps = useWorkoutStore.amrapReps();
-  const { setChecked, setAmrapReps, activateTimer } = useWorkoutStore.actions();
-
-  const variant = TEMPLATES[template];
-  const weekDef = variant.weeks[activeWeek];
-  const liftId = LIFT_ORDER[activeDay % LIFT_ORDER.length];
-  const trainingMax = trainingMaxes[liftId];
-  const isDeload = activeWeek === 3;
+  const checked = useAppStore.checked();
+  const amrapReps = useAppStore.amrapReps();
+  const { activateAmrap, setAmrapReps } = useAppStore.actions();
 
   const set = weekDef.sets[setIndex];
   const setKey = `m${setIndex}`;
@@ -47,29 +37,6 @@ export const AmrapCard = ({ setIndex }: AmrapCardProps) => {
   const previousEstimate = oneRepMaxes[liftId] || 0;
   const isPR = amrapDone && entered > 0 && goalReps && entered >= goalReps;
 
-  const prog = useProgramStore.getState();
-  const accessories = getAssistanceForLift(liftId, prog);
-  const supplementalSets = buildSupplementalSets(variant, weekDef, activeWeek);
-  const allSets = buildAllSets(activeWeek, weekDef, supplementalSets, accessories, isDeload);
-
-  const activateAmrap = () => {
-    if (!amrapDone) {
-      setChecked((prev) => ({ ...prev, [setKey]: true }));
-      setAmrapReps((prev) => ({ ...prev, [setKey]: String(minReps) }));
-      const amrapIndex = allSets.findIndex((s) => s.key === setKey);
-      let nextSet: (typeof allSets)[number] | null = null;
-      for (let j = amrapIndex + 1; j < allSets.length; j++) {
-        if (!checked[allSets[j].key]) {
-          nextSet = allSets[j];
-          break;
-        }
-      }
-      if (nextSet) {
-        activateTimer(nextSet.type, nextSet.intensity || 0, nextSet.isDeload || false);
-      }
-    }
-  };
-
   const stepDown = () => {
     if (!amrapDone) return;
     const newValue = Math.max(0, (parseInt(amrapReps[setKey]) || 0) - 1);
@@ -78,7 +45,7 @@ export const AmrapCard = ({ setIndex }: AmrapCardProps) => {
 
   const stepUp = () => {
     if (!amrapDone) {
-      activateAmrap();
+      activateAmrap(setIndex);
       return;
     }
     setAmrapReps((prev) => ({ ...prev, [setKey]: String((parseInt(prev[setKey]) || 0) + 1) }));
@@ -108,7 +75,7 @@ export const AmrapCard = ({ setIndex }: AmrapCardProps) => {
     >
       {!amrapDone ? (
         <Button
-          onClick={activateAmrap}
+          onClick={() => activateAmrap(setIndex)}
           className="flex items-center justify-between w-full box-border bg-none border-none p-0 cursor-pointer min-h-14"
         >
           <div>

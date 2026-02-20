@@ -1,19 +1,22 @@
 import { Button } from "@base-ui/react/button";
-import { useProgramStore } from "../../stores/program-store";
-import { useWorkoutStore } from "../../stores/workout-store";
+import { useAppStore } from "../../stores/app-store";
 import { EXERCISE_LIB, CATS, CAT_LABELS, CAT_COLORS } from "../../constants/exercises";
 import { getAssistancePrescription } from "../../lib/exercises";
 import { cn } from "../../lib/cn";
 import { Drawer } from "../../components/drawer";
+import type { ProgramData } from "../../types";
 
 export const SwapExerciseDrawer = () => {
-  const swapSlot = useWorkoutStore.swapSlot();
-  const activeWeek = useWorkoutStore.activeWeek();
-  const { setSwapSlot } = useWorkoutStore.actions();
+  const swapSlot = useAppStore.swapSlot();
+  const activeWeek = useAppStore.activeWeek();
+  const { setSwapSlot } = useAppStore.actions();
 
-  const assistanceMaximums = useProgramStore.assistanceMaximums();
-  const unit = useProgramStore.unit();
-  const { exerciseSwapped } = useProgramStore.actions();
+  const assistanceMaximums = useAppStore.assistanceMaximums();
+  const bodyweightBaselines = useAppStore.bodyweightBaselines();
+  const unit = useAppStore.unit();
+  const { exerciseSwapped } = useAppStore.actions();
+
+  const prescriptionData = { assistanceMaximums, bodyweightBaselines } as ProgramData;
 
   return (
     <Drawer
@@ -38,17 +41,18 @@ export const SwapExerciseDrawer = () => {
               {exercises.map((e) => {
                 const isCurrent = e.id === swapSlot.currentId;
                 const hasMax = !e.isBodyweight && (assistanceMaximums?.[e.id] || 0) > 0;
-                const prog = useProgramStore.getState();
-                const rx = getAssistancePrescription(e, activeWeek, prog, swapSlot.liftId);
+                const rx = getAssistancePrescription(
+                  e,
+                  activeWeek,
+                  prescriptionData,
+                  swapSlot.liftId,
+                );
                 const isNew = !e.isBodyweight && !hasMax;
                 return (
                   <Button
                     key={e.id}
                     onClick={() => {
-                      if (!isCurrent)
-                        exerciseSwapped(swapSlot.liftId, swapSlot.slot, e.id).then(() =>
-                          setSwapSlot(null),
-                        );
+                      if (!isCurrent) exerciseSwapped(e.id).then(() => setSwapSlot(null));
                     }}
                     className={cn(
                       "flex items-center w-full box-border px-3 py-2.5 rounded-xl text-left min-h-12 mb-0.5 gap-2.5",

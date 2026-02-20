@@ -1,5 +1,5 @@
 import { createFileRoute, redirect } from "@tanstack/react-router";
-import { hasProgramData } from "../stores/program-store";
+import { hasProgramData } from "../stores/app-store";
 import { useHistoryData } from "../features/history/use-history-data";
 import { LiftProgressCard } from "../features/history/lift-progress-card";
 import { RecentWorkoutRow } from "../features/history/recent-workout-row";

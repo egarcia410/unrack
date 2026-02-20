@@ -1,4 +1,4 @@
-import { useProgramStore } from "../../stores/program-store";
+import { useAppStore } from "../../stores/app-store";
 import { LIFTS } from "../../constants/program";
 import type { Lift } from "../../types";
 
@@ -28,7 +28,7 @@ export type RecentWorkoutEntry = {
 };
 
 export const useHistoryData = () => {
-  const programData = useProgramStore();
+  const programData = useAppStore();
 
   const personalRecords = programData.workouts
     .filter((workout) => workout.newOneRepMax)

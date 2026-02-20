@@ -1,68 +1,37 @@
 import { useNavigate } from "@tanstack/react-router";
 import { Button } from "@base-ui/react/button";
 import { Check } from "lucide-react";
-import { useProgramStore } from "../../stores/program-store";
-import { useWorkoutStore } from "../../stores/workout-store";
+import { useAppStore } from "../../stores/app-store";
 import { useUIStore } from "../../stores/ui-store";
-import { TEMPLATES, LIFT_ORDER } from "../../constants/program";
-import { ASSISTANCE_WEEKS } from "../../constants/exercises";
-import {
-  getAssistanceForLift,
-  isAssistanceDiscovered,
-  getAssistancePrescription,
-} from "../../lib/exercises";
 import { cn } from "../../lib/cn";
 import { LiveClock } from "../../components/live-clock";
-import { buildSupplementalSets, WARMUP_SETS } from "./workout-utils";
+import {
+  WARMUP_SETS,
+  useActiveWeekDef,
+  useSupplementalSets,
+  useAllAccessoriesDone,
+  useAccessoryProgress,
+} from "./use-workout-selectors";
 
 export const WorkoutBottomBar = () => {
   const navigate = useNavigate();
 
-  const template = useProgramStore.template();
-  const { workoutFinished } = useProgramStore.actions();
+  const { workoutFinished } = useAppStore.actions();
   const { setCeleb } = useUIStore.actions();
 
-  const activeWeek = useWorkoutStore.activeWeek();
-  const activeDay = useWorkoutStore.activeDay();
-  const checked = useWorkoutStore.checked();
-  const amrapReps = useWorkoutStore.amrapReps();
-  const accLog = useWorkoutStore.accLog();
-  const accSets = useWorkoutStore.accSets();
-  const workoutStart = useWorkoutStore.workoutStart();
+  const checked = useAppStore.checked();
+  const workoutStart = useAppStore.workoutStart();
 
-  const variant = TEMPLATES[template];
-  const weekDef = variant.weeks[activeWeek];
-  const liftId = LIFT_ORDER[activeDay % LIFT_ORDER.length];
-
-  const prog = useProgramStore.getState();
-  const accessories = getAssistanceForLift(liftId, prog);
-  const supplementalSets = buildSupplementalSets(variant, weekDef, activeWeek);
+  const weekDef = useActiveWeekDef();
+  const supplementalSets = useSupplementalSets();
+  const allAccDone = useAllAccessoriesDone();
+  const { done: accSetsDone, total: accSetsTotal } = useAccessoryProgress();
 
   const allWarmup = WARMUP_SETS.every((_, i) => checked[`w${i}`]);
   const allMain = weekDef.sets.every((_, i) => checked[`m${i}`]);
   const allSupp = supplementalSets.every((s) => checked[s.key]);
-  const allAcc = accessories.every((a) => {
-    if (!isAssistanceDiscovered(a, prog)) {
-      const log = accLog[a.id];
-      const weekRx = ASSISTANCE_WEEKS[activeWeek] || ASSISTANCE_WEEKS[0];
-      return (accSets[a.id] || 0) >= weekRx.sets && log && parseFloat(log.w || "0") > 0;
-    }
-    const rx = getAssistancePrescription(a, activeWeek, prog, liftId);
-    return (accSets[a.id] || 0) >= rx.sets;
-  });
-  const canFinish = allWarmup && allMain && allSupp && allAcc;
+  const canFinish = allWarmup && allMain && allSupp && allAccDone;
 
-  // Progress counts
-  let accSetsDone = 0;
-  let accSetsTotal = 0;
-  accessories.forEach((a) => {
-    const disc = isAssistanceDiscovered(a, prog);
-    const rx = disc
-      ? getAssistancePrescription(a, activeWeek, prog, liftId)
-      : { sets: (ASSISTANCE_WEEKS[activeWeek] || ASSISTANCE_WEEKS[0]).sets };
-    accSetsTotal += rx.sets;
-    accSetsDone += accSets[a.id] || 0;
-  });
   const warmupDone = WARMUP_SETS.filter((_, i) => checked[`w${i}`]).length;
   const mainDone = weekDef.sets.filter((_, i) => checked[`m${i}`]).length;
   const suppDone = supplementalSets.filter((s) => checked[s.key]).length;
@@ -70,14 +39,7 @@ export const WorkoutBottomBar = () => {
   const total = WARMUP_SETS.length + weekDef.sets.length + supplementalSets.length + accSetsTotal;
 
   const handleFinish = async () => {
-    const result = await workoutFinished({
-      activeWeek,
-      activeDay,
-      amrapReps,
-      accLog,
-      accSets,
-      workoutStart,
-    });
+    const result = await workoutFinished();
     setCeleb({
       type: result.celebType,
       message: result.celebMsg,

@@ -1,4 +1,4 @@
-import { useProgramStore } from "../../stores/program-store";
+import { useAppStore } from "../../stores/app-store";
 import { useUIStore } from "../../stores/ui-store";
 import { LIFT_ORDER } from "../../constants/program";
 import { ASSISTANCE_WEEKS } from "../../constants/exercises";
@@ -27,12 +27,12 @@ const getAllUsedAccessories = (prog: Parameters<typeof getAssistanceForLift>[1])
 export const AssistanceEditor = () => {
   const editAssistance = useUIStore.editAssistance();
   const { setEditAssistance, updateEditAssistance } = useUIStore.actions();
-  const assistanceMaximums = useProgramStore.assistanceMaximums();
-  const unit = useProgramStore.unit();
-  const week = useProgramStore.week();
-  const { assistanceMaximumsSaved } = useProgramStore.actions();
+  const assistanceMaximums = useAppStore.assistanceMaximums();
+  const unit = useAppStore.unit();
+  const week = useAppStore.week();
+  const { assistanceMaximumsSaved } = useAppStore.actions();
 
-  const prog = useProgramStore();
+  const prog = useAppStore();
   const allUsedAccs = getAllUsedAccessories(prog);
   const weightedAccs = allUsedAccs.filter((a) => !a.isBodyweight);
 

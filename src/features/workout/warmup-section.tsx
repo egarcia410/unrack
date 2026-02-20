@@ -1,33 +1,15 @@
 import { Collapsible } from "@base-ui/react/collapsible";
-import { useProgramStore } from "../../stores/program-store";
-import { useWorkoutStore } from "../../stores/workout-store";
-import { TEMPLATES, LIFT_ORDER } from "../../constants/program";
+import { useAppStore } from "../../stores/app-store";
 import { calcWeight } from "../../lib/calc";
-import { getAssistanceForLift } from "../../lib/exercises";
 import { SectionHeader } from "../../components/section-header";
 import { SetRow } from "../../components/set-row";
-import { WARMUP_SETS, buildSupplementalSets, buildAllSets } from "./workout-utils";
+import { WARMUP_SETS, useActiveTrainingMax } from "./use-workout-selectors";
 
 export const WarmupSection = () => {
-  const template = useProgramStore.template();
-  const trainingMaxes = useProgramStore.trainingMaxes();
-  const unit = useProgramStore.unit();
-
-  const activeWeek = useWorkoutStore.activeWeek();
-  const activeDay = useWorkoutStore.activeDay();
-  const checked = useWorkoutStore.checked();
-  const { onSetCheck } = useWorkoutStore.actions();
-
-  const variant = TEMPLATES[template];
-  const weekDef = variant.weeks[activeWeek];
-  const liftId = LIFT_ORDER[activeDay % LIFT_ORDER.length];
-  const trainingMax = trainingMaxes[liftId];
-  const isDeload = activeWeek === 3;
-
-  const prog = useProgramStore.getState();
-  const accessories = getAssistanceForLift(liftId, prog);
-  const supplementalSets = buildSupplementalSets(variant, weekDef, activeWeek);
-  const allSets = buildAllSets(activeWeek, weekDef, supplementalSets, accessories, isDeload);
+  const unit = useAppStore.unit();
+  const trainingMax = useActiveTrainingMax();
+  const checked = useAppStore.checked();
+  const { onSetCheck } = useAppStore.actions();
 
   const allWarmupDone = WARMUP_SETS.every((_, i) => checked[`w${i}`]);
 
@@ -46,7 +28,7 @@ export const WarmupSection = () => {
                 unit={unit}
                 reps={w.reps}
                 pct={w.percentage}
-                onClick={() => onSetCheck(key, allSets)}
+                onClick={() => onSetCheck(key)}
               />
             );
           })}

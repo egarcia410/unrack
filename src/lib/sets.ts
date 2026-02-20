@@ -1,6 +1,5 @@
-import type { SetType, Template, WeekDef } from "../../types";
-import { ASSISTANCE_WEEKS } from "../../constants/exercises";
-import type { Exercise } from "../../types";
+import type { Template, WeekDef, SetType, Exercise } from "../types";
+import { ASSISTANCE_WEEKS } from "../constants/exercises";
 
 export const WARMUP_SETS = [
   { reps: 5, percentage: 0.4 },
@@ -8,13 +7,25 @@ export const WARMUP_SETS = [
   { reps: 3, percentage: 0.6 },
 ] as const;
 
-export const buildSupplementalSets = (
+export type SupplementalSet = {
+  reps: number;
+  percentage: number;
+  key: string;
+};
+
+export type WorkoutSet = {
+  key: string;
+  type: SetType;
+  intensity: number;
+  isDeload: boolean;
+};
+
+export const deriveSupplementalSets = (
   variant: Template,
   weekDef: WeekDef,
   activeWeek: number,
-): Array<{ reps: number; percentage: number; key: string }> => {
-  const supp: Array<{ reps: number; percentage: number; key: string }> = [];
-
+): SupplementalSet[] => {
+  const supp: SupplementalSet[] = [];
   if (variant.supplemental) {
     for (let i = 0; i < variant.supplemental.numSets; i++)
       supp.push({
@@ -41,17 +52,16 @@ export const buildSupplementalSets = (
         key: `s${i}`,
       });
   }
-
   return supp;
 };
 
-export const buildAllSets = (
+export const deriveAllSets = (
   activeWeek: number,
   weekDef: WeekDef,
-  supplementalSets: Array<{ percentage: number; key: string }>,
+  supplementalSets: SupplementalSet[],
   accessories: Exercise[],
   isDeload: boolean,
-): Array<{ key: string; type: SetType; intensity: number; isDeload: boolean }> => [
+): WorkoutSet[] => [
   ...WARMUP_SETS.map((w, i) => ({
     key: `w${i}`,
     type: "warmup" as SetType,

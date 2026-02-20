@@ -1,33 +1,25 @@
 import { Button } from "@base-ui/react/button";
 import { ChevronDown } from "lucide-react";
-import { useProgramStore } from "../../stores/program-store";
-import { useWorkoutStore } from "../../stores/workout-store";
-import { LIFT_ORDER } from "../../constants/program";
+import { useAppStore } from "../../stores/app-store";
 import { ASSISTANCE_WEEKS } from "../../constants/exercises";
-import { getAssistanceForLift } from "../../lib/exercises";
 import { cn } from "../../lib/cn";
 import { WeightInput } from "../../components/weight-input";
 import { AssistanceSetButtons } from "./assistance-set-buttons";
-import type { Exercise } from "../../types";
+import { useActiveLiftId, useAccessoryExercise } from "./use-workout-selectors";
 
 type UndiscoveredAssistanceCardProps = {
   exerciseIndex: number;
 };
 
 export const UndiscoveredAssistanceCard = ({ exerciseIndex }: UndiscoveredAssistanceCardProps) => {
-  const activeWeek = useWorkoutStore.activeWeek();
-  const activeDay = useWorkoutStore.activeDay();
-  const accSets = useWorkoutStore.accSets();
-  const accLog = useWorkoutStore.accLog();
-  const { tapAccSet, untapAccSet, setSwapSlot, setAccLog, setChecked } = useWorkoutStore.actions();
+  const activeWeek = useAppStore.activeWeek();
+  const accSets = useAppStore.accSets();
+  const accLog = useAppStore.accLog();
+  const { tapAccSet, untapAccSet, setSwapSlot, setAccLog, setChecked } = useAppStore.actions();
 
-  const unit = useProgramStore.unit();
-
-  const liftId = LIFT_ORDER[activeDay % LIFT_ORDER.length];
-  const prog = useProgramStore.getState();
-  const accessories = getAssistanceForLift(liftId, prog);
-  const exercise = accessories[exerciseIndex] as Exercise;
-  const isDeload = activeWeek === 3;
+  const unit = useAppStore.unit();
+  const liftId = useActiveLiftId();
+  const exercise = useAccessoryExercise(exerciseIndex);
 
   const weekRx = ASSISTANCE_WEEKS[activeWeek] || ASSISTANCE_WEEKS[0];
   const log = accLog[exercise.id] || {};
@@ -53,22 +45,6 @@ export const UndiscoveredAssistanceCard = ({ exerciseIndex }: UndiscoveredAssist
         delete next[`a_${exercise.id}`];
         return next;
       });
-  };
-
-  const handleTapSet = () => {
-    tapAccSet(
-      exercise.id,
-      weekRx.sets,
-      exercise.isBodyweight ? "acc_bw" : "acc_wt",
-      weekRx.percentage,
-      isDeload,
-    );
-    if (setsDone + 1 >= weekRx.sets && (exercise.isBodyweight || hasWeight)) {
-      setChecked((prev) => ({
-        ...prev,
-        [`a_${exercise.id}`]: true,
-      }));
-    }
   };
 
   return (
@@ -118,8 +94,8 @@ export const UndiscoveredAssistanceCard = ({ exerciseIndex }: UndiscoveredAssist
       <AssistanceSetButtons
         exerciseId={exercise.id}
         totalSets={weekRx.sets}
-        onTapSet={handleTapSet}
-        onUntapSet={() => untapAccSet(exercise.id, weekRx.sets)}
+        onTapSet={() => tapAccSet(exercise.id)}
+        onUntapSet={() => untapAccSet(exercise.id)}
       />
     </div>
   );
