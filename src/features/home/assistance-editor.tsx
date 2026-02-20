@@ -85,8 +85,8 @@ export const AssistanceEditor = () => {
       </div>
       {editAssistance && (
         <PrimaryButton
-          onClick={async () => {
-            await assistanceMaximumsSaved(editAssistance);
+          onClick={() => {
+            assistanceMaximumsSaved(editAssistance);
             setEditAssistance(null);
           }}
           size="small"

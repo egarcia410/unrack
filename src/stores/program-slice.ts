@@ -51,17 +51,17 @@ export type ProgramState = {
 };
 
 export type ProgramActions = {
-  loadProgram: () => Promise<void>;
-  programCreated: (oneRepMaxes: Record<string, string>) => Promise<void>;
-  programReset: () => Promise<void>;
-  templateChanged: (templateId: TemplateId) => Promise<void>;
+  loadProgram: () => void;
+  programCreated: (oneRepMaxes: Record<string, string>) => void;
+  programReset: () => void;
+  templateChanged: (templateId: TemplateId) => void;
   exerciseSwapped: (newExId: string) => Promise<void>;
-  unitToggled: () => Promise<void>;
-  modeToggled: () => Promise<void>;
-  trainingMaxPercentChanged: (newPct: number) => Promise<void>;
-  oneRepMaxesSaved: (editOneRepMax: Record<string, string>) => Promise<void>;
-  assistanceMaximumsSaved: (editAssistance: Record<string, string | number>) => Promise<void>;
-  workoutFinished: () => Promise<{
+  unitToggled: () => void;
+  modeToggled: () => void;
+  trainingMaxPercentChanged: (newPct: number) => void;
+  oneRepMaxesSaved: (editOneRepMax: Record<string, string>) => void;
+  assistanceMaximumsSaved: (editAssistance: Record<string, string | number>) => void;
+  workoutFinished: () => {
     celebType: "done" | "pr" | "warn";
     celebMsg: string;
     celebSub: string;
@@ -70,17 +70,17 @@ export type ProgramActions = {
     _liftId?: string;
     _suggestedOneRepMax?: number;
     _suggestedTrainingMax?: number;
-  }>;
-  weekAdvanced: () => Promise<{
+  };
+  weekAdvanced: () => {
     type: "cycle" | "advance";
     message?: string;
     subtitle?: string;
-  }>;
+  };
   trainingMaxAdjusted: (
     liftId: string,
     suggestedOneRepMax: number,
     suggestedTrainingMax: number,
-  ) => Promise<void>;
+  ) => void;
 };
 
 const inferUnit = (): Unit =>
@@ -122,14 +122,14 @@ export const extractProgramData = (state: ProgramState): ProgramData => ({
   mode: useUIStore.getState().mode,
 });
 
-const save = async (state: ProgramState, set: AppSet, updates: Partial<ProgramState>) => {
+const save = (state: ProgramState, set: AppSet, updates: Partial<ProgramState>) => {
   set(updates);
-  await saveData(extractProgramData({ ...state, ...updates } as ProgramState));
+  saveData(extractProgramData({ ...state, ...updates } as ProgramState));
 };
 
 export const createProgramActions = (set: AppSet, get: AppGet): ProgramActions => ({
-  loadProgram: async () => {
-    const saved = await loadData();
+  loadProgram: () => {
+    const saved = loadData();
     if (saved) {
       const { mode, ...programFields } = saved;
       set({ ...programFields });
@@ -138,7 +138,7 @@ export const createProgramActions = (set: AppSet, get: AppGet): ProgramActions =
     set({ loading: false });
   },
 
-  programCreated: async (oneRepMaxes) => {
+  programCreated: (oneRepMaxes) => {
     const state = get();
 
     const parsedOneRepMaxes: Record<string, number> = {};
@@ -149,20 +149,20 @@ export const createProgramActions = (set: AppSet, get: AppGet): ProgramActions =
       trainingMaxes[lift.id] = roundToNearest(orm * (state.trainingMaxPercent / 100));
     });
 
-    await save(state, set, {
+    save(state, set, {
       trainingMaxes,
       oneRepMaxes: parsedOneRepMaxes,
       timestamp: Date.now(),
     });
   },
 
-  programReset: async () => {
-    await clearData();
+  programReset: () => {
+    clearData();
     set({ ...programInitialState, loading: false });
   },
 
-  templateChanged: async (templateId) => {
-    await save(get(), set, { template: templateId });
+  templateChanged: (templateId) => {
+    save(get(), set, { template: templateId });
   },
 
   exerciseSwapped: async (newExId) => {
@@ -174,10 +174,10 @@ export const createProgramActions = (set: AppSet, get: AppGet): ProgramActions =
     const defaults = (await import("../constants/exercises")).DEFAULT_ACC;
     const liftSlots = [...(current[liftId] || defaults[liftId])];
     liftSlots[slotIdx] = newExId;
-    await save(state, set, { assistanceSlots: { ...current, [liftId]: liftSlots } });
+    save(state, set, { assistanceSlots: { ...current, [liftId]: liftSlots } });
   },
 
-  unitToggled: async () => {
+  unitToggled: () => {
     const state = get();
     const newUnit: Unit = state.unit === "lb" ? "kg" : "lb";
     const factor = newUnit === "kg" ? 0.453592 : 2.20462;
@@ -193,7 +193,7 @@ export const createProgramActions = (set: AppSet, get: AppGet): ProgramActions =
     Object.entries(state.assistanceMaximums || {}).forEach(([k, v]) => {
       newAssistanceMaximums[k] = roundToNearest(v * factor);
     });
-    await save(state, set, {
+    save(state, set, {
       unit: newUnit,
       oneRepMaxes: newOneRepMaxes,
       trainingMaxes: newTrainingMaxes,
@@ -201,25 +201,25 @@ export const createProgramActions = (set: AppSet, get: AppGet): ProgramActions =
     });
   },
 
-  modeToggled: async () => {
+  modeToggled: () => {
     const state = get();
     const uiStore = useUIStore.getState();
     const next = uiStore.mode === "dark" ? ("light" as const) : ("dark" as const);
     uiStore.actions.setMode(next);
-    await save(state, set, {});
+    save(state, set, {});
   },
 
-  trainingMaxPercentChanged: async (newPct) => {
+  trainingMaxPercentChanged: (newPct) => {
     const state = get();
     const clamped = Math.max(80, Math.min(95, newPct));
     const newTrainingMaxes: Record<string, number> = {};
     LIFTS.forEach((lift) => {
       newTrainingMaxes[lift.id] = roundToNearest(state.oneRepMaxes[lift.id] * (clamped / 100));
     });
-    await save(state, set, { trainingMaxPercent: clamped, trainingMaxes: newTrainingMaxes });
+    save(state, set, { trainingMaxPercent: clamped, trainingMaxes: newTrainingMaxes });
   },
 
-  oneRepMaxesSaved: async (editOneRepMax) => {
+  oneRepMaxesSaved: (editOneRepMax) => {
     const state = get();
     const newOneRepMaxes: Record<string, number> = {};
     const newTrainingMaxes: Record<string, number> = {};
@@ -228,19 +228,19 @@ export const createProgramActions = (set: AppSet, get: AppGet): ProgramActions =
       newOneRepMaxes[lift.id] = val;
       newTrainingMaxes[lift.id] = roundToNearest(val * (state.trainingMaxPercent / 100));
     });
-    await save(state, set, { oneRepMaxes: newOneRepMaxes, trainingMaxes: newTrainingMaxes });
+    save(state, set, { oneRepMaxes: newOneRepMaxes, trainingMaxes: newTrainingMaxes });
   },
 
-  assistanceMaximumsSaved: async (editAssistance) => {
+  assistanceMaximumsSaved: (editAssistance) => {
     const state = get();
     const newMaximums = { ...state.assistanceMaximums };
     Object.entries(editAssistance).forEach(([id, val]) => {
       newMaximums[id] = parseInt(String(val)) || 0;
     });
-    await save(state, set, { assistanceMaximums: newMaximums });
+    save(state, set, { assistanceMaximums: newMaximums });
   },
 
-  workoutFinished: async () => {
+  workoutFinished: () => {
     const state = get();
     const { activeWeek, activeDay, amrapReps, accLog, workoutStart } = state;
     const programData = extractProgramData(state);
@@ -325,7 +325,7 @@ export const createProgramActions = (set: AppSet, get: AppGet): ProgramActions =
     };
     if (newOneRepMax)
       updates.oneRepMaxes = { ...state.oneRepMaxes, [liftId]: newOneRepMax.newValue };
-    await save(state, set, updates);
+    save(state, set, updates);
     const next = { ...state, ...updates };
 
     const durationMin = Math.floor(durationSec / 60);
@@ -380,7 +380,7 @@ export const createProgramActions = (set: AppSet, get: AppGet): ProgramActions =
     };
   },
 
-  weekAdvanced: async () => {
+  weekAdvanced: () => {
     const state = get();
     const programData = extractProgramData(state);
     const template = TEMPLATES[state.template];
@@ -414,7 +414,7 @@ export const createProgramActions = (set: AppSet, get: AppGet): ProgramActions =
         .forEach((a) => {
           newBodyweightBaselines[a.id] = (newBodyweightBaselines[a.id] || 8) + 1;
         });
-      await save(state, set, {
+      save(state, set, {
         cycle: state.cycle + 1,
         week: 0,
         trainingMaxes: newTrainingMaxes,
@@ -427,14 +427,14 @@ export const createProgramActions = (set: AppSet, get: AppGet): ProgramActions =
         subtitle: "TMs updated. Assistance progressed.",
       };
     } else {
-      await save(state, set, { week: nextWeek });
+      save(state, set, { week: nextWeek });
       return { type: "advance" as const };
     }
   },
 
-  trainingMaxAdjusted: async (liftId, suggestedOneRepMax, suggestedTrainingMax) => {
+  trainingMaxAdjusted: (liftId, suggestedOneRepMax, suggestedTrainingMax) => {
     const state = get();
-    await save(state, set, {
+    save(state, set, {
       oneRepMaxes: { ...state.oneRepMaxes, [liftId]: suggestedOneRepMax },
       trainingMaxes: { ...state.trainingMaxes, [liftId]: suggestedTrainingMax },
     });

@@ -24,8 +24,8 @@ export const WeekCompleteBanner = () => {
     ? "Start Cycle " + (cycle + 1)
     : "Start " + variant.weeks[week + 1].label + " Phase";
 
-  const handleAdvanceWeek = async () => {
-    const result = await weekAdvanced();
+  const handleAdvanceWeek = () => {
+    const result = weekAdvanced();
     if (result.type === "cycle") {
       setCeleb({
         type: "cycle",

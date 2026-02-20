@@ -16,10 +16,10 @@ export const OneRepMaxEditor = () => {
 
   return (
     <Form
-      onSubmit={async (event) => {
+      onSubmit={(event) => {
         event.preventDefault();
         if (editOneRepMax) {
-          await oneRepMaxesSaved(editOneRepMax);
+          oneRepMaxesSaved(editOneRepMax);
           setEditOneRepMax(null);
         }
       }}

@@ -7,7 +7,6 @@ import {
   BW_DELOAD_DROP,
   FATIGUE,
 } from "../constants/exercises";
-import { CAT_MIGRATE } from "../constants/migrations";
 import { roundToNearest } from "./calc";
 
 export function findExercise(id: string): Exercise | undefined {
@@ -15,16 +14,7 @@ export function findExercise(id: string): Exercise | undefined {
 }
 
 export function getAssistanceForLift(liftId: string, prog: ProgramData): Exercise[] {
-  let slots = prog.assistanceSlots?.[liftId] || DEFAULT_ACC[liftId];
-  // Migrate from old object format {push:"id",pull:"id","legs/core":"id"} to array
-  if (slots && !Array.isArray(slots)) {
-    const obj = slots as unknown as Record<string, string>;
-    slots = [
-      obj.push || obj["legs/core"] || DEFAULT_ACC[liftId][0],
-      obj.pull || DEFAULT_ACC[liftId][1],
-      obj["legs/core"] || obj.push || DEFAULT_ACC[liftId][2],
-    ];
-  }
+  const slots = prog.assistanceSlots?.[liftId] || DEFAULT_ACC[liftId];
   return slots.map((exId, i) => {
     let exercise: Exercise | undefined = EXERCISE_LIB.find((e) => e.id === exId);
     if (!exercise && prog.customExercises?.[exId]) exercise = prog.customExercises[exId];
@@ -67,7 +57,7 @@ export function getAssistancePrescription(
   }
   const week = ASSISTANCE_WEEKS[weekIdx] || ASSISTANCE_WEEKS[0];
   const maximum = prog.assistanceMaximums?.[acc.id] || 0;
-  const category = CAT_MIGRATE[acc.category] || acc.category;
+  const category = acc.category;
   const fatigued = !!(liftId && FATIGUE[liftId] && FATIGUE[liftId].includes(category));
   const fatiguePct = fatigued ? 0.9 : 1;
   return {

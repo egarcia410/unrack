@@ -27,9 +27,9 @@ const SetupPage = () => {
         Enter Your 1 Rep Maxes
       </div>
       <Form
-        onSubmit={async (event) => {
+        onSubmit={(event) => {
           event.preventDefault();
-          await programCreated(oneRepMaxes);
+          programCreated(oneRepMaxes);
           navigate({ to: "/" });
         }}
       >

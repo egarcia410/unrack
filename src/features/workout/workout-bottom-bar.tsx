@@ -38,8 +38,8 @@ export const WorkoutBottomBar = () => {
   const done = warmupDone + mainDone + suppDone + accSetsDone;
   const total = WARMUP_SETS.length + weekDef.sets.length + supplementalSets.length + accSetsTotal;
 
-  const handleFinish = async () => {
-    const result = await workoutFinished();
+  const handleFinish = () => {
+    const result = workoutFinished();
     setCeleb({
       type: result.celebType,
       message: result.celebMsg,

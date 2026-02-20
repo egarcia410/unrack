@@ -28,3 +28,11 @@
 - Extract `initialState` constant — reuse in store init and reset actions
 - Never use inline selectors (`useStore((s) => s.foo)`) in components
 - Never use `.getState()` outside store files — export static selectors for non-React contexts (route guards)
+
+## Derived State & Selectors
+- Derive computed values from stores using composed selector hooks — not helper functions that take store data as arguments
+- Components should never pull broad store data (`useProgramData()`) just to pass it into a function — encapsulate that in a hook
+- Colocate selector hooks with the feature that consumes them (e.g. `src/features/workout/use-workout-selectors.ts`)
+- Hooks can compose other hooks and read from multiple stores — they are the view model layer between stores and components
+- Parameterized selectors are hooks that accept arguments (e.g. `useAccessoryExercise(exerciseIndex)`)
+- Pure static constants and truly pure functions (no store data as input) are fine as standalone utilities in `src/lib/`
