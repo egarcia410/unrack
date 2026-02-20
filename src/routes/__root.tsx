@@ -1,4 +1,3 @@
-import { useEffect } from "react";
 import { createRootRoute, Outlet } from "@tanstack/react-router";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useAppStore } from "../stores/app-store";
@@ -6,37 +5,19 @@ import { initTheme } from "../stores/ui-store";
 
 const queryClient = new QueryClient();
 
-const RootLayout = () => {
-  const loading = useAppStore.loading();
-  const { loadProgram } = useAppStore.actions();
-
-  useEffect(() => {
-    initTheme();
-  }, []);
-
-  useEffect(() => {
-    loadProgram();
-  }, [loadProgram]);
-
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-th-bg text-th-t font-sans text-sm leading-normal transition-colors duration-200 flex items-center justify-center h-screen">
-        <div className="text-4xl font-extrabold font-mono text-th-a tracking-wide">unrack</div>
-      </div>
-    );
-  }
-
-  return (
-    <div className="min-h-screen bg-th-bg text-th-t font-sans text-sm leading-normal transition-colors duration-200">
-      <Outlet />
-    </div>
-  );
-};
-
 export const Route = createRootRoute({
+  beforeLoad: () => {
+    const state = useAppStore.getState();
+    if (state.loading) {
+      state.actions.loadProgram();
+    }
+    initTheme();
+  },
   component: () => (
     <QueryClientProvider client={queryClient}>
-      <RootLayout />
+      <div className="min-h-screen bg-th-bg text-th-t font-sans text-sm leading-normal transition-colors duration-200">
+        <Outlet />
+      </div>
     </QueryClientProvider>
   ),
 });
