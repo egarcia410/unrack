@@ -5,7 +5,6 @@ import { roundToNearest, epley, calcWeight } from "../lib/calc";
 import { getAssistanceForLift, getAllAssistanceExercises } from "../lib/exercises";
 import { loadData, saveData, clearData } from "../lib/storage";
 import { createStore } from "./polaris";
-import { useUIStore } from "./ui-store";
 import { useWorkoutStore } from "./workout-store";
 
 type ProgramState = {
@@ -85,7 +84,6 @@ export const extractProgramData = (state: ProgramState): ProgramData => ({
   assistanceSlots: state.assistanceSlots,
   customExercises: state.customExercises,
   timestamp: state.timestamp,
-  mode: useUIStore.getState().mode,
 });
 
 export const useProgramStore = createStore("program", {
@@ -94,9 +92,7 @@ export const useProgramStore = createStore("program", {
   init: (set) => {
     const saved = loadData();
     if (saved) {
-      const { mode, ...programFields } = saved;
-      set(programFields as Partial<ProgramState>);
-      if (mode) useUIStore.actions.setMode(mode);
+      set(saved as Partial<ProgramState>);
     }
   },
 
@@ -166,13 +162,6 @@ export const useProgramStore = createStore("program", {
           trainingMaxes: newTrainingMaxes,
           assistanceMaximums: newAssistanceMaximums,
         });
-      },
-
-      modeToggled: () => {
-        const uiState = useUIStore.getState();
-        const next = uiState.mode === "dark" ? ("light" as const) : ("dark" as const);
-        useUIStore.actions.setMode(next);
-        save({});
       },
 
       trainingMaxPercentChanged: (newPct: number) => {

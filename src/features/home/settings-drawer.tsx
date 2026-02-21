@@ -1,6 +1,5 @@
 import { Sun, Moon } from "lucide-react";
 import { Button } from "@base-ui/react/button";
-import { useProgramStore } from "../../stores/program-store";
 import { useUIStore } from "../../stores/ui-store";
 import { Drawer } from "../../components/drawer";
 import { SectionLabel } from "../../components/section-label";
@@ -9,8 +8,7 @@ import { AssistanceEditor } from "./assistance-editor";
 import { ProgramSettings } from "./program-settings";
 
 export const SettingsDrawer = () => {
-  const { showSettings, mode, closeSettings, setShowConfirm } = useUIStore();
-  const { modeToggled } = useProgramStore();
+  const { showSettings, mode, closeSettings, setShowConfirm, toggleMode } = useUIStore();
 
   return (
     <Drawer
@@ -23,7 +21,7 @@ export const SettingsDrawer = () => {
       <div className="flex justify-between items-center mb-5">
         <SectionLabel>Theme</SectionLabel>
         <Button
-          onClick={modeToggled}
+          onClick={toggleMode}
           className="flex items-center gap-2 bg-th-s2 border border-th-b rounded-xl px-3.5 py-2 cursor-pointer min-h-11"
         >
           <span className="text-th-t3 flex">

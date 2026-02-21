@@ -1,6 +1,22 @@
 import type { ThemeMode, CelebState } from "../types";
 import { createStore } from "./polaris";
 
+const THEME_KEY = "unrack-theme";
+
+const loadMode = (): ThemeMode => {
+  try {
+    const stored = localStorage.getItem(THEME_KEY);
+    if (stored === "light" || stored === "dark") return stored;
+    // Migration: check legacy program data
+    const program = localStorage.getItem("unrack-v1");
+    if (program) {
+      const parsed = JSON.parse(program);
+      if (parsed.mode === "light" || parsed.mode === "dark") return parsed.mode;
+    }
+  } catch {}
+  return "dark";
+};
+
 type EditOneRepMaxState = {
   [liftId: string]: string;
 };
@@ -21,7 +37,7 @@ type UIState = {
 };
 
 const initialState: UIState = {
-  mode: "dark",
+  mode: loadMode(),
   showConfirm: false,
   showSettings: false,
   settingsExpanded: false,
@@ -33,10 +49,15 @@ const initialState: UIState = {
 
 export const useUIStore = createStore("ui", {
   state: initialState,
-  actions: (set) => ({
+  actions: (set, get) => ({
     setMode: (mode: ThemeMode) => {
       document.documentElement.classList.toggle("dark", mode === "dark");
+      localStorage.setItem(THEME_KEY, mode);
       set({ mode });
+    },
+    toggleMode: () => {
+      const next = get().mode === "dark" ? ("light" as const) : ("dark" as const);
+      useUIStore.actions.setMode(next);
     },
     setShowConfirm: (show: boolean) => set({ showConfirm: show }),
     setShowSettings: (show: boolean) => set({ showSettings: show }),

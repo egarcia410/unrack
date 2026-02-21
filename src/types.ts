@@ -110,7 +110,6 @@ export type ProgramData = {
   bodyweightBaselines: Record<string, number>;
   assistanceSlots?: Record<string, string[]>;
   customExercises?: Record<string, Exercise>;
-  mode?: ThemeMode;
   timestamp: number;
 };
 
