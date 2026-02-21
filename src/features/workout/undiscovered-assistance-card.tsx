@@ -1,6 +1,7 @@
 import { Button } from "@base-ui/react/button";
 import { ChevronDown } from "lucide-react";
-import { useAppStore } from "../../stores/app-store";
+import { useProgramStore } from "../../stores/program-store";
+import { useWorkoutStore } from "../../stores/workout-store";
 import { ASSISTANCE_WEEKS } from "../../constants/exercises";
 import { cn } from "../../lib/cn";
 import { WeightInput } from "../../components/weight-input";
@@ -12,12 +13,17 @@ type UndiscoveredAssistanceCardProps = {
 };
 
 export const UndiscoveredAssistanceCard = ({ exerciseIndex }: UndiscoveredAssistanceCardProps) => {
-  const activeWeek = useAppStore.activeWeek();
-  const accSets = useAppStore.accSets();
-  const accLog = useAppStore.accLog();
-  const { tapAccSet, untapAccSet, setSwapSlot, setAccLog, setChecked } = useAppStore.actions();
-
-  const unit = useAppStore.unit();
+  const {
+    activeWeek,
+    accSets,
+    accLog,
+    tapAccSet,
+    untapAccSet,
+    setSwapSlot,
+    setAccLog,
+    setChecked,
+  } = useWorkoutStore();
+  const { unit } = useProgramStore();
   const liftId = useActiveLiftId();
   const exercise = useAccessoryExercise(exerciseIndex);
 

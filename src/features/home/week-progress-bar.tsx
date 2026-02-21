@@ -1,11 +1,9 @@
 import { Progress } from "@base-ui/react/progress";
-import { useAppStore } from "../../stores/app-store";
+import { useProgramStore } from "../../stores/program-store";
 import { LIFT_ORDER } from "../../constants/program";
 
 export const WeekProgressBar = () => {
-  const workouts = useAppStore.workouts();
-  const cycle = useAppStore.cycle();
-  const week = useAppStore.week();
+  const { workouts, cycle, week } = useProgramStore();
 
   const weekDone = workouts.filter((w) => w.cycle === cycle && w.week === week);
   const progress = weekDone.length;

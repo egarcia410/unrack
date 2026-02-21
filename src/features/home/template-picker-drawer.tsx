@@ -1,5 +1,5 @@
 import { Button } from "@base-ui/react/button";
-import { useAppStore } from "../../stores/app-store";
+import { useProgramStore } from "../../stores/program-store";
 import { useUIStore } from "../../stores/ui-store";
 import { TEMPLATES } from "../../constants/program";
 import { Drawer } from "../../components/drawer";
@@ -7,10 +7,8 @@ import { cn } from "../../lib/cn";
 import type { TemplateId } from "../../types";
 
 export const TemplatePickerDrawer = () => {
-  const showTemplPicker = useUIStore.showTemplPicker();
-  const { setShowTemplPicker } = useUIStore.actions();
-  const template = useAppStore.template();
-  const { templateChanged } = useAppStore.actions();
+  const { showTemplPicker, setShowTemplPicker } = useUIStore();
+  const { template, templateChanged } = useProgramStore();
 
   return (
     <Drawer

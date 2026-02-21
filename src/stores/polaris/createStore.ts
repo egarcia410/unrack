@@ -177,7 +177,7 @@ export function createStore<
 
         if (!result || typeof result.then !== "function") {
           runHook("afterAction", actionName, args);
-          return;
+          return result;
         }
 
         tracker.setPending(actionName);
@@ -250,17 +250,21 @@ export function createStore<
   // THE HOOK
   // =====================================================================
 
+  const stateKeys = Object.keys(initial);
+
   function useHook(): StoreHookReturn<TState, TComputed, TActions> {
     if (!_initRun && def.init) triggerInit();
     const snap = useSnapshot(state) as TState;
     const statusSnap = useSnapshot(statusProxy);
     const computed = applyComputed(snapshot(state) as TState, computedMap);
-    return {
-      ...snap,
-      ...computed,
-      ...boundActions,
-      status: statusSnap.current,
-    } as StoreHookReturn<TState, TComputed, TActions>;
+    const result = { ...computed, ...boundActions, status: statusSnap.current };
+    for (const key of stateKeys) {
+      Object.defineProperty(result, key, {
+        get: () => (snap as any)[key],
+        enumerable: true,
+      });
+    }
+    return result as StoreHookReturn<TState, TComputed, TActions>;
   }
 
   // --- Static properties ---

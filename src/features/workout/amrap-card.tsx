@@ -1,5 +1,6 @@
 import { Minus, Plus, ArrowRight } from "lucide-react";
-import { useAppStore } from "../../stores/app-store";
+import { useProgramStore } from "../../stores/program-store";
+import { useWorkoutStore } from "../../stores/workout-store";
 import { calcWeight, epley } from "../../lib/calc";
 import { cn } from "../../lib/cn";
 import { PRRing } from "../../components/pr-ring";
@@ -12,15 +13,12 @@ type AmrapCardProps = {
 };
 
 export const AmrapCard = ({ setIndex }: AmrapCardProps) => {
-  const unit = useAppStore.unit();
-  const oneRepMaxes = useAppStore.oneRepMaxes();
+  const { unit, oneRepMaxes } = useProgramStore();
   const trainingMax = useActiveTrainingMax();
   const liftId = useActiveLiftId();
   const weekDef = useActiveWeekDef();
 
-  const checked = useAppStore.checked();
-  const amrapReps = useAppStore.amrapReps();
-  const { activateAmrap, setAmrapReps } = useAppStore.actions();
+  const { checked, amrapReps, activateAmrap, setAmrapReps } = useWorkoutStore();
 
   const set = weekDef.sets[setIndex];
   const setKey = `m${setIndex}`;

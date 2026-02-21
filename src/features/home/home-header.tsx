@@ -5,7 +5,7 @@ import { IconButton } from "../../components/icon-button";
 
 export const HomeHeader = () => {
   const navigate = useNavigate();
-  const { setShowSettings } = useUIStore.actions();
+  const { setShowSettings } = useUIStore();
 
   return (
     <header className="flex justify-between items-center py-2 pb-4 min-h-11">

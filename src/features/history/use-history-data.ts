@@ -1,4 +1,4 @@
-import { useAppStore } from "../../stores/app-store";
+import { useProgramStore } from "../../stores/program-store";
 import { LIFTS } from "../../constants/program";
 import type { Lift } from "../../types";
 
@@ -28,9 +28,9 @@ export type RecentWorkoutEntry = {
 };
 
 export const useHistoryData = () => {
-  const programData = useAppStore();
+  const programState = useProgramStore();
 
-  const personalRecords = programData.workouts
+  const personalRecords = programState.workouts
     .filter((workout) => workout.newOneRepMax)
     .map((workout) => ({
       ...workout.newOneRepMax!,
@@ -43,7 +43,7 @@ export const useHistoryData = () => {
       .filter((record) => record.lift === lift.id)
       .sort((a, b) => a.datetime - b.datetime);
     const recordValues = liftRecords.map((record) => record.newValue);
-    const current = programData.oneRepMaxes[lift.id];
+    const current = programState.oneRepMaxes[lift.id];
     const first = recordValues.length > 0 ? recordValues[0] : current;
     const best = recordValues.length > 0 ? Math.max(...recordValues) : current;
     const lastPersonalRecord = liftRecords.length > 0 ? liftRecords[liftRecords.length - 1] : null;
@@ -57,7 +57,7 @@ export const useHistoryData = () => {
     };
   });
 
-  const recentWorkouts: RecentWorkoutEntry[] = programData.workouts
+  const recentWorkouts: RecentWorkoutEntry[] = programState.workouts
     .slice(-8)
     .reverse()
     .map((workout) => {
@@ -76,7 +76,7 @@ export const useHistoryData = () => {
     });
 
   return {
-    programData,
+    programData: programState,
     liftProgressEntries,
     recentWorkouts,
   };

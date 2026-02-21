@@ -1,4 +1,5 @@
-import { useAppStore, useProgramData } from "../../stores/app-store";
+import { useProgramStore, extractProgramData } from "../../stores/program-store";
+import { useWorkoutStore } from "../../stores/workout-store";
 import { TEMPLATES, LIFT_ORDER } from "../../constants/program";
 import { ASSISTANCE_WEEKS } from "../../constants/exercises";
 import {
@@ -10,35 +11,36 @@ import { deriveSupplementalSets } from "../../lib/sets";
 export { WARMUP_SETS } from "../../lib/sets";
 
 export const useActiveLiftId = () => {
-  const activeDay = useAppStore.activeDay();
+  const { activeDay } = useWorkoutStore();
   return LIFT_ORDER[activeDay % LIFT_ORDER.length];
 };
 
 export const useActiveVariant = () => {
-  const template = useAppStore.template();
+  const { template } = useProgramStore();
   return TEMPLATES[template];
 };
 
 export const useActiveWeekDef = () => {
   const variant = useActiveVariant();
-  const activeWeek = useAppStore.activeWeek();
+  const { activeWeek } = useWorkoutStore();
   return variant.weeks[activeWeek];
 };
 
 export const useActiveTrainingMax = () => {
-  const trainingMaxes = useAppStore.trainingMaxes();
+  const { trainingMaxes } = useProgramStore();
   const liftId = useActiveLiftId();
   return trainingMaxes[liftId];
 };
 
 export const useIsDeload = () => {
-  const activeWeek = useAppStore.activeWeek();
+  const { activeWeek } = useWorkoutStore();
   return activeWeek === 3;
 };
 
 export const useAccessories = () => {
   const liftId = useActiveLiftId();
-  const programData = useProgramData();
+  const programState = useProgramStore();
+  const programData = extractProgramData(programState);
   return getAssistanceForLift(liftId, programData);
 };
 
@@ -48,15 +50,17 @@ export const useAccessoryExercise = (exerciseIndex: number) => {
 };
 
 export const useAssistancePrescription = (exerciseIndex: number) => {
-  const activeWeek = useAppStore.activeWeek();
+  const { activeWeek } = useWorkoutStore();
   const liftId = useActiveLiftId();
-  const programData = useProgramData();
+  const programState = useProgramStore();
+  const programData = extractProgramData(programState);
   const exercise = useAccessoryExercise(exerciseIndex);
   return getAssistancePrescription(exercise, activeWeek, programData, liftId);
 };
 
 export const useIsExerciseDiscovered = (exerciseIndex: number) => {
-  const programData = useProgramData();
+  const programState = useProgramStore();
+  const programData = extractProgramData(programState);
   const exercise = useAccessoryExercise(exerciseIndex);
   return isAssistanceDiscovered(exercise, programData);
 };
@@ -64,17 +68,17 @@ export const useIsExerciseDiscovered = (exerciseIndex: number) => {
 export const useSupplementalSets = () => {
   const variant = useActiveVariant();
   const weekDef = useActiveWeekDef();
-  const activeWeek = useAppStore.activeWeek();
+  const { activeWeek } = useWorkoutStore();
   return deriveSupplementalSets(variant, weekDef, activeWeek);
 };
 
 export const useAllAccessoriesDone = () => {
   const accessories = useAccessories();
-  const activeWeek = useAppStore.activeWeek();
+  const { activeWeek } = useWorkoutStore();
   const liftId = useActiveLiftId();
-  const accSets = useAppStore.accSets();
-  const accLog = useAppStore.accLog();
-  const programData = useProgramData();
+  const { accSets, accLog } = useWorkoutStore();
+  const programState = useProgramStore();
+  const programData = extractProgramData(programState);
 
   return accessories.every((a) => {
     if (!isAssistanceDiscovered(a, programData)) {
@@ -89,10 +93,11 @@ export const useAllAccessoriesDone = () => {
 
 export const useAccessoryProgress = () => {
   const accessories = useAccessories();
-  const activeWeek = useAppStore.activeWeek();
+  const { activeWeek } = useWorkoutStore();
   const liftId = useActiveLiftId();
-  const accSetsState = useAppStore.accSets();
-  const programData = useProgramData();
+  const { accSets } = useWorkoutStore();
+  const programState = useProgramStore();
+  const programData = extractProgramData(programState);
 
   let done = 0;
   let total = 0;
@@ -102,7 +107,7 @@ export const useAccessoryProgress = () => {
       ? getAssistancePrescription(a, activeWeek, programData, liftId)
       : { sets: (ASSISTANCE_WEEKS[activeWeek] || ASSISTANCE_WEEKS[0]).sets };
     total += rx.sets;
-    done += accSetsState[a.id] || 0;
+    done += accSets[a.id] || 0;
   });
   return { done, total };
 };

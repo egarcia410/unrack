@@ -1,7 +1,8 @@
 import { useNavigate } from "@tanstack/react-router";
 import { Button } from "@base-ui/react/button";
 import { Check } from "lucide-react";
-import { useAppStore } from "../../stores/app-store";
+import { useProgramStore } from "../../stores/program-store";
+import { useWorkoutStore } from "../../stores/workout-store";
 import { useUIStore } from "../../stores/ui-store";
 import { cn } from "../../lib/cn";
 import { LiveClock } from "../../components/live-clock";
@@ -16,11 +17,10 @@ import {
 export const WorkoutBottomBar = () => {
   const navigate = useNavigate();
 
-  const { workoutFinished } = useAppStore.actions();
-  const { setCeleb } = useUIStore.actions();
+  const { workoutFinished } = useProgramStore();
+  const { setCeleb } = useUIStore();
 
-  const checked = useAppStore.checked();
-  const workoutStart = useAppStore.workoutStart();
+  const { checked, workoutStart } = useWorkoutStore();
 
   const weekDef = useActiveWeekDef();
   const supplementalSets = useSupplementalSets();

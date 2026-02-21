@@ -1,15 +1,15 @@
 import { Collapsible } from "@base-ui/react/collapsible";
-import { useAppStore } from "../../stores/app-store";
+import { useProgramStore } from "../../stores/program-store";
+import { useWorkoutStore } from "../../stores/workout-store";
 import { calcWeight } from "../../lib/calc";
 import { SectionHeader } from "../../components/section-header";
 import { SetRow } from "../../components/set-row";
 import { WARMUP_SETS, useActiveTrainingMax } from "./use-workout-selectors";
 
 export const WarmupSection = () => {
-  const unit = useAppStore.unit();
+  const { unit } = useProgramStore();
   const trainingMax = useActiveTrainingMax();
-  const checked = useAppStore.checked();
-  const { onSetCheck } = useAppStore.actions();
+  const { checked, onSetCheck } = useWorkoutStore();
 
   const allWarmupDone = WARMUP_SETS.every((_, i) => checked[`w${i}`]);
 

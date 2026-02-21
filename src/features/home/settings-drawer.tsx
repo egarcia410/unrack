@@ -1,6 +1,6 @@
 import { Sun, Moon } from "lucide-react";
 import { Button } from "@base-ui/react/button";
-import { useAppStore } from "../../stores/app-store";
+import { useProgramStore } from "../../stores/program-store";
 import { useUIStore } from "../../stores/ui-store";
 import { Drawer } from "../../components/drawer";
 import { SectionLabel } from "../../components/section-label";
@@ -9,10 +9,8 @@ import { AssistanceEditor } from "./assistance-editor";
 import { ProgramSettings } from "./program-settings";
 
 export const SettingsDrawer = () => {
-  const showSettings = useUIStore.showSettings();
-  const mode = useUIStore.mode();
-  const { closeSettings, setShowConfirm } = useUIStore.actions();
-  const { modeToggled } = useAppStore.actions();
+  const { showSettings, mode, closeSettings, setShowConfirm } = useUIStore();
+  const { modeToggled } = useProgramStore();
 
   return (
     <Drawer

@@ -1,15 +1,13 @@
 import { Button } from "@base-ui/react/button";
 import { ChevronDown } from "lucide-react";
-import { useAppStore } from "../../stores/app-store";
+import { useProgramStore } from "../../stores/program-store";
 import { useUIStore } from "../../stores/ui-store";
 import { TEMPLATES } from "../../constants/program";
 import { Badge } from "../../components/badge";
 
 export const WeekOverview = () => {
-  const cycle = useAppStore.cycle();
-  const week = useAppStore.week();
-  const template = useAppStore.template();
-  const { setShowTemplPicker } = useUIStore.actions();
+  const { cycle, week, template } = useProgramStore();
+  const { setShowTemplPicker } = useUIStore();
 
   const variant = TEMPLATES[template];
   const weekDef = variant.weeks[week];

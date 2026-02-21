@@ -1,16 +1,15 @@
 import { Collapsible } from "@base-ui/react/collapsible";
-import { useAppStore } from "../../stores/app-store";
+import { useProgramStore } from "../../stores/program-store";
+import { useWorkoutStore } from "../../stores/workout-store";
 import { calcWeight } from "../../lib/calc";
 import { SectionHeader } from "../../components/section-header";
 import { SetRow } from "../../components/set-row";
 import { useActiveTrainingMax, useSupplementalSets } from "./use-workout-selectors";
 
 export const SupplementalSection = () => {
-  const template = useAppStore.template();
-  const unit = useAppStore.unit();
+  const { template, unit } = useProgramStore();
   const trainingMax = useActiveTrainingMax();
-  const checked = useAppStore.checked();
-  const { onSetCheck } = useAppStore.actions();
+  const { checked, onSetCheck } = useWorkoutStore();
   const supplementalSets = useSupplementalSets();
 
   const allSuppDone = supplementalSets.every((s) => checked[s.key]);

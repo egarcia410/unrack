@@ -4,11 +4,10 @@ import { useState } from "react";
 import { LIFTS } from "../constants/program";
 import { LiftInputRow } from "../components/lift-input-row";
 import { PrimaryButton } from "../components/primary-button";
-import { useAppStore, hasProgramData } from "../stores/app-store";
+import { useProgramStore, hasProgramData } from "../stores/program-store";
 
 const SetupPage = () => {
-  const { programCreated } = useAppStore.actions();
-  const unit = useAppStore.unit();
+  const { programCreated, unit } = useProgramStore();
   const navigate = useNavigate();
   const [oneRepMaxes, setOneRepMaxes] = useState<Record<string, string>>({
     ohp: "",

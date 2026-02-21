@@ -1,18 +1,15 @@
 import { Collapsible } from "@base-ui/react/collapsible";
 import { Button } from "@base-ui/react/button";
 import { ChevronDown, Minus, Plus } from "lucide-react";
-import { useAppStore } from "../../stores/app-store";
+import { useProgramStore } from "../../stores/program-store";
 import { useUIStore } from "../../stores/ui-store";
 import { SectionLabel } from "../../components/section-label";
 import { IconButton } from "../../components/icon-button";
 import { cn } from "../../lib/cn";
 
 export const ProgramSettings = () => {
-  const settingsExpanded = useUIStore.settingsExpanded();
-  const { setSettingsExpanded } = useUIStore.actions();
-  const unit = useAppStore.unit();
-  const trainingMaxPercent = useAppStore.trainingMaxPercent();
-  const { unitToggled, trainingMaxPercentChanged } = useAppStore.actions();
+  const { settingsExpanded, setSettingsExpanded } = useUIStore();
+  const { unit, trainingMaxPercent, unitToggled, trainingMaxPercentChanged } = useProgramStore();
 
   return (
     <Collapsible.Root open={settingsExpanded} onOpenChange={setSettingsExpanded}>

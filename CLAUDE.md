@@ -21,13 +21,15 @@
 - No single-character or heavily abbreviated names — code should be readable years later
 - Example: `trainingMax` not `tm`, `inputValue` not `val`, `oneRepMaxes` not `orms`
 
-## Zustand Stores
-- Wrap stores with `createSelectors` (`src/lib/create-selectors.ts`) — generates `store.field()` selectors
-- Consume state as `useXStore.field()`, actions as `useXStore.actions()`
-- Separate `type XState` (data) from `type XActions` (methods), nest actions under `actions` key
+## Polaris Stores
+- Define stores with `createStore(name, { state, actions, init? })` from `src/stores/polaris`
+- Consume state and actions via destructuring: `const { week, weekAdvanced } = useProgramStore()`
+- Valtio proxy tracking gives granular reactivity — only accessed properties trigger re-renders
+- Use `set({ key: value })` for partial merges, `set((s) => { s.key = value })` for mutations
 - Extract `initialState` constant — reuse in store init and reset actions
-- Never use inline selectors (`useStore((s) => s.foo)`) in components
-- Never use `.getState()` outside store files — export static selectors for non-React contexts (route guards)
+- Cross-store reads use `useOtherStore.getState()` inside actions
+- Static access (route guards): `useProgramStore.getState()` or `useProgramStore.status("init")`
+- Never use `.getState()` in components — only in store files, route guards, or exported static selectors
 
 ## Derived State & Selectors
 - Derive computed values from stores using composed selector hooks — not helper functions that take store data as arguments

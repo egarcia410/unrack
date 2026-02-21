@@ -1,6 +1,5 @@
-import { create } from "zustand";
 import type { ThemeMode, CelebState } from "../types";
-import { createSelectors } from "../lib/create-selectors";
+import { createStore } from "./polaris";
 
 type EditOneRepMaxState = {
   [liftId: string]: string;
@@ -21,25 +20,6 @@ type UIState = {
   editAssistance: EditAssistanceState | null;
 };
 
-type UIActions = {
-  setMode: (mode: ThemeMode) => void;
-  setShowConfirm: (show: boolean) => void;
-  setShowSettings: (show: boolean) => void;
-  setSettingsExpanded: (expanded: boolean) => void;
-  toggleSettingsExpanded: () => void;
-  setShowTemplPicker: (show: boolean) => void;
-  setCeleb: (celeb: CelebState | null) => void;
-  setEditOneRepMax: (edit: EditOneRepMaxState | null) => void;
-  updateEditOneRepMax: (
-    updater: (prev: EditOneRepMaxState | null) => EditOneRepMaxState | null,
-  ) => void;
-  setEditAssistance: (edit: EditAssistanceState | null) => void;
-  updateEditAssistance: (
-    updater: (prev: EditAssistanceState | null) => EditAssistanceState | null,
-  ) => void;
-  closeSettings: () => void;
-};
-
 const initialState: UIState = {
   mode: "dark",
   showConfirm: false,
@@ -51,37 +31,45 @@ const initialState: UIState = {
   editAssistance: null,
 };
 
-export const useUIStore = createSelectors(
-  create<UIState & { actions: UIActions }>((set) => ({
-    ...initialState,
-
-    actions: {
-      setMode: (mode) => {
-        document.documentElement.classList.toggle("dark", mode === "dark");
-        set({ mode });
-      },
-      setShowConfirm: (show) => set({ showConfirm: show }),
-      setShowSettings: (show) => set({ showSettings: show }),
-      setSettingsExpanded: (expanded) => set({ settingsExpanded: expanded }),
-      toggleSettingsExpanded: () => set((state) => ({ settingsExpanded: !state.settingsExpanded })),
-      setShowTemplPicker: (show) => set({ showTemplPicker: show }),
-      setCeleb: (celeb) => set({ celeb }),
-      setEditOneRepMax: (edit) => set({ editOneRepMax: edit }),
-      updateEditOneRepMax: (updater) =>
-        set((state) => ({ editOneRepMax: updater(state.editOneRepMax) })),
-      setEditAssistance: (edit) => set({ editAssistance: edit }),
-      updateEditAssistance: (updater) =>
-        set((state) => ({ editAssistance: updater(state.editAssistance) })),
-      closeSettings: () =>
-        set({
-          showSettings: false,
-          editAssistance: null,
-          editOneRepMax: null,
-          settingsExpanded: false,
-        }),
+export const useUIStore = createStore("ui", {
+  state: initialState,
+  actions: (set) => ({
+    setMode: (mode: ThemeMode) => {
+      document.documentElement.classList.toggle("dark", mode === "dark");
+      set({ mode });
     },
-  })),
-);
+    setShowConfirm: (show: boolean) => set({ showConfirm: show }),
+    setShowSettings: (show: boolean) => set({ showSettings: show }),
+    setSettingsExpanded: (expanded: boolean) => set({ settingsExpanded: expanded }),
+    toggleSettingsExpanded: () =>
+      set((s) => {
+        s.settingsExpanded = !s.settingsExpanded;
+      }),
+    setShowTemplPicker: (show: boolean) => set({ showTemplPicker: show }),
+    setCeleb: (celeb: CelebState | null) => set({ celeb }),
+    setEditOneRepMax: (edit: EditOneRepMaxState | null) => set({ editOneRepMax: edit }),
+    updateEditOneRepMax: (
+      updater: (prev: EditOneRepMaxState | null) => EditOneRepMaxState | null,
+    ) =>
+      set((s) => {
+        s.editOneRepMax = updater(s.editOneRepMax);
+      }),
+    setEditAssistance: (edit: EditAssistanceState | null) => set({ editAssistance: edit }),
+    updateEditAssistance: (
+      updater: (prev: EditAssistanceState | null) => EditAssistanceState | null,
+    ) =>
+      set((s) => {
+        s.editAssistance = updater(s.editAssistance);
+      }),
+    closeSettings: () =>
+      set({
+        showSettings: false,
+        editAssistance: null,
+        editOneRepMax: null,
+        settingsExpanded: false,
+      }),
+  }),
+});
 
 export const initTheme = () => {
   const mode = useUIStore.getState().mode;

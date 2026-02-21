@@ -1,12 +1,11 @@
 import { useNavigate } from "@tanstack/react-router";
 import { Button } from "@base-ui/react/button";
 import { useUIStore } from "../stores/ui-store";
-import { useAppStore } from "../stores/app-store";
+import { useProgramStore } from "../stores/program-store";
 
 export const DeleteConfirmDialog = () => {
-  const showConfirm = useUIStore.showConfirm();
-  const { setShowConfirm } = useUIStore.actions();
-  const { programReset } = useAppStore.actions();
+  const { showConfirm, setShowConfirm } = useUIStore();
+  const { programReset } = useProgramStore();
   const navigate = useNavigate();
 
   if (!showConfirm) return null;

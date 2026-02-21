@@ -3,12 +3,11 @@ import { Star } from "lucide-react";
 import { Button } from "@base-ui/react/button";
 import { cn } from "../lib/cn";
 import { useUIStore } from "../stores/ui-store";
-import { useAppStore } from "../stores/app-store";
+import { useProgramStore } from "../stores/program-store";
 
 export const Celebration = () => {
-  const celeb = useUIStore.celeb();
-  const { setCeleb } = useUIStore.actions();
-  const { trainingMaxAdjusted } = useAppStore.actions();
+  const { celeb, setCeleb } = useUIStore();
+  const { trainingMaxAdjusted } = useProgramStore();
 
   useEffect(() => {
     if (celeb && celeb.type !== "warn") {

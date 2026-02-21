@@ -1,5 +1,5 @@
 import { Form } from "@base-ui/react/form";
-import { useAppStore } from "../../stores/app-store";
+import { useProgramStore } from "../../stores/program-store";
 import { useUIStore } from "../../stores/ui-store";
 import { LIFTS } from "../../constants/program";
 import { LiftInputRow } from "../../components/lift-input-row";
@@ -8,11 +8,8 @@ import { SectionLabel } from "../../components/section-label";
 import { cn } from "../../lib/cn";
 
 export const OneRepMaxEditor = () => {
-  const editOneRepMax = useUIStore.editOneRepMax();
-  const { setEditOneRepMax, updateEditOneRepMax } = useUIStore.actions();
-  const oneRepMaxes = useAppStore.oneRepMaxes();
-  const unit = useAppStore.unit();
-  const { oneRepMaxesSaved } = useAppStore.actions();
+  const { editOneRepMax, setEditOneRepMax, updateEditOneRepMax } = useUIStore();
+  const { oneRepMaxes, unit, oneRepMaxesSaved } = useProgramStore();
 
   return (
     <Form

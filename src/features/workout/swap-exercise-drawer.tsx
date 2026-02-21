@@ -1,5 +1,6 @@
 import { Button } from "@base-ui/react/button";
-import { useAppStore } from "../../stores/app-store";
+import { useProgramStore } from "../../stores/program-store";
+import { useWorkoutStore } from "../../stores/workout-store";
 import { EXERCISE_LIB, CATS, CAT_LABELS, CAT_COLORS } from "../../constants/exercises";
 import { getAssistancePrescription } from "../../lib/exercises";
 import { cn } from "../../lib/cn";
@@ -7,14 +8,8 @@ import { Drawer } from "../../components/drawer";
 import type { ProgramData } from "../../types";
 
 export const SwapExerciseDrawer = () => {
-  const swapSlot = useAppStore.swapSlot();
-  const activeWeek = useAppStore.activeWeek();
-  const { setSwapSlot } = useAppStore.actions();
-
-  const assistanceMaximums = useAppStore.assistanceMaximums();
-  const bodyweightBaselines = useAppStore.bodyweightBaselines();
-  const unit = useAppStore.unit();
-  const { exerciseSwapped } = useAppStore.actions();
+  const { swapSlot, activeWeek, setSwapSlot } = useWorkoutStore();
+  const { assistanceMaximums, bodyweightBaselines, unit, exerciseSwapped } = useProgramStore();
 
   const prescriptionData = { assistanceMaximums, bodyweightBaselines } as ProgramData;
 

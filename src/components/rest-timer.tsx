@@ -2,14 +2,11 @@ import { useState, useEffect, useRef } from "react";
 import { ChevronRight, Pause, X } from "lucide-react";
 import { cn } from "../lib/cn";
 import { playTimerDone } from "../lib/audio";
-import { useAppStore } from "../stores/app-store";
+import { useWorkoutStore } from "../stores/workout-store";
 import { IconButton } from "./icon-button";
 
 export const RestTimer = () => {
-  const showTimer = useAppStore.showTimer();
-  const timerInfo = useAppStore.timerInfo();
-  const timerKey = useAppStore.timerKey();
-  const { dismissTimer } = useAppStore.actions();
+  const { showTimer, timerInfo, timerKey, dismissTimer } = useWorkoutStore();
 
   const duration = timerInfo.duration;
   const reason = timerInfo.reason;

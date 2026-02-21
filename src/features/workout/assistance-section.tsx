@@ -1,12 +1,12 @@
 import { Collapsible } from "@base-ui/react/collapsible";
-import { useAppStore } from "../../stores/app-store";
+import { useProgramStore } from "../../stores/program-store";
 import { SectionHeader } from "../../components/section-header";
 import { DiscoveredAssistanceCard } from "./discovered-assistance-card";
 import { UndiscoveredAssistanceCard } from "./undiscovered-assistance-card";
 import { useAccessories, useAllAccessoriesDone } from "./use-workout-selectors";
 
 export const AssistanceSection = () => {
-  const assistanceMaximums = useAppStore.assistanceMaximums();
+  const { assistanceMaximums } = useProgramStore();
   const accessories = useAccessories();
   const allAccDone = useAllAccessoriesDone();
 

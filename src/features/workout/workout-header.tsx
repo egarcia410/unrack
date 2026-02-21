@@ -1,16 +1,12 @@
-import { useAppStore } from "../../stores/app-store";
+import { useProgramStore } from "../../stores/program-store";
+import { useWorkoutStore } from "../../stores/workout-store";
 import { TEMPLATES, LIFTS, LIFT_ORDER } from "../../constants/program";
 import { BackButton } from "../../components/back-button";
 import { Badge } from "../../components/badge";
 
 export const WorkoutHeader = () => {
-  const cycle = useAppStore.cycle();
-  const trainingMaxes = useAppStore.trainingMaxes();
-  const oneRepMaxes = useAppStore.oneRepMaxes();
-  const template = useAppStore.template();
-
-  const activeWeek = useAppStore.activeWeek();
-  const activeDay = useAppStore.activeDay();
+  const { cycle, trainingMaxes, oneRepMaxes, template } = useProgramStore();
+  const { activeWeek, activeDay } = useWorkoutStore();
 
   const variant = TEMPLATES[template];
   const weekDef = variant.weeks[activeWeek];

@@ -1,5 +1,6 @@
 import { Collapsible } from "@base-ui/react/collapsible";
-import { useAppStore } from "../../stores/app-store";
+import { useProgramStore } from "../../stores/program-store";
+import { useWorkoutStore } from "../../stores/workout-store";
 import { calcWeight } from "../../lib/calc";
 import { SectionHeader } from "../../components/section-header";
 import { SetRow } from "../../components/set-row";
@@ -7,11 +8,10 @@ import { AmrapCard } from "./amrap-card";
 import { useActiveTrainingMax, useActiveWeekDef } from "./use-workout-selectors";
 
 export const WorkingSetsSection = () => {
-  const unit = useAppStore.unit();
+  const { unit } = useProgramStore();
   const trainingMax = useActiveTrainingMax();
   const weekDef = useActiveWeekDef();
-  const checked = useAppStore.checked();
-  const { onSetCheck } = useAppStore.actions();
+  const { checked, onSetCheck } = useWorkoutStore();
 
   const allMainDone = weekDef.sets.every((_, i) => checked[`m${i}`]);
 

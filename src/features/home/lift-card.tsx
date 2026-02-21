@@ -1,7 +1,8 @@
 import { useNavigate } from "@tanstack/react-router";
 import { Button } from "@base-ui/react/button";
 import { Check } from "lucide-react";
-import { useAppStore } from "../../stores/app-store";
+import { useProgramStore } from "../../stores/program-store";
+import { useWorkoutStore } from "../../stores/workout-store";
 import { TEMPLATES, LIFTS, LIFT_ORDER } from "../../constants/program";
 import { calcWeight } from "../../lib/calc";
 import { PRRing } from "../../components/pr-ring";
@@ -13,13 +14,8 @@ type LiftCardProps = {
 
 export const LiftCard = ({ liftIndex }: LiftCardProps) => {
   const navigate = useNavigate();
-  const week = useAppStore.week();
-  const cycle = useAppStore.cycle();
-  const workouts = useAppStore.workouts();
-  const template = useAppStore.template();
-  const trainingMaxes = useAppStore.trainingMaxes();
-  const oneRepMaxes = useAppStore.oneRepMaxes();
-  const { startWorkout } = useAppStore.actions();
+  const { week, cycle, workouts, template, trainingMaxes, oneRepMaxes } = useProgramStore();
+  const { startWorkout } = useWorkoutStore();
 
   const liftId = LIFT_ORDER[liftIndex];
   const lift = LIFTS.find((x) => x.id === liftId)!;

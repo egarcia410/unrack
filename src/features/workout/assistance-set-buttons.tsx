@@ -1,6 +1,6 @@
 import { Button } from "@base-ui/react/button";
 import { Check } from "lucide-react";
-import { useAppStore } from "../../stores/app-store";
+import { useWorkoutStore } from "../../stores/workout-store";
 import { cn } from "../../lib/cn";
 
 type AssistanceSetButtonsProps = {
@@ -16,7 +16,7 @@ export const AssistanceSetButtons = ({
   onTapSet,
   onUntapSet,
 }: AssistanceSetButtonsProps) => {
-  const accSets = useAppStore.accSets();
+  const { accSets } = useWorkoutStore();
   const setsDone = accSets[exerciseId] || 0;
 
   return (

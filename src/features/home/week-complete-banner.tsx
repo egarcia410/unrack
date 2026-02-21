@@ -1,15 +1,11 @@
-import { useAppStore } from "../../stores/app-store";
+import { useProgramStore } from "../../stores/program-store";
 import { useUIStore } from "../../stores/ui-store";
 import { TEMPLATES, LIFT_ORDER } from "../../constants/program";
 import { PrimaryButton } from "../../components/primary-button";
 
 export const WeekCompleteBanner = () => {
-  const workouts = useAppStore.workouts();
-  const cycle = useAppStore.cycle();
-  const week = useAppStore.week();
-  const template = useAppStore.template();
-  const { weekAdvanced } = useAppStore.actions();
-  const { setCeleb } = useUIStore.actions();
+  const { workouts, cycle, week, template, weekAdvanced } = useProgramStore();
+  const { setCeleb } = useUIStore();
 
   const variant = TEMPLATES[template];
   const weekDef = variant.weeks[week];
