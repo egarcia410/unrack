@@ -10,7 +10,7 @@ import {
 import { deriveSupplementalSets, deriveAllSets } from "../lib/sets";
 import type { WorkoutSet } from "../lib/sets";
 import { createStore } from "./polaris";
-import { useProgramStore, extractProgramData, registerWorkoutStore } from "./program-store";
+import { useProgramStore, extractProgramData } from "./program-store";
 
 type WorkoutState = {
   activeWeek: number;
@@ -242,8 +242,5 @@ export const useWorkoutStore = createStore("workout", {
     reset: () => set({ ...initialState }),
   }),
 });
-
-// Register with program-store to break circular dependency
-registerWorkoutStore(() => useWorkoutStore.getState());
 
 export const hasActiveWorkout = () => !!useWorkoutStore.getState().workoutStart;

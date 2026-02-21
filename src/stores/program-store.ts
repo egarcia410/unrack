@@ -6,27 +6,7 @@ import { getAssistanceForLift, getAllAssistanceExercises } from "../lib/exercise
 import { loadData, saveData, clearData } from "../lib/storage";
 import { createStore } from "./polaris";
 import { useUIStore } from "./ui-store";
-
-// Lazy ref to break circular dependency with workout-store
-let _getWorkoutState:
-  | (() => {
-      activeWeek: number;
-      activeDay: number;
-      amrapReps: Record<string, string>;
-      accLog: Record<string, { w?: string }>;
-      workoutStart: number | null;
-      swapSlot: { liftId: string; slot: number; currentId: string } | null;
-    })
-  | null = null;
-
-export const registerWorkoutStore = (getter: typeof _getWorkoutState) => {
-  _getWorkoutState = getter;
-};
-
-const getWorkoutState = () => {
-  if (!_getWorkoutState) throw new Error("Workout store not registered");
-  return _getWorkoutState();
-};
+import { useWorkoutStore } from "./workout-store";
 
 type ProgramState = {
   template: TemplateId;
@@ -154,7 +134,7 @@ export const useProgramStore = createStore("program", {
 
       exerciseSwapped: async (newExId: string) => {
         const state = get();
-        const { swapSlot } = getWorkoutState();
+        const { swapSlot } = useWorkoutStore.getState();
         if (!swapSlot) return;
         const { liftId, slot: slotIdx } = swapSlot;
         const current = state.assistanceSlots || {};
@@ -237,7 +217,8 @@ export const useProgramStore = createStore("program", {
         _suggestedTrainingMax?: number;
       } => {
         const state = get();
-        const { activeWeek, activeDay, amrapReps, accLog, workoutStart } = getWorkoutState();
+        const { activeWeek, activeDay, amrapReps, accLog, workoutStart } =
+          useWorkoutStore.getState();
         const programData = extractProgramData(state);
         const template = TEMPLATES[state.template];
         const weekDef = template.weeks[activeWeek];
