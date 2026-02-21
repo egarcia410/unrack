@@ -27,7 +27,7 @@ const getAllUsedAccessories = (prog: Parameters<typeof getAssistanceForLift>[1])
 export const AssistanceEditor = () => {
   const { editAssistance, setEditAssistance, updateEditAssistance } = useUIStore();
   const programState = useProgramStore();
-  const { assistanceMaximums, unit, week, assistanceMaximumsSaved } = programState;
+  const { assistanceMaximums, week, assistanceMaximumsSaved } = programState;
 
   const programData = extractProgramData(programState);
   const allUsedAccs = getAllUsedAccessories(programData);
@@ -74,7 +74,6 @@ export const AssistanceEditor = () => {
                     return { ...base, [a.id]: val };
                   });
                 }}
-                unit={unit}
               />
             </div>
           );

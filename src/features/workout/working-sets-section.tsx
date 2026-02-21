@@ -1,17 +1,13 @@
 import { Collapsible } from "@base-ui/react/collapsible";
-import { useProgramStore } from "../../stores/program-store";
 import { useWorkoutStore } from "../../stores/workout-store";
-import { calcWeight } from "../../lib/calc";
 import { SectionHeader } from "../../components/section-header";
 import { SetRow } from "../../components/set-row";
 import { AmrapCard } from "./amrap-card";
-import { useActiveTrainingMax, useActiveWeekDef } from "./use-workout-selectors";
+import { useActiveWeekDef } from "./use-workout-selectors";
 
 export const WorkingSetsSection = () => {
-  const { unit } = useProgramStore();
-  const trainingMax = useActiveTrainingMax();
   const weekDef = useActiveWeekDef();
-  const { checked, onSetCheck } = useWorkoutStore();
+  const { checked } = useWorkoutStore();
 
   const allMainDone = weekDef.sets.every((_, i) => checked[`m${i}`]);
 
@@ -28,17 +24,7 @@ export const WorkingSetsSection = () => {
               return <AmrapCard key={key} setIndex={i} />;
             }
 
-            return (
-              <SetRow
-                key={key}
-                done={!!checked[key]}
-                weight={calcWeight(trainingMax, set.percentage)}
-                unit={unit}
-                reps={set.reps}
-                pct={set.percentage}
-                onClick={() => onSetCheck(key)}
-              />
-            );
+            return <SetRow key={key} setKey={key} reps={set.reps} pct={set.percentage} />;
           })}
         </div>
       </Collapsible.Panel>

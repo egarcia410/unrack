@@ -11,17 +11,19 @@ import { LiftCardList } from "../features/home/lift-card-list";
 import { WeekCompleteBanner } from "../features/home/week-complete-banner";
 
 const HomePage = () => (
-  <main className="mx-auto max-w-115 px-4 py-3 pb-20">
+  <div className="mx-auto max-w-115 px-4 py-3 pb-20">
     <Celebration />
     <DeleteConfirmDialog />
-    <HomeHeader />
     <SettingsDrawer />
     <TemplatePickerDrawer />
-    <WeekOverview />
-    <WeekProgressBar />
-    <LiftCardList />
-    <WeekCompleteBanner />
-  </main>
+    <HomeHeader />
+    <main>
+      <WeekOverview />
+      <WeekProgressBar />
+      <LiftCardList />
+      <WeekCompleteBanner />
+    </main>
+  </div>
 );
 
 export const Route = createFileRoute("/")({

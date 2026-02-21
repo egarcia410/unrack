@@ -1,15 +1,13 @@
 import { Collapsible } from "@base-ui/react/collapsible";
 import { useProgramStore } from "../../stores/program-store";
 import { useWorkoutStore } from "../../stores/workout-store";
-import { calcWeight } from "../../lib/calc";
 import { SectionHeader } from "../../components/section-header";
 import { SetRow } from "../../components/set-row";
-import { useActiveTrainingMax, useSupplementalSets } from "./use-workout-selectors";
+import { useSupplementalSets } from "./use-workout-selectors";
 
 export const SupplementalSection = () => {
-  const { template, unit } = useProgramStore();
-  const trainingMax = useActiveTrainingMax();
-  const { checked, onSetCheck } = useWorkoutStore();
+  const { template } = useProgramStore();
+  const { checked } = useWorkoutStore();
   const supplementalSets = useSupplementalSets();
 
   const allSuppDone = supplementalSets.every((s) => checked[s.key]);
@@ -29,15 +27,7 @@ export const SupplementalSection = () => {
       <Collapsible.Panel>
         <div className="flex flex-col gap-1 mb-6">
           {supplementalSets.map((s) => (
-            <SetRow
-              key={s.key}
-              done={!!checked[s.key]}
-              weight={calcWeight(trainingMax, s.percentage)}
-              unit={unit}
-              reps={s.reps}
-              pct={s.percentage}
-              onClick={() => onSetCheck(s.key)}
-            />
+            <SetRow key={s.key} setKey={s.key} reps={s.reps} pct={s.percentage} />
           ))}
         </div>
       </Collapsible.Panel>

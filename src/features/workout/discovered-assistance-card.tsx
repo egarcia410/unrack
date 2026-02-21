@@ -15,7 +15,7 @@ type DiscoveredAssistanceCardProps = {
 };
 
 export const DiscoveredAssistanceCard = ({ exerciseIndex }: DiscoveredAssistanceCardProps) => {
-  const { accSets, tapAccSet, untapAccSet, setSwapSlot } = useWorkoutStore();
+  const { accSets, setSwapSlot } = useWorkoutStore();
   const { unit } = useProgramStore();
   const liftId = useActiveLiftId();
   const exercise = useAccessoryExercise(exerciseIndex);
@@ -23,6 +23,7 @@ export const DiscoveredAssistanceCard = ({ exerciseIndex }: DiscoveredAssistance
   const setsDone = accSets[exercise.id] || 0;
   const done = setsDone >= rx.sets;
 
+  // TODO: Remove unicode
   const rxText =
     rx.type === "bw"
       ? `${rx.sets}\u00D7${rx.reps}`
@@ -51,12 +52,7 @@ export const DiscoveredAssistanceCard = ({ exerciseIndex }: DiscoveredAssistance
         </div>
         <span className="text-sm font-mono font-semibold text-th-t3 shrink-0 ml-2">{rxText}</span>
       </Button>
-      <AssistanceSetButtons
-        exerciseId={exercise.id}
-        totalSets={rx.sets}
-        onTapSet={() => tapAccSet(exercise.id)}
-        onUntapSet={() => untapAccSet(exercise.id)}
-      />
+      <AssistanceSetButtons exerciseId={exercise.id} totalSets={rx.sets} />
     </div>
   );
 };

@@ -1,33 +1,52 @@
 import { Button } from "@base-ui/react/button";
 import { Check } from "lucide-react";
+import { cva } from "class-variance-authority";
+import { useProgramStore } from "../stores/program-store";
+import { useWorkoutStore } from "../stores/workout-store";
+import { useActiveTrainingMax } from "../features/workout/use-workout-selectors";
+import { calcWeight } from "../lib/calc";
 import { cn } from "../lib/cn";
 
+const setRowVariants = cva(
+  "grid grid-cols-[28px_1fr_auto_42px] items-center gap-2 px-3.5 py-3 rounded-xl cursor-pointer font-sans text-left w-full box-border transition-all duration-150 min-h-13 border",
+  {
+    variants: {
+      done: {
+        true: "bg-th-gd border-th-gb",
+        false: "bg-th-s1 border-th-b",
+      },
+    },
+    defaultVariants: { done: false },
+  },
+);
+
+const checkboxVariants = cva("w-6 h-6 rounded-md border-2 flex items-center justify-center", {
+  variants: {
+    done: {
+      true: "border-th-g bg-th-g text-th-inv",
+      false: "border-th-t4 bg-transparent text-transparent",
+    },
+  },
+  defaultVariants: { done: false },
+});
+
 type SetRowProps = {
-  done: boolean;
-  weight: number;
-  unit: string;
+  setKey: string;
   reps: number | string;
   pct: number;
-  isAmrap?: boolean;
-  onClick: () => void;
 };
 
-export const SetRow = ({ done, weight, unit, reps, pct, isAmrap, onClick }: SetRowProps) => {
+export const SetRow = ({ setKey, reps, pct }: SetRowProps) => {
+  const { unit } = useProgramStore();
+  const trainingMax = useActiveTrainingMax();
+  const { checked, onSetCheck } = useWorkoutStore();
+
+  const done = !!checked[setKey];
+  const weight = calcWeight(trainingMax, pct);
+
   return (
-    <Button
-      onClick={onClick}
-      className={cn(
-        "grid grid-cols-[28px_1fr_auto_42px] items-center gap-2 px-3.5 py-3 rounded-xl cursor-pointer font-sans text-left w-full box-border transition-all duration-150 min-h-13",
-        done ? "bg-th-gd border border-th-gb" : "bg-th-s1 border",
-        !done && isAmrap ? "border-th-yb" : !done ? "border-th-b" : "",
-      )}
-    >
-      <div
-        className={cn(
-          "w-6 h-6 rounded-md border-2 flex items-center justify-center",
-          done ? "border-th-g bg-th-g text-th-inv" : "border-th-t4 bg-transparent text-transparent",
-        )}
-      >
+    <Button onClick={() => onSetCheck(setKey)} className={cn(setRowVariants({ done }))}>
+      <div className={cn(checkboxVariants({ done }))}>
         {done && <Check size={13} strokeWidth={3} />}
       </div>
       <span className="text-base font-bold font-mono text-th-t">

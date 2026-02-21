@@ -1,12 +1,14 @@
 import { ArrowRight } from "lucide-react";
+import { useProgramStore } from "../../stores/program-store";
 import type { LiftProgressEntry } from "./use-history-data";
 
 type LiftProgressCardProps = {
   entry: LiftProgressEntry;
-  unit: string;
 };
 
-export const LiftProgressCard = ({ entry, unit }: LiftProgressCardProps) => {
+export const LiftProgressCard = ({ entry }: LiftProgressCardProps) => {
+  const { unit } = useProgramStore();
+
   return (
     <div className="bg-th-s1 border border-th-b rounded-xl px-4 py-3.5">
       <div className="flex justify-between items-center">

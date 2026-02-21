@@ -8,7 +8,6 @@ type LiftInputRowProps = {
   liftName: string;
   value: string;
   onChange: (filteredValue: string) => void;
-  unit: string;
 };
 
 const validateOneRepMax = (value: unknown) => {
@@ -17,8 +16,8 @@ const validateOneRepMax = (value: unknown) => {
   return null;
 };
 
-export const LiftInputRow = ({ liftId, liftName, value, onChange, unit }: LiftInputRowProps) => {
-  const { trainingMaxPercent } = useProgramStore();
+export const LiftInputRow = ({ liftId, liftName, value, onChange }: LiftInputRowProps) => {
+  const { trainingMaxPercent, unit } = useProgramStore();
   const parsed = Number(value);
   const trainingMax = parsed >= 1 ? roundToNearest(parsed * (trainingMaxPercent / 100)) : 0;
 
@@ -44,7 +43,7 @@ export const LiftInputRow = ({ liftId, liftName, value, onChange, unit }: LiftIn
             )}
           </div>
         </div>
-        <WeightInput inputId={liftId} value={value} onChange={onChange} unit={unit} required />
+        <WeightInput inputId={liftId} value={value} onChange={onChange} required />
       </div>
     </Field.Root>
   );

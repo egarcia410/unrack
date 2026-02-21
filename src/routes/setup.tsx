@@ -7,7 +7,7 @@ import { PrimaryButton } from "../components/primary-button";
 import { useProgramStore, hasProgramData } from "../stores/program-store";
 
 const SetupPage = () => {
-  const { programCreated, unit } = useProgramStore();
+  const { programCreated } = useProgramStore();
   const navigate = useNavigate();
   const [oneRepMaxes, setOneRepMaxes] = useState<Record<string, string>>({
     ohp: "",
@@ -18,34 +18,35 @@ const SetupPage = () => {
 
   return (
     <div className="max-w-115 mx-auto px-4 py-3 pb-20">
-      <div className="flex flex-col items-center pt-12 pb-8 gap-1.5">
-        <div className="text-4xl font-extrabold font-mono text-th-a tracking-wide">unrack</div>
+      <header className="flex flex-col items-center pt-12 pb-8 gap-1.5">
+        <h1 className="text-4xl font-extrabold font-mono text-th-a tracking-wide">unrack</h1>
         <p className="text-th-t3 text-sm tracking-wide uppercase m-0">Strength Program</p>
-      </div>
-      <div className="text-xs font-bold uppercase tracking-widest text-th-t2 mb-2.5">
-        Enter Your 1 Rep Maxes
-      </div>
-      <Form
-        onSubmit={(event) => {
-          event.preventDefault();
-          programCreated(oneRepMaxes);
-          navigate({ to: "/" });
-        }}
-      >
-        <div className="flex flex-col gap-1.5 mb-6">
-          {LIFTS.map((lift) => (
-            <LiftInputRow
-              key={lift.id}
-              liftId={lift.id}
-              liftName={lift.name}
-              value={oneRepMaxes[lift.id]}
-              onChange={(val) => setOneRepMaxes((prev) => ({ ...prev, [lift.id]: val }))}
-              unit={unit}
-            />
-          ))}
+      </header>
+      <main>
+        <div className="text-xs font-bold uppercase tracking-widest text-th-t2 mb-2.5">
+          Enter Your 1 Rep Maxes
         </div>
-        <PrimaryButton type="submit">Start Program</PrimaryButton>
-      </Form>
+        <Form
+          onSubmit={(event) => {
+            event.preventDefault();
+            programCreated(oneRepMaxes);
+            navigate({ to: "/" });
+          }}
+        >
+          <div className="flex flex-col gap-1.5 mb-6">
+            {LIFTS.map((lift) => (
+              <LiftInputRow
+                key={lift.id}
+                liftId={lift.id}
+                liftName={lift.name}
+                value={oneRepMaxes[lift.id]}
+                onChange={(val) => setOneRepMaxes((prev) => ({ ...prev, [lift.id]: val }))}
+              />
+            ))}
+          </div>
+          <PrimaryButton type="submit">Start Program</PrimaryButton>
+        </Form>
+      </main>
     </div>
   );
 };

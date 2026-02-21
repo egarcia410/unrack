@@ -76,7 +76,6 @@ export const useHistoryData = () => {
     });
 
   return {
-    programData: programState,
     liftProgressEntries,
     recentWorkouts,
   };

@@ -9,7 +9,7 @@ import { cn } from "../../lib/cn";
 
 export const OneRepMaxEditor = () => {
   const { editOneRepMax, setEditOneRepMax, updateEditOneRepMax } = useUIStore();
-  const { oneRepMaxes, unit, oneRepMaxesSaved } = useProgramStore();
+  const { oneRepMaxes, oneRepMaxesSaved } = useProgramStore();
 
   return (
     <Form
@@ -41,7 +41,6 @@ export const OneRepMaxEditor = () => {
                 return { ...prev, [l.id]: val };
               });
             }}
-            unit={unit}
           />
         ))}
       </div>

@@ -6,17 +6,10 @@ import { cn } from "../../lib/cn";
 type AssistanceSetButtonsProps = {
   exerciseId: string;
   totalSets: number;
-  onTapSet: () => void;
-  onUntapSet: () => void;
 };
 
-export const AssistanceSetButtons = ({
-  exerciseId,
-  totalSets,
-  onTapSet,
-  onUntapSet,
-}: AssistanceSetButtonsProps) => {
-  const { accSets } = useWorkoutStore();
+export const AssistanceSetButtons = ({ exerciseId, totalSets }: AssistanceSetButtonsProps) => {
+  const { accSets, tapAccSet, untapAccSet } = useWorkoutStore();
   const setsDone = accSets[exerciseId] || 0;
 
   return (
@@ -28,7 +21,13 @@ export const AssistanceSetButtons = ({
         return (
           <Button
             key={setIndex}
-            onClick={isNext ? onTapSet : isLast ? onUntapSet : undefined}
+            onClick={
+              isNext
+                ? () => tapAccSet(exerciseId)
+                : isLast
+                  ? () => untapAccSet(exerciseId)
+                  : undefined
+            }
             className={cn(
               "w-11 h-11 rounded-lg border-2 flex items-center justify-center transition-all duration-150",
               filled

@@ -78,7 +78,9 @@ export const LiftCard = ({ liftIndex }: LiftCardProps) => {
               month: "short",
               day: "numeric",
             })}
-            {doneEntry.duration ? ` \u00B7 ${Math.floor(doneEntry.duration / 60)} min` : ""}
+            {doneEntry.duration
+              ? ` \u00B7 ${Math.floor(doneEntry.duration / 60)} min` // TODO: Remove unicode
+              : ""}
           </p>
         )}
       </div>

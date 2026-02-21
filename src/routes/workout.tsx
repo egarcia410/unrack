@@ -10,10 +10,10 @@ import { AssistanceSection } from "../features/workout/assistance-section";
 import { WorkoutBottomBar } from "../features/workout/workout-bottom-bar";
 
 const WorkoutPage = () => (
-  <div>
-    <main className="mx-auto max-w-115 px-4 py-3 pb-20">
-      <SwapExerciseDrawer />
-      <WorkoutHeader />
+  <div className="mx-auto max-w-115 px-4 py-3 pb-20">
+    <SwapExerciseDrawer />
+    <WorkoutHeader />
+    <main>
       <RestTimer />
       <WarmupSection />
       <WorkingSetsSection />
