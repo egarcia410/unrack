@@ -153,8 +153,8 @@ export const useProgramStore = createStore("program", {
             newOneRepMaxes[lift.id] * (state.trainingMaxPercent / 100),
           );
         });
-        Object.entries(state.assistanceMaximums || {}).forEach(([k, v]) => {
-          newAssistanceMaximums[k] = roundToNearest(v * factor);
+        Object.entries(state.assistanceMaximums || {}).forEach(([exerciseId, weight]) => {
+          newAssistanceMaximums[exerciseId] = roundToNearest(weight * factor);
         });
         save({
           unit: newUnit,
@@ -179,9 +179,12 @@ export const useProgramStore = createStore("program", {
         const newOneRepMaxes: Record<string, number> = {};
         const newTrainingMaxes: Record<string, number> = {};
         LIFTS.forEach((lift) => {
-          const val = parseFloat(editOneRepMax[lift.id]) || state.oneRepMaxes[lift.id] || 0;
-          newOneRepMaxes[lift.id] = val;
-          newTrainingMaxes[lift.id] = roundToNearest(val * (state.trainingMaxPercent / 100));
+          const parsedWeight =
+            parseFloat(editOneRepMax[lift.id]) || state.oneRepMaxes[lift.id] || 0;
+          newOneRepMaxes[lift.id] = parsedWeight;
+          newTrainingMaxes[lift.id] = roundToNearest(
+            parsedWeight * (state.trainingMaxPercent / 100),
+          );
         });
         save({ oneRepMaxes: newOneRepMaxes, trainingMaxes: newTrainingMaxes });
       },
@@ -189,16 +192,16 @@ export const useProgramStore = createStore("program", {
       assistanceMaximumsSaved: (editAssistance: Record<string, string | number>) => {
         const state = get();
         const newMaximums = { ...state.assistanceMaximums };
-        Object.entries(editAssistance).forEach(([id, val]) => {
-          newMaximums[id] = parseInt(String(val)) || 0;
+        Object.entries(editAssistance).forEach(([exerciseId, value]) => {
+          newMaximums[exerciseId] = parseInt(String(value)) || 0;
         });
         save({ assistanceMaximums: newMaximums });
       },
 
       workoutFinished: (): {
-        celebType: "done" | "pr" | "warn";
-        celebMsg: string;
-        celebSub: string;
+        type: "done" | "pr" | "warn";
+        message: string;
+        subtitle: string;
         actionLabel?: string;
         actionSub?: string;
         _liftId?: string;
@@ -206,15 +209,15 @@ export const useProgramStore = createStore("program", {
         _suggestedTrainingMax?: number;
       } => {
         const state = get();
-        const { activeWeek, activeDay, amrapReps, accLog, workoutStart } =
+        const { activeWeek, activeDay, amrapReps, assistanceLog, workoutStart } =
           useWorkoutStore.getState();
         const programData = extractProgramData(state);
         const template = TEMPLATES[state.template];
         const weekDef = template.weeks[activeWeek];
         const liftId = LIFT_ORDER[activeDay % LIFT_ORDER.length];
-        const lift = LIFTS.find((l) => l.id === liftId)!;
-        const tm = state.trainingMaxes[liftId];
-        const accs = getAssistanceForLift(liftId, programData);
+        const lift = LIFTS.find((exercise) => exercise.id === liftId)!;
+        const trainingMax = state.trainingMaxes[liftId];
+        const assistanceExercises = getAssistanceForLift(liftId, programData);
 
         const amrapSet = weekDef.sets.find((s) => String(s.reps).includes("+"));
         const amrapIdx = amrapSet ? weekDef.sets.indexOf(amrapSet) : -1;
@@ -227,7 +230,7 @@ export const useProgramStore = createStore("program", {
           weight: number;
         } | null = null;
         if (amrapSet && repsHit > 0) {
-          const weight = calcWeight(tm, amrapSet.percentage);
+          const weight = calcWeight(trainingMax, amrapSet.percentage);
           const est = epley(weight, repsHit);
           if (est > state.oneRepMaxes[liftId])
             newOneRepMax = {
@@ -242,26 +245,26 @@ export const useProgramStore = createStore("program", {
         const assistanceHistory = { ...state.assistanceHistory };
         const assistanceMaximums = { ...state.assistanceMaximums };
         const bodyweightBaselines = { ...state.bodyweightBaselines };
-        accs.forEach((a) => {
-          if (!assistanceHistory[a.id]) assistanceHistory[a.id] = [];
-          if (a.isBodyweight) {
-            assistanceHistory[a.id].push({
+        assistanceExercises.forEach((exercise) => {
+          if (!assistanceHistory[exercise.id]) assistanceHistory[exercise.id] = [];
+          if (exercise.isBodyweight) {
+            assistanceHistory[exercise.id].push({
               datetime: Date.now(),
               cycle: state.cycle,
               week: activeWeek,
               isBodyweight: true,
             });
           } else {
-            const log = accLog[a.id];
+            const log = assistanceLog[exercise.id];
             if (log && parseFloat(log.w || "0") > 0) {
-              assistanceHistory[a.id].push({
+              assistanceHistory[exercise.id].push({
                 weight: parseFloat(log.w || "0"),
                 datetime: Date.now(),
                 cycle: state.cycle,
                 week: activeWeek,
               });
-              if (!assistanceMaximums[a.id] || assistanceMaximums[a.id] === 0) {
-                assistanceMaximums[a.id] = roundToNearest(
+              if (!assistanceMaximums[exercise.id] || assistanceMaximums[exercise.id] === 0) {
+                assistanceMaximums[exercise.id] = roundToNearest(
                   parseFloat(log.w || "0") /
                     (ASSISTANCE_WEEKS[activeWeek] || ASSISTANCE_WEEKS[0]).percentage,
                 );
@@ -279,7 +282,7 @@ export const useProgramStore = createStore("program", {
           datetime: Date.now(),
           duration: durationSec,
           amrapReps: { ...amrapReps },
-          assistanceLog: { ...accLog },
+          assistanceLog: { ...assistanceLog },
           newOneRepMax,
         };
         const updates: Partial<ProgramState> = {
@@ -299,16 +302,18 @@ export const useProgramStore = createStore("program", {
 
         if (amrapSet && !isDeload) {
           const minReps = parseInt(String(amrapSet.reps).replace("+", "")) || 1;
-          const amrapWeight = calcWeight(tm, amrapSet.percentage);
+          const amrapWeight = calcWeight(trainingMax, amrapSet.percentage);
           if (repsHit <= 0) {
-            const suggestedOneRepMax = roundToNearest((tm * 0.9) / (next.trainingMaxPercent / 100));
+            const suggestedOneRepMax = roundToNearest(
+              (trainingMax * 0.9) / (next.trainingMaxPercent / 100),
+            );
             const suggestedTrainingMax = roundToNearest(
               suggestedOneRepMax * (next.trainingMaxPercent / 100),
             );
             return {
-              celebType: "warn" as const,
-              celebMsg: "Missed AMRAP",
-              celebSub: `0 reps at ${amrapWeight} ${next.unit}`,
+              type: "warn" as const,
+              message: "Missed AMRAP",
+              subtitle: `0 reps at ${amrapWeight} ${next.unit}`,
               actionLabel: `Adjust TM to ${suggestedTrainingMax}`,
               actionSub: `1RM: ${next.oneRepMaxes![liftId]} \u2192 ${suggestedOneRepMax} ${next.unit}`,
               _liftId: liftId,
@@ -321,9 +326,9 @@ export const useProgramStore = createStore("program", {
               realOneRepMax * (next.trainingMaxPercent / 100),
             );
             return {
-              celebType: "warn" as const,
-              celebMsg: "Below Target",
-              celebSub: `${repsHit} rep${repsHit > 1 ? "s" : ""} at ${amrapWeight} ${next.unit} (needed ${minReps}+)`,
+              type: "warn" as const,
+              message: "Below Target",
+              subtitle: `${repsHit} rep${repsHit > 1 ? "s" : ""} at ${amrapWeight} ${next.unit} (needed ${minReps}+)`,
               actionLabel: `Adjust TM to ${suggestedTrainingMax}`,
               actionSub: `1RM: ${next.oneRepMaxes![liftId]} \u2192 ${realOneRepMax} ${next.unit}`,
               _liftId: liftId,
@@ -332,16 +337,16 @@ export const useProgramStore = createStore("program", {
             };
           } else if (newOneRepMax) {
             return {
-              celebType: "pr" as const,
-              celebMsg: "New 1RM!",
-              celebSub: `${lift.name}: ${newOneRepMax.old} to ${newOneRepMax.newValue} ${next.unit} \u00B7 ${durationFmt}`,
+              type: "pr" as const,
+              message: "New 1RM!",
+              subtitle: `${lift.name}: ${newOneRepMax.old} to ${newOneRepMax.newValue} ${next.unit} \u00B7 ${durationFmt}`,
             };
           }
         }
         return {
-          celebType: "done" as const,
-          celebMsg: "Workout Logged",
-          celebSub: `${lift.name} \u00B7 ${durationFmt}`,
+          type: "done" as const,
+          message: "Workout Logged",
+          subtitle: `${lift.name} \u00B7 ${durationFmt}`,
         };
       },
 
@@ -372,16 +377,17 @@ export const useProgramStore = createStore("program", {
           });
           const newAssistanceMaximums = { ...state.assistanceMaximums };
           getAllAssistanceExercises(programData)
-            .filter((a) => !a.isBodyweight)
-            .forEach((a) => {
-              if (newAssistanceMaximums[a.id])
-                newAssistanceMaximums[a.id] = newAssistanceMaximums[a.id] + (a.inc || 5);
+            .filter((exercise) => !exercise.isBodyweight)
+            .forEach((exercise) => {
+              if (newAssistanceMaximums[exercise.id])
+                newAssistanceMaximums[exercise.id] =
+                  newAssistanceMaximums[exercise.id] + (exercise.weightIncrement || 5);
             });
           const newBodyweightBaselines = { ...state.bodyweightBaselines };
           getAllAssistanceExercises(programData)
-            .filter((a) => a.isBodyweight)
-            .forEach((a) => {
-              newBodyweightBaselines[a.id] = (newBodyweightBaselines[a.id] || 8) + 1;
+            .filter((exercise) => exercise.isBodyweight)
+            .forEach((exercise) => {
+              newBodyweightBaselines[exercise.id] = (newBodyweightBaselines[exercise.id] || 8) + 1;
             });
           save({
             cycle: state.cycle + 1,

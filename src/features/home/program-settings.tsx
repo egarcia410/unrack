@@ -27,20 +27,20 @@ export const ProgramSettings = () => {
         <div className="mb-4">
           <p className="text-xs font-bold text-th-t3 tracking-wide mb-2 mt-1">Units</p>
           <div className="grid grid-cols-2 gap-2 mb-4">
-            {(["lb", "kg"] as const).map((u) => (
+            {(["lb", "kg"] as const).map((unitOption) => (
               <Button
-                key={u}
+                key={unitOption}
                 onClick={() => {
-                  if (unit !== u) unitToggled();
+                  if (unit !== unitOption) unitToggled();
                 }}
                 className={cn(
                   "rounded-xl p-3 text-sm font-sans cursor-pointer text-center min-h-11",
-                  unit === u
+                  unit === unitOption
                     ? "bg-th-ad border border-th-am text-th-a font-bold"
                     : "bg-th-s2 border border-th-b text-th-t3 font-medium",
                 )}
               >
-                {u === "lb" ? "Pounds (lb)" : "Kilograms (kg)"}
+                {unitOption === "lb" ? "Pounds (lb)" : "Kilograms (kg)"}
               </Button>
             ))}
           </div>

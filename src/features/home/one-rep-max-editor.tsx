@@ -23,22 +23,22 @@ export const OneRepMaxEditor = () => {
     >
       <SectionLabel className="mb-2">1 Rep Maxes</SectionLabel>
       <div className={cn("flex flex-col gap-1.5", editOneRepMax ? "mb-3" : "mb-5")}>
-        {LIFTS.map((l) => (
+        {LIFTS.map((lift) => (
           <LiftInputRow
-            key={l.id}
-            liftId={l.id}
-            liftName={l.name}
+            key={lift.id}
+            liftId={lift.id}
+            liftName={lift.name}
             value={
               editOneRepMax
-                ? (editOneRepMax[l.id] ?? String(oneRepMaxes[l.id]))
-                : String(oneRepMaxes[l.id])
+                ? (editOneRepMax[lift.id] ?? String(oneRepMaxes[lift.id]))
+                : String(oneRepMaxes[lift.id])
             }
             onChange={(val) => {
-              updateEditOneRepMax((p) => {
+              updateEditOneRepMax((previousValues) => {
                 const prev =
-                  p ||
+                  previousValues ||
                   Object.fromEntries(Object.entries(oneRepMaxes).map(([k, v]) => [k, String(v)]));
-                return { ...prev, [l.id]: val };
+                return { ...prev, [lift.id]: val };
               });
             }}
           />

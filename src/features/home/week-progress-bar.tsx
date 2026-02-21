@@ -5,7 +5,7 @@ import { LIFT_ORDER } from "../../constants/program";
 export const WeekProgressBar = () => {
   const { workouts, cycle, week } = useProgramStore();
 
-  const weekDone = workouts.filter((w) => w.cycle === cycle && w.week === week);
+  const weekDone = workouts.filter((workout) => workout.cycle === cycle && workout.week === week);
   const progress = weekDone.length;
   const total = LIFT_ORDER.length;
 

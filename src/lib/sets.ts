@@ -25,34 +25,38 @@ export const deriveSupplementalSets = (
   weekDef: WeekDef,
   activeWeek: number,
 ): SupplementalSet[] => {
-  const supp: SupplementalSet[] = [];
+  const supplementalSets: SupplementalSet[] = [];
   if (variant.supplemental) {
-    for (let i = 0; i < variant.supplemental.numSets; i++)
-      supp.push({
+    for (let setIndex = 0; setIndex < variant.supplemental.numSets; setIndex++)
+      supplementalSets.push({
         reps: variant.supplemental.reps,
         percentage: variant.supplemental.percentage,
-        key: `s${i}`,
+        key: `s${setIndex}`,
       });
   } else if (variant.supplementalWeekly) {
     const weeklySupp = variant.supplementalWeekly[activeWeek];
-    for (let i = 0; i < weeklySupp.numSets; i++)
-      supp.push({ reps: weeklySupp.reps, percentage: weeklySupp.percentage, key: `s${i}` });
+    for (let setIndex = 0; setIndex < weeklySupp.numSets; setIndex++)
+      supplementalSets.push({
+        reps: weeklySupp.reps,
+        percentage: weeklySupp.percentage,
+        key: `s${setIndex}`,
+      });
   } else if (variant.firstSetLast) {
-    for (let i = 0; i < variant.firstSetLast.numSets; i++)
-      supp.push({
+    for (let setIndex = 0; setIndex < variant.firstSetLast.numSets; setIndex++)
+      supplementalSets.push({
         reps: variant.firstSetLast.reps,
         percentage: weekDef.sets[0].percentage,
-        key: `s${i}`,
+        key: `s${setIndex}`,
       });
   } else if (variant.secondSetLast) {
-    for (let i = 0; i < variant.secondSetLast.numSets; i++)
-      supp.push({
+    for (let setIndex = 0; setIndex < variant.secondSetLast.numSets; setIndex++)
+      supplementalSets.push({
         reps: variant.secondSetLast.reps,
         percentage: weekDef.sets[1].percentage,
-        key: `s${i}`,
+        key: `s${setIndex}`,
       });
   }
-  return supp;
+  return supplementalSets;
 };
 
 export const deriveAllSets = (
@@ -62,27 +66,27 @@ export const deriveAllSets = (
   accessories: Exercise[],
   isDeload: boolean,
 ): WorkoutSet[] => [
-  ...WARMUP_SETS.map((w, i) => ({
-    key: `w${i}`,
+  ...WARMUP_SETS.map((warmupSet, setIndex) => ({
+    key: `w${setIndex}`,
     type: "warmup" as SetType,
-    intensity: w.percentage,
+    intensity: warmupSet.percentage,
     isDeload,
   })),
-  ...weekDef.sets.map((s, i) => ({
-    key: `m${i}`,
+  ...weekDef.sets.map((mainSet, setIndex) => ({
+    key: `m${setIndex}`,
     type: "main" as SetType,
-    intensity: s.percentage,
+    intensity: mainSet.percentage,
     isDeload,
   })),
-  ...supplementalSets.map((s) => ({
-    key: s.key,
+  ...supplementalSets.map((supplementalSet) => ({
+    key: supplementalSet.key,
     type: "supp" as SetType,
-    intensity: s.percentage,
+    intensity: supplementalSet.percentage,
     isDeload,
   })),
-  ...accessories.map((a) => ({
-    key: `a_${a.id}`,
-    type: (a.isBodyweight ? "acc_bw" : "acc_wt") as SetType,
+  ...accessories.map((accessory) => ({
+    key: `a_${accessory.id}`,
+    type: (accessory.isBodyweight ? "acc_bw" : "acc_wt") as SetType,
     intensity: (ASSISTANCE_WEEKS[activeWeek] || ASSISTANCE_WEEKS[0]).percentage,
     isDeload,
   })),

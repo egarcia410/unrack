@@ -8,19 +8,19 @@ import { useAccessories, useAllAccessoriesDone } from "./use-workout-selectors";
 export const AssistanceSection = () => {
   const { assistanceMaximums } = useProgramStore();
   const accessories = useAccessories();
-  const allAccDone = useAllAccessoriesDone();
+  const allAssistanceDone = useAllAccessoriesDone();
 
   return (
     <Collapsible.Root defaultOpen>
-      <SectionHeader label="Assistance" done={allAccDone} />
+      <SectionHeader label="Assistance" done={allAssistanceDone} />
       <Collapsible.Panel>
         <div className="flex flex-col gap-1.5 mb-6">
-          {accessories.map((a, index) => {
-            const discovered = a.isBodyweight || (assistanceMaximums[a.id] || 0) > 0;
+          {accessories.map((exercise, exerciseIndex) => {
+            const discovered = exercise.isBodyweight || (assistanceMaximums[exercise.id] || 0) > 0;
             return discovered ? (
-              <DiscoveredAssistanceCard key={a.id} exerciseIndex={index} />
+              <DiscoveredAssistanceCard key={exercise.id} exerciseIndex={exerciseIndex} />
             ) : (
-              <UndiscoveredAssistanceCard key={a.id} exerciseIndex={index} />
+              <UndiscoveredAssistanceCard key={exercise.id} exerciseIndex={exerciseIndex} />
             );
           })}
         </div>

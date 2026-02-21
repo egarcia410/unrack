@@ -17,8 +17,8 @@ type WorkoutState = {
   activeDay: number;
   checked: Record<string, boolean>;
   amrapReps: Record<string, string>;
-  accLog: Record<string, { w?: string }>;
-  accSets: Record<string, number>;
+  assistanceLog: Record<string, { w?: string }>;
+  assistanceSetCounts: Record<string, number>;
   timerKey: number;
   showTimer: boolean;
   timerInfo: RestInfo;
@@ -31,8 +31,8 @@ const initialState: WorkoutState = {
   activeDay: 0,
   checked: {},
   amrapReps: {},
-  accLog: {},
-  accSets: {},
+  assistanceLog: {},
+  assistanceSetCounts: {},
   timerKey: 0,
   showTimer: false,
   timerInfo: { duration: 90, reason: "" },
@@ -110,17 +110,17 @@ export const useWorkoutStore = createStore("workout", {
       });
     },
 
-    setAccLog: (
+    setAssistanceLog: (
       updater: (prev: Record<string, { w?: string }>) => Record<string, { w?: string }>,
     ) => {
       set((s) => {
-        s.accLog = updater(s.accLog);
+        s.assistanceLog = updater(s.assistanceLog);
       });
     },
 
-    tapAccSet: (accId: string) => {
+    incrementAssistanceSet: (accId: string) => {
       const state = get();
-      const { activeWeek, activeDay, accSets, accLog, timerKey } = state;
+      const { activeWeek, activeDay, assistanceSetCounts, assistanceLog, timerKey } = state;
       const programState = useProgramStore.getState();
       const programData = extractProgramData(programState);
       const liftId = LIFT_ORDER[activeDay % LIFT_ORDER.length];
@@ -136,14 +136,15 @@ export const useWorkoutStore = createStore("workout", {
       const setType: SetType = exercise.isBodyweight ? "acc_bw" : "acc_wt";
       const isDeload = activeWeek === 3;
 
-      const setsDone = accSets[accId] || 0;
+      const setsDone = assistanceSetCounts[accId] || 0;
       if (setsDone < maxSets) {
         const nextSetCount = setsDone + 1;
         const updates: Partial<WorkoutState> = {
-          accSets: { ...accSets, [accId]: nextSetCount },
+          assistanceSetCounts: { ...assistanceSetCounts, [accId]: nextSetCount },
         };
         if (nextSetCount >= maxSets) {
-          const weightEntered = exercise.isBodyweight || parseFloat(accLog[accId]?.w || "0") > 0;
+          const weightEntered =
+            exercise.isBodyweight || parseFloat(assistanceLog[accId]?.w || "0") > 0;
           if (discovered || weightEntered) {
             updates.checked = {
               ...state.checked,
@@ -160,9 +161,9 @@ export const useWorkoutStore = createStore("workout", {
       }
     },
 
-    untapAccSet: (accId: string) => {
+    decrementAssistanceSet: (accId: string) => {
       const state = get();
-      const { activeWeek, activeDay, accSets } = state;
+      const { activeWeek, activeDay, assistanceSetCounts } = state;
       const programState = useProgramStore.getState();
       const programData = extractProgramData(programState);
       const liftId = LIFT_ORDER[activeDay % LIFT_ORDER.length];
@@ -176,7 +177,7 @@ export const useWorkoutStore = createStore("workout", {
         ? getAssistancePrescription(exercise, activeWeek, programData, liftId).sets
         : weekRx.sets;
 
-      const setsDone = accSets[accId] || 0;
+      const setsDone = assistanceSetCounts[accId] || 0;
       if (setsDone > 0) {
         const nextSetCount = setsDone - 1;
         const nextChecked = { ...state.checked };
@@ -184,7 +185,7 @@ export const useWorkoutStore = createStore("workout", {
           delete nextChecked[`a_${accId}`];
         }
         set({
-          accSets: { ...accSets, [accId]: nextSetCount },
+          assistanceSetCounts: { ...assistanceSetCounts, [accId]: nextSetCount },
           checked: nextChecked,
         });
       }

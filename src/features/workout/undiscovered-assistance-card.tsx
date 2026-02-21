@@ -12,19 +12,26 @@ type UndiscoveredAssistanceCardProps = {
 };
 
 export const UndiscoveredAssistanceCard = ({ exerciseIndex }: UndiscoveredAssistanceCardProps) => {
-  const { activeWeek, accSets, accLog, setSwapSlot, setAccLog, setChecked } = useWorkoutStore();
+  const {
+    activeWeek,
+    assistanceSetCounts,
+    assistanceLog,
+    setSwapSlot,
+    setAssistanceLog,
+    setChecked,
+  } = useWorkoutStore();
   const liftId = useActiveLiftId();
   const exercise = useAccessoryExercise(exerciseIndex);
 
-  const weekRx = ASSISTANCE_WEEKS[activeWeek] || ASSISTANCE_WEEKS[0];
-  const log = accLog[exercise.id] || {};
+  const assistanceWeek = ASSISTANCE_WEEKS[activeWeek] || ASSISTANCE_WEEKS[0];
+  const log = assistanceLog[exercise.id] || {};
   const hasWeight = parseFloat(log.w || "0") > 0;
-  const setsDone = accSets[exercise.id] || 0;
-  const allSetsDone = setsDone >= weekRx.sets;
+  const setsDone = assistanceSetCounts[exercise.id] || 0;
+  const allSetsDone = setsDone >= assistanceWeek.sets;
   const isComplete = allSetsDone && (exercise.isBodyweight || hasWeight);
 
   const handleWeightChange = (value: string) => {
-    setAccLog((prev) => ({
+    setAssistanceLog((prev) => ({
       ...prev,
       [exercise.id]: { w: value },
     }));
@@ -64,15 +71,15 @@ export const UndiscoveredAssistanceCard = ({ exerciseIndex }: UndiscoveredAssist
           <ChevronDown size={12} className="shrink-0 text-th-t4" />
         </div>
         <span className="text-sm font-mono font-semibold text-th-y shrink-0 ml-2">
-          {weekRx.sets}
+          {assistanceWeek.sets}
           {"\u00D7"}
-          {weekRx.reps}
+          {assistanceWeek.reps}
         </span>
       </Button>
       <div className="text-xs text-th-t3 mb-2.5">
         {exercise.isBodyweight
           ? "Max reps with good form each set."
-          : "Same weight all " + weekRx.sets + " sets. Leave 1\u20132 reps in the tank."}
+          : "Same weight all " + assistanceWeek.sets + " sets. Leave 1\u20132 reps in the tank."}
       </div>
       {!exercise.isBodyweight && (
         <div className="flex items-center gap-2 mb-2.5">
@@ -85,7 +92,7 @@ export const UndiscoveredAssistanceCard = ({ exerciseIndex }: UndiscoveredAssist
           />
         </div>
       )}
-      <AssistanceSetButtons exerciseId={exercise.id} totalSets={weekRx.sets} />
+      <AssistanceSetButtons exerciseId={exercise.id} totalSets={assistanceWeek.sets} />
     </div>
   );
 };

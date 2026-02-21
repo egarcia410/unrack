@@ -19,8 +19,8 @@ export const PRRing = ({ size, min, prGoal, value, active, activated }: PRRingPr
   const empty = !activated && value <= 0;
   const zeroReps = activated && value <= 0;
   const cap = prGoal || min;
-  const pct = empty ? 0 : zeroReps ? 0 : Math.min(value / cap, 1);
-  const off = circumference - pct * circumference;
+  const percentage = empty ? 0 : zeroReps ? 0 : Math.min(value / cap, 1);
+  const strokeDashOffset = circumference - percentage * circumference;
   const isPR = !empty && !zeroReps && prGoal && value >= prGoal;
   const aboveMin = !empty && !zeroReps && value > min && !isPR;
   const atMin = !empty && !zeroReps && value === min;
@@ -43,8 +43,8 @@ export const PRRing = ({ size, min, prGoal, value, active, activated }: PRRingPr
   useEffect(() => {
     if (isPR && !prevPRRef.current) {
       setShowConfetti(true);
-      const t = setTimeout(() => setShowConfetti(false), 900);
-      return () => clearTimeout(t);
+      const timeoutId = setTimeout(() => setShowConfetti(false), 900);
+      return () => clearTimeout(timeoutId);
     }
     if (!isPR) setShowConfetti(false);
     prevPRRef.current = !!isPR;
@@ -68,7 +68,7 @@ export const PRRing = ({ size, min, prGoal, value, active, activated }: PRRingPr
           stroke={strokeColor}
           strokeWidth={isPR ? strokeWidth + 1 : strokeWidth}
           strokeDasharray={circumference}
-          strokeDashoffset={empty ? circumference : off}
+          strokeDashoffset={empty ? circumference : strokeDashOffset}
           strokeLinecap="round"
           className="transition-[stroke-dashoffset,stroke] duration-[400ms,300ms]"
         />

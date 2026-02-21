@@ -7,14 +7,14 @@ import { cn } from "../../lib/cn";
 import type { TemplateId } from "../../types";
 
 export const TemplatePickerDrawer = () => {
-  const { showTemplPicker, setShowTemplPicker } = useUIStore();
+  const { showTemplatePicker, setShowTemplatePicker } = useUIStore();
   const { template, templateChanged } = useProgramStore();
 
   return (
     <Drawer
-      open={showTemplPicker}
+      open={showTemplatePicker}
       onOpenChange={(open) => {
-        if (!open) setShowTemplPicker(false);
+        if (!open) setShowTemplatePicker(false);
       }}
       title="Template"
     >

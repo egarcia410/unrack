@@ -15,19 +15,18 @@ type DiscoveredAssistanceCardProps = {
 };
 
 export const DiscoveredAssistanceCard = ({ exerciseIndex }: DiscoveredAssistanceCardProps) => {
-  const { accSets, setSwapSlot } = useWorkoutStore();
+  const { assistanceSetCounts, setSwapSlot } = useWorkoutStore();
   const { unit } = useProgramStore();
   const liftId = useActiveLiftId();
   const exercise = useAccessoryExercise(exerciseIndex);
-  const rx = useAssistancePrescription(exerciseIndex);
-  const setsDone = accSets[exercise.id] || 0;
-  const done = setsDone >= rx.sets;
+  const prescription = useAssistancePrescription(exerciseIndex);
+  const setsDone = assistanceSetCounts[exercise.id] || 0;
+  const done = setsDone >= prescription.sets;
 
-  // TODO: Remove unicode
-  const rxText =
-    rx.type === "bw"
-      ? `${rx.sets}\u00D7${rx.reps}`
-      : `${rx.sets}\u00D7${rx.reps}${rx.weight && rx.weight > 0 ? " @ " + rx.weight + " " + unit : ""}`;
+  const prescriptionText =
+    prescription.type === "bw"
+      ? `${prescription.sets}\u00D7${prescription.reps}`
+      : `${prescription.sets}\u00D7${prescription.reps}${prescription.weight && prescription.weight > 0 ? " @ " + prescription.weight + " " + unit : ""}`;
 
   return (
     <div
@@ -50,9 +49,11 @@ export const DiscoveredAssistanceCard = ({ exerciseIndex }: DiscoveredAssistance
           <span className="text-base font-semibold text-th-t">{exercise.name}</span>
           <ChevronDown size={12} className="shrink-0 text-th-t4" />
         </div>
-        <span className="text-sm font-mono font-semibold text-th-t3 shrink-0 ml-2">{rxText}</span>
+        <span className="text-sm font-mono font-semibold text-th-t3 shrink-0 ml-2">
+          {prescriptionText}
+        </span>
       </Button>
-      <AssistanceSetButtons exerciseId={exercise.id} totalSets={rx.sets} />
+      <AssistanceSetButtons exerciseId={exercise.id} totalSets={prescription.sets} />
     </div>
   );
 };

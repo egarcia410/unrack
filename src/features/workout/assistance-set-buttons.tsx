@@ -9,8 +9,8 @@ type AssistanceSetButtonsProps = {
 };
 
 export const AssistanceSetButtons = ({ exerciseId, totalSets }: AssistanceSetButtonsProps) => {
-  const { accSets, tapAccSet, untapAccSet } = useWorkoutStore();
-  const setsDone = accSets[exerciseId] || 0;
+  const { assistanceSetCounts, incrementAssistanceSet, decrementAssistanceSet } = useWorkoutStore();
+  const setsDone = assistanceSetCounts[exerciseId] || 0;
 
   return (
     <div className="flex items-center gap-2">
@@ -23,9 +23,9 @@ export const AssistanceSetButtons = ({ exerciseId, totalSets }: AssistanceSetBut
             key={setIndex}
             onClick={
               isNext
-                ? () => tapAccSet(exerciseId)
+                ? () => incrementAssistanceSet(exerciseId)
                 : isLast
-                  ? () => untapAccSet(exerciseId)
+                  ? () => decrementAssistanceSet(exerciseId)
                   : undefined
             }
             className={cn(

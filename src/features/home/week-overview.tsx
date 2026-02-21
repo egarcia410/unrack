@@ -7,7 +7,7 @@ import { Badge } from "../../components/badge";
 
 export const WeekOverview = () => {
   const { cycle, week, template } = useProgramStore();
-  const { setShowTemplPicker } = useUIStore();
+  const { setShowTemplatePicker } = useUIStore();
 
   const variant = TEMPLATES[template];
   const weekDef = variant.weeks[week];
@@ -19,7 +19,7 @@ export const WeekOverview = () => {
         <Badge variant="muted">{weekDef.label} Phase</Badge>
       </div>
       <Button
-        onClick={() => setShowTemplPicker(true)}
+        onClick={() => setShowTemplatePicker(true)}
         className="flex items-center gap-1.5 bg-none border-none p-0 cursor-pointer min-h-11"
       >
         <h2 className="text-2xl font-extrabold m-0 text-th-t">{variant.name}</h2>

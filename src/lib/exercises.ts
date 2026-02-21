@@ -1,4 +1,4 @@
-import type { Exercise, AccRx, ProgramData } from "../types";
+import type { Exercise, AssistancePrescription, ProgramData } from "../types";
 import {
   EXERCISE_LIB,
   DEFAULT_ACC,
@@ -10,41 +10,44 @@ import {
 import { roundToNearest } from "./calc";
 
 export function findExercise(id: string): Exercise | undefined {
-  return EXERCISE_LIB.find((e) => e.id === id);
+  return EXERCISE_LIB.find((exercise) => exercise.id === id);
 }
 
-export function getAssistanceForLift(liftId: string, prog: ProgramData): Exercise[] {
-  const slots = prog.assistanceSlots?.[liftId] || DEFAULT_ACC[liftId];
-  return slots.map((exId, i) => {
-    let exercise: Exercise | undefined = EXERCISE_LIB.find((e) => e.id === exId);
-    if (!exercise && prog.customExercises?.[exId]) exercise = prog.customExercises[exId];
-    if (!exercise) exercise = EXERCISE_LIB[i]; // fallback
-    return { ...exercise, slot: i };
+export function getAssistanceForLift(liftId: string, programData: ProgramData): Exercise[] {
+  const slots = programData.assistanceSlots?.[liftId] || DEFAULT_ACC[liftId];
+  return slots.map((exerciseId, slotIndex) => {
+    let exercise: Exercise | undefined = EXERCISE_LIB.find(
+      (existing) => existing.id === exerciseId,
+    );
+    if (!exercise && programData.customExercises?.[exerciseId])
+      exercise = programData.customExercises[exerciseId];
+    if (!exercise) exercise = EXERCISE_LIB[slotIndex]; // fallback
+    return { ...exercise, slot: slotIndex };
   });
 }
 
-export function getAllAssistanceExercises(prog: ProgramData): Exercise[] {
+export function getAllAssistanceExercises(programData: ProgramData): Exercise[] {
   const all = [...EXERCISE_LIB];
-  if (prog.customExercises)
-    Object.values(prog.customExercises).forEach((e) => {
-      if (!all.find((x) => x.id === e.id)) all.push(e);
+  if (programData.customExercises)
+    Object.values(programData.customExercises).forEach((exercise) => {
+      if (!all.find((existing) => existing.id === exercise.id)) all.push(exercise);
     });
   return all;
 }
 
-export function isAssistanceDiscovered(acc: Exercise, prog: ProgramData): boolean {
-  return acc.isBodyweight || (prog.assistanceMaximums?.[acc.id] || 0) > 0;
+export function isAssistanceDiscovered(exercise: Exercise, programData: ProgramData): boolean {
+  return exercise.isBodyweight || (programData.assistanceMaximums?.[exercise.id] || 0) > 0;
 }
 
 export function getAssistancePrescription(
-  acc: Exercise,
-  weekIdx: number,
-  prog: ProgramData,
+  exercise: Exercise,
+  weekIndex: number,
+  programData: ProgramData,
   liftId?: string,
-): AccRx {
-  if (acc.isBodyweight) {
-    const base = prog.bodyweightBaselines?.[acc.id] || BW_BASE;
-    const isDeload = weekIdx === 3;
+): AssistancePrescription {
+  if (exercise.isBodyweight) {
+    const base = programData.bodyweightBaselines?.[exercise.id] || BW_BASE;
+    const isDeload = weekIndex === 3;
     const reps = isDeload ? Math.max(3, base - BW_DELOAD_DROP) : base;
     return {
       type: "bw",
@@ -55,19 +58,19 @@ export function getAssistancePrescription(
       base,
     };
   }
-  const week = ASSISTANCE_WEEKS[weekIdx] || ASSISTANCE_WEEKS[0];
-  const maximum = prog.assistanceMaximums?.[acc.id] || 0;
-  const category = acc.category;
-  const fatigued = !!(liftId && FATIGUE[liftId] && FATIGUE[liftId].includes(category));
-  const fatiguePct = fatigued ? 0.9 : 1;
+  const week = ASSISTANCE_WEEKS[weekIndex] || ASSISTANCE_WEEKS[0];
+  const maximum = programData.assistanceMaximums?.[exercise.id] || 0;
+  const category = exercise.category;
+  const isFatigued = !!(liftId && FATIGUE[liftId] && FATIGUE[liftId].includes(category));
+  const fatigueMultiplier = isFatigued ? 0.9 : 1;
   return {
     type: "wt",
     sets: week.sets,
     reps: week.reps,
-    pct: week.percentage,
-    weight: maximum > 0 ? roundToNearest(maximum * week.percentage * fatiguePct) : 0,
-    label: week.label + (fatigued ? " *" : ""),
+    percentage: week.percentage,
+    weight: maximum > 0 ? roundToNearest(maximum * week.percentage * fatigueMultiplier) : 0,
+    label: week.label + (isFatigued ? " *" : ""),
     maximum,
-    fatigued,
+    fatigued: isFatigued,
   };
 }

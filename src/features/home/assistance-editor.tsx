@@ -14,10 +14,10 @@ const getAllUsedAccessories = (prog: Parameters<typeof getAssistanceForLift>[1])
   const seen = new Set<string>();
   const result: Exercise[] = [];
   LIFT_ORDER.forEach((liftId) => {
-    getAssistanceForLift(liftId, prog).forEach((a) => {
-      if (!seen.has(a.id)) {
-        seen.add(a.id);
-        result.push(a);
+    getAssistanceForLift(liftId, prog).forEach((exercise) => {
+      if (!seen.has(exercise.id)) {
+        seen.add(exercise.id);
+        result.push(exercise);
       }
     });
   });
@@ -31,7 +31,7 @@ export const AssistanceEditor = () => {
 
   const programData = extractProgramData(programState);
   const allUsedAccs = getAllUsedAccessories(programData);
-  const weightedAccs = allUsedAccs.filter((a) => !a.isBodyweight);
+  const weightedAccs = allUsedAccs.filter((exercise) => !exercise.isBodyweight);
 
   if (weightedAccs.length === 0) return null;
 
@@ -39,20 +39,20 @@ export const AssistanceEditor = () => {
     <>
       <SectionLabel className="mb-2">Assistance</SectionLabel>
       <div className={cn("flex flex-col gap-1.5", editAssistance ? "mb-3" : "mb-5")}>
-        {weightedAccs.map((a) => {
-          const workingMax = assistanceMaximums?.[a.id] || 0;
+        {weightedAccs.map((exercise) => {
+          const workingMax = assistanceMaximums?.[exercise.id] || 0;
           const currentValue = editAssistance
-            ? parseFloat(String(editAssistance[a.id])) || 0
+            ? parseFloat(String(editAssistance[exercise.id])) || 0
             : workingMax;
           const phasePercentage = (ASSISTANCE_WEEKS[week] || ASSISTANCE_WEEKS[0]).percentage;
           const phaseWeight = currentValue > 0 ? roundToNearest(currentValue * phasePercentage) : 0;
           return (
             <div
-              key={a.id}
+              key={exercise.id}
               className="flex justify-between items-center bg-th-s2 rounded-lg px-3 py-2 min-h-11"
             >
               <div>
-                <span className="text-sm font-semibold text-th-t">{a.name}</span>
+                <span className="text-sm font-semibold text-th-t">{exercise.name}</span>
                 {phaseWeight > 0 && (
                   <span className="text-xs font-mono text-th-a block">
                     Phase weight: {phaseWeight}
@@ -60,18 +60,22 @@ export const AssistanceEditor = () => {
                 )}
               </div>
               <WeightInput
-                inputId={`assistance-${a.id}`}
+                inputId={`assistance-${exercise.id}`}
                 value={
-                  editAssistance ? String(editAssistance[a.id] || "") : String(workingMax || "")
+                  editAssistance
+                    ? String(editAssistance[exercise.id] || "")
+                    : String(workingMax || "")
                 }
                 onChange={(val) => {
-                  updateEditAssistance((p) => {
+                  updateEditAssistance((previousValues) => {
                     const base: Record<string, string | number> = {};
-                    weightedAccs.forEach((x) => {
-                      base[x.id] =
-                        p?.[x.id] !== undefined ? p[x.id] : assistanceMaximums?.[x.id] || 0;
+                    weightedAccs.forEach((accessory) => {
+                      base[accessory.id] =
+                        previousValues?.[accessory.id] !== undefined
+                          ? previousValues[accessory.id]
+                          : assistanceMaximums?.[accessory.id] || 0;
                     });
-                    return { ...base, [a.id]: val };
+                    return { ...base, [exercise.id]: val };
                   });
                 }}
               />

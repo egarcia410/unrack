@@ -1,12 +1,15 @@
 import type { RestInfo, SetType } from "../types";
 
-export const roundToNearest = (w: number, n = 5) => Math.round(w / n) * n;
+export const roundToNearest = (weight: number, roundingInterval = 5) =>
+  Math.round(weight / roundingInterval) * roundingInterval;
 
-export const epley = (w: number, r: number) => Math.round(w * (1 + r / 30));
+export const epley = (weight: number, reps: number) => Math.round(weight * (1 + reps / 30));
 
-export const calcTM = (orm: number, tmPct: number) => roundToNearest(orm * (tmPct / 100));
+export const calcTM = (oneRepMax: number, trainingMaxPercentage: number) =>
+  roundToNearest(oneRepMax * (trainingMaxPercentage / 100));
 
-export const calcWeight = (tm: number, pct: number) => roundToNearest(tm * pct);
+export const calcWeight = (trainingMax: number, percentage: number) =>
+  roundToNearest(trainingMax * percentage);
 
 export const smartRest = (setType: SetType, intensity: number, isDeload: boolean): RestInfo => {
   if (isDeload) return { duration: 60, reason: "Deload phase" };

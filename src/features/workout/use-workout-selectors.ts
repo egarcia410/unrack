@@ -76,18 +76,22 @@ export const useAllAccessoriesDone = () => {
   const accessories = useAccessories();
   const { activeWeek } = useWorkoutStore();
   const liftId = useActiveLiftId();
-  const { accSets, accLog } = useWorkoutStore();
+  const { assistanceSetCounts, assistanceLog } = useWorkoutStore();
   const programState = useProgramStore();
   const programData = extractProgramData(programState);
 
-  return accessories.every((a) => {
-    if (!isAssistanceDiscovered(a, programData)) {
-      const log = accLog[a.id];
-      const weekRx = ASSISTANCE_WEEKS[activeWeek] || ASSISTANCE_WEEKS[0];
-      return (accSets[a.id] || 0) >= weekRx.sets && log && parseFloat(log.w || "0") > 0;
+  return accessories.every((exercise) => {
+    if (!isAssistanceDiscovered(exercise, programData)) {
+      const assistanceLogEntry = assistanceLog[exercise.id];
+      const assistanceWeek = ASSISTANCE_WEEKS[activeWeek] || ASSISTANCE_WEEKS[0];
+      return (
+        (assistanceSetCounts[exercise.id] || 0) >= assistanceWeek.sets &&
+        assistanceLogEntry &&
+        parseFloat(assistanceLogEntry.w || "0") > 0
+      );
     }
-    const rx = getAssistancePrescription(a, activeWeek, programData, liftId);
-    return (accSets[a.id] || 0) >= rx.sets;
+    const prescription = getAssistancePrescription(exercise, activeWeek, programData, liftId);
+    return (assistanceSetCounts[exercise.id] || 0) >= prescription.sets;
   });
 };
 
@@ -95,19 +99,19 @@ export const useAccessoryProgress = () => {
   const accessories = useAccessories();
   const { activeWeek } = useWorkoutStore();
   const liftId = useActiveLiftId();
-  const { accSets } = useWorkoutStore();
+  const { assistanceSetCounts } = useWorkoutStore();
   const programState = useProgramStore();
   const programData = extractProgramData(programState);
 
   let done = 0;
   let total = 0;
-  accessories.forEach((a) => {
-    const disc = isAssistanceDiscovered(a, programData);
-    const rx = disc
-      ? getAssistancePrescription(a, activeWeek, programData, liftId)
+  accessories.forEach((exercise) => {
+    const isDiscovered = isAssistanceDiscovered(exercise, programData);
+    const prescription = isDiscovered
+      ? getAssistancePrescription(exercise, activeWeek, programData, liftId)
       : { sets: (ASSISTANCE_WEEKS[activeWeek] || ASSISTANCE_WEEKS[0]).sets };
-    total += rx.sets;
-    done += accSets[a.id] || 0;
+    total += prescription.sets;
+    done += assistanceSetCounts[exercise.id] || 0;
   });
   return { done, total };
 };

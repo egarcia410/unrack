@@ -1,4 +1,5 @@
 import { Minus, Plus, ArrowRight } from "lucide-react";
+import { cva } from "class-variance-authority";
 import { useProgramStore } from "../../stores/program-store";
 import { useWorkoutStore } from "../../stores/workout-store";
 import { calcWeight, epley } from "../../lib/calc";
@@ -7,6 +8,28 @@ import { PRRing } from "../../components/pr-ring";
 import { IconButton } from "../../components/icon-button";
 import { Button } from "@base-ui/react/button";
 import { useActiveLiftId, useActiveTrainingMax, useActiveWeekDef } from "./use-workout-selectors";
+
+type AmrapStatus =
+  | "inactive"
+  | "zeroReps"
+  | "belowMinimum"
+  | "atMinimum"
+  | "aboveMinimum"
+  | "personalRecord";
+
+const amrapCardVariants = cva("rounded-2xl p-4 transition-all duration-250 border-2", {
+  variants: {
+    status: {
+      inactive: "bg-th-s1 border-th-t4",
+      zeroReps: "bg-th-s1 border-th-r",
+      belowMinimum: "bg-th-s1 border-th-r",
+      atMinimum: "bg-th-s1 border-th-g",
+      aboveMinimum: "bg-th-s1 border-th-pr",
+      personalRecord: "bg-th-god border-th-go animate-gold-glow",
+    },
+  },
+  defaultVariants: { status: "inactive" },
+});
 
 type AmrapCardProps = {
   setIndex: number;
@@ -49,28 +72,20 @@ export const AmrapCard = ({ setIndex }: AmrapCardProps) => {
     setAmrapReps((prev) => ({ ...prev, [setKey]: String((parseInt(prev[setKey]) || 0) + 1) }));
   };
 
-  const borderColor = !amrapDone
-    ? "var(--color-th-t4)"
+  const amrapStatus: AmrapStatus = !amrapDone
+    ? "inactive"
     : entered <= 0
-      ? "var(--color-th-r)"
+      ? "zeroReps"
       : isPR
-        ? "var(--color-th-go)"
+        ? "personalRecord"
         : entered > minReps
-          ? "var(--color-th-pr)"
+          ? "aboveMinimum"
           : entered === minReps
-            ? "var(--color-th-g)"
-            : entered < minReps
-              ? "var(--color-th-r)"
-              : "var(--color-th-g)";
+            ? "atMinimum"
+            : "belowMinimum";
 
   return (
-    <div
-      className={cn(
-        "rounded-2xl p-4 transition-all duration-250",
-        isPR ? "bg-th-god animate-gold-glow" : "bg-th-s1",
-      )}
-      style={{ border: `2px solid ${borderColor}` }}
-    >
+    <div className={cn(amrapCardVariants({ status: amrapStatus }))}>
       {!amrapDone ? (
         <Button
           onClick={() => activateAmrap(setIndex)}

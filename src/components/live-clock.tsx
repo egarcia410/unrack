@@ -7,8 +7,8 @@ type LiveClockProps = {
 export const LiveClock = ({ start }: LiveClockProps) => {
   const [now, setNow] = useState(Date.now());
   useEffect(() => {
-    const t = setInterval(() => setNow(Date.now()), 1000);
-    return () => clearInterval(t);
+    const intervalId = setInterval(() => setNow(Date.now()), 1000);
+    return () => clearInterval(intervalId);
   }, []);
   const elapsed = Math.floor((now - start) / 1000);
   const minutes = Math.floor(elapsed / 60),

@@ -45,25 +45,25 @@ export type Exercise = {
   name: string;
   category: string;
   isBodyweight: boolean;
-  inc?: number;
+  weightIncrement?: number;
   slot?: number;
 };
 
-export type AccWeek = {
+export type AssistanceWeek = {
   sets: number;
   reps: number;
   percentage: number;
   label: string;
 };
 
-export type AccRx = {
+export type AssistancePrescription = {
   type: "bw" | "wt";
   sets: number;
   reps: number;
   total?: number;
   label: string;
   base?: number;
-  pct?: number;
+  percentage?: number;
   weight?: number;
   maximum?: number;
   fatigued?: boolean;
@@ -118,7 +118,7 @@ export type RestInfo = {
   reason: string;
 };
 
-export type CelebState = {
+export type CelebrationState = {
   type: "done" | "pr" | "cycle" | "warn";
   message: string;
   subtitle: string;

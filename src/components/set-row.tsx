@@ -33,16 +33,16 @@ const checkboxVariants = cva("w-6 h-6 rounded-md border-2 flex items-center just
 type SetRowProps = {
   setKey: string;
   reps: number | string;
-  pct: number;
+  percentage: number;
 };
 
-export const SetRow = ({ setKey, reps, pct }: SetRowProps) => {
+export const SetRow = ({ setKey, reps, percentage }: SetRowProps) => {
   const { unit } = useProgramStore();
   const trainingMax = useActiveTrainingMax();
   const { checked, onSetCheck } = useWorkoutStore();
 
   const done = !!checked[setKey];
-  const weight = calcWeight(trainingMax, pct);
+  const weight = calcWeight(trainingMax, percentage);
 
   return (
     <Button onClick={() => onSetCheck(setKey)} className={cn(setRowVariants({ done }))}>
@@ -53,7 +53,9 @@ export const SetRow = ({ setKey, reps, pct }: SetRowProps) => {
         {weight} <span className="text-xs text-th-t4">{unit}</span>
       </span>
       <span className="text-sm font-mono text-th-t3">x{reps}</span>
-      <span className="text-xs font-mono text-th-t4 text-right">{Math.round(pct * 100)}%</span>
+      <span className="text-xs font-mono text-th-t4 text-right">
+        {Math.round(percentage * 100)}%
+      </span>
     </Button>
   );
 };

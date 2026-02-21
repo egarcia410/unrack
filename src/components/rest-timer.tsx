@@ -23,8 +23,8 @@ export const RestTimer = () => {
 
   useEffect(() => {
     if (!paused && left > 0) {
-      const t = setTimeout(() => setLeft((l) => l - 1), 1000);
-      return () => clearTimeout(t);
+      const timeoutId = setTimeout(() => setLeft((previous) => previous - 1), 1000);
+      return () => clearTimeout(timeoutId);
     }
   }, [left, paused]);
 
@@ -37,10 +37,11 @@ export const RestTimer = () => {
 
   if (!showTimer) return null;
 
-  const formatTime = (s: number) => `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
+  const formatTime = (totalSeconds: number) =>
+    `${Math.floor(totalSeconds / 60)}:${String(totalSeconds % 60).padStart(2, "0")}`;
   const done = left <= 0;
   const urgent = !done && left <= 10;
-  const pct = duration > 0 ? ((duration - left) / duration) * 100 : 100;
+  const percentage = duration > 0 ? ((duration - left) / duration) * 100 : 100;
 
   return (
     <div
@@ -81,15 +82,11 @@ export const RestTimer = () => {
       </div>
       <div className={cn("h-2 rounded overflow-hidden", done ? "bg-black/15" : "bg-th-s3")}>
         <div
-          className="h-full rounded transition-[width] duration-1000 ease-linear"
-          style={{
-            width: `${pct}%`,
-            background: done
-              ? "rgba(0,0,0,0.2)"
-              : urgent
-                ? "var(--color-th-y)"
-                : "var(--color-th-a)",
-          }}
+          className={cn(
+            "h-full rounded transition-[width] duration-1000 ease-linear",
+            done ? "bg-black/20" : urgent ? "bg-th-y" : "bg-th-a",
+          )}
+          style={{ width: `${percentage}%` }}
         />
       </div>
     </div>

@@ -10,11 +10,11 @@ export const SupplementalSection = () => {
   const { checked } = useWorkoutStore();
   const supplementalSets = useSupplementalSets();
 
-  const allSuppDone = supplementalSets.every((s) => checked[s.key]);
+  const allSuppDone = supplementalSets.every((supplementalSet) => checked[supplementalSet.key]);
 
   if (supplementalSets.length === 0) return null;
 
-  const suppLabel =
+  const supplementalLabel =
     template === "bbb" || template === "bbbC" ? "BBB" : template === "fsl" ? "FSL" : "SSL";
 
   return (
@@ -22,12 +22,17 @@ export const SupplementalSection = () => {
       <SectionHeader
         label="Supplemental"
         done={allSuppDone}
-        extra={<span className="text-th-t4">{suppLabel}</span>}
+        extra={<span className="text-th-t4">{supplementalLabel}</span>}
       />
       <Collapsible.Panel>
         <div className="flex flex-col gap-1 mb-6">
-          {supplementalSets.map((s) => (
-            <SetRow key={s.key} setKey={s.key} reps={s.reps} pct={s.percentage} />
+          {supplementalSets.map((supplementalSet) => (
+            <SetRow
+              key={supplementalSet.key}
+              setKey={supplementalSet.key}
+              reps={supplementalSet.reps}
+              percentage={supplementalSet.percentage}
+            />
           ))}
         </div>
       </Collapsible.Panel>

@@ -1,12 +1,36 @@
 import { useNavigate } from "@tanstack/react-router";
 import { Button } from "@base-ui/react/button";
 import { Check } from "lucide-react";
+import { cva } from "class-variance-authority";
 import { useProgramStore } from "../../stores/program-store";
 import { useWorkoutStore } from "../../stores/workout-store";
 import { TEMPLATES, LIFTS, LIFT_ORDER } from "../../constants/program";
 import { calcWeight } from "../../lib/calc";
 import { PRRing } from "../../components/pr-ring";
 import { cn } from "../../lib/cn";
+
+const liftCardVariants = cva(
+  "flex items-center gap-3 rounded-xl px-4 py-3.5 font-sans text-left w-full box-border min-h-14",
+  {
+    variants: {
+      done: {
+        true: "bg-th-gd border border-th-gb cursor-default",
+        false: "bg-th-s1 border border-th-b cursor-pointer",
+      },
+    },
+    defaultVariants: { done: false },
+  },
+);
+
+const checkboxVariants = cva("w-6 h-6 rounded-md border-2 flex items-center justify-center", {
+  variants: {
+    done: {
+      true: "border-th-g bg-th-g text-th-inv",
+      false: "border-th-t4 bg-transparent text-transparent",
+    },
+  },
+  defaultVariants: { done: false },
+});
 
 type LiftCardProps = {
   liftIndex: number;
@@ -18,21 +42,21 @@ export const LiftCard = ({ liftIndex }: LiftCardProps) => {
   const { startWorkout } = useWorkoutStore();
 
   const liftId = LIFT_ORDER[liftIndex];
-  const lift = LIFTS.find((x) => x.id === liftId)!;
+  const lift = LIFTS.find((candidate) => candidate.id === liftId)!;
   const variant = TEMPLATES[template];
   const weekDef = variant.weeks[week];
-  const weekDone = workouts.filter((w) => w.cycle === cycle && w.week === week);
-  const isDone = weekDone.some((w) => w.lift === liftId);
-  const doneEntry = weekDone.find((w) => w.lift === liftId);
+  const weekDone = workouts.filter((workout) => workout.cycle === cycle && workout.week === week);
+  const isDone = weekDone.some((workout) => workout.lift === liftId);
+  const doneEntry = weekDone.find((workout) => workout.lift === liftId);
 
-  const amrapSet = weekDef.sets.find((x) => String(x.reps).includes("+"));
+  const amrapSet = weekDef.sets.find((candidate) => String(candidate.reps).includes("+"));
   const amrapWeight = amrapSet ? calcWeight(trainingMaxes[liftId], amrapSet.percentage) : 0;
 
   let doneReps = 0;
   if (doneEntry?.amrapReps) {
-    Object.values(doneEntry.amrapReps).forEach((v) => {
-      const n = parseInt(v);
-      if (n > 0) doneReps = n;
+    Object.values(doneEntry.amrapReps).forEach((repValue) => {
+      const parsedReps = parseInt(repValue);
+      if (parsedReps > 0) doneReps = parsedReps;
     });
   }
 
@@ -53,21 +77,9 @@ export const LiftCard = ({ liftIndex }: LiftCardProps) => {
           navigate({ to: "/workout" });
         }
       }}
-      className={cn(
-        "flex items-center gap-3 rounded-xl px-4 py-3.5 font-sans text-left w-full box-border min-h-14",
-        isDone
-          ? "bg-th-gd border border-th-gb cursor-default"
-          : "bg-th-s1 border border-th-b cursor-pointer",
-      )}
+      className={cn(liftCardVariants({ done: isDone }))}
     >
-      <div
-        className={cn(
-          "w-6 h-6 rounded-md border-2 flex items-center justify-center",
-          isDone
-            ? "border-th-g bg-th-g text-th-inv"
-            : "border-th-t4 bg-transparent text-transparent",
-        )}
-      >
+      <div className={cn(checkboxVariants({ done: isDone }))}>
         {isDone && <Check size={13} strokeWidth={3} />}
       </div>
       <div className="flex-1">
@@ -78,9 +90,7 @@ export const LiftCard = ({ liftIndex }: LiftCardProps) => {
               month: "short",
               day: "numeric",
             })}
-            {doneEntry.duration
-              ? ` \u00B7 ${Math.floor(doneEntry.duration / 60)} min` // TODO: Remove unicode
-              : ""}
+            {doneEntry.duration ? ` \u00B7 ${Math.floor(doneEntry.duration / 60)} min` : ""}
           </p>
         )}
       </div>

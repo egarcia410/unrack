@@ -5,15 +5,15 @@ import { PrimaryButton } from "../../components/primary-button";
 
 export const WeekCompleteBanner = () => {
   const { workouts, cycle, week, template, weekAdvanced } = useProgramStore();
-  const { setCeleb } = useUIStore();
+  const { setCelebration } = useUIStore();
 
   const variant = TEMPLATES[template];
   const weekDef = variant.weeks[week];
-  const weekDone = workouts.filter((w) => w.cycle === cycle && w.week === week);
+  const weekDone = workouts.filter((workout) => workout.cycle === cycle && workout.week === week);
 
   if (weekDone.length < LIFT_ORDER.length) return null;
 
-  const weekPRs = weekDone.filter((w) => w.newOneRepMax).length;
+  const weekPRs = weekDone.filter((workout) => workout.newOneRepMax).length;
   const isLastWeek = week >= variant.weeks.length - 1;
   const isDeload = !weekDef.sets.some((s) => String(s.reps).includes("+"));
   const nextLabel = isLastWeek
@@ -23,7 +23,7 @@ export const WeekCompleteBanner = () => {
   const handleAdvanceWeek = () => {
     const result = weekAdvanced();
     if (result.type === "cycle") {
-      setCeleb({
+      setCelebration({
         type: "cycle",
         message: result.message!,
         subtitle: result.subtitle!,

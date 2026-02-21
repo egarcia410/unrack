@@ -1,11 +1,17 @@
 import { Button } from "@base-ui/react/button";
 import { useProgramStore } from "../../stores/program-store";
 import { useWorkoutStore } from "../../stores/workout-store";
-import { EXERCISE_LIB, CATS, CAT_LABELS, CAT_COLORS } from "../../constants/exercises";
+import { EXERCISE_LIB, EXERCISE_CATEGORIES, CAT_LABELS } from "../../constants/exercises";
 import { getAssistancePrescription } from "../../lib/exercises";
 import { cn } from "../../lib/cn";
 import { Drawer } from "../../components/drawer";
 import type { ProgramData } from "../../types";
+
+const CATEGORY_TEXT_CLASSES: Record<string, string> = {
+  push: "text-th-pr",
+  pull: "text-th-a",
+  "legs/core": "text-th-y",
+};
 
 export const SwapExerciseDrawer = () => {
   const { swapSlot, activeWeek, setSwapSlot } = useWorkoutStore();
@@ -22,32 +28,34 @@ export const SwapExerciseDrawer = () => {
       title="Swap Exercise"
     >
       {swapSlot &&
-        CATS.map((cat) => {
-          const catColor = CAT_COLORS[cat as keyof typeof CAT_COLORS];
-          const exercises = EXERCISE_LIB.filter((e) => e.category === cat);
+        EXERCISE_CATEGORIES.map((category) => {
+          const exercises = EXERCISE_LIB.filter((exercise) => exercise.category === category);
           return (
-            <div key={cat} className="mb-3">
+            <div key={category} className="mb-3">
               <div
-                className="text-xs font-bold uppercase tracking-wide px-1 pt-2 pb-1"
-                style={{ color: catColor }}
+                className={cn(
+                  "text-xs font-bold uppercase tracking-wide px-1 pt-2 pb-1",
+                  CATEGORY_TEXT_CLASSES[category],
+                )}
               >
-                {CAT_LABELS[cat]}
+                {CAT_LABELS[category]}
               </div>
-              {exercises.map((e) => {
-                const isCurrent = e.id === swapSlot.currentId;
-                const hasMax = !e.isBodyweight && (assistanceMaximums?.[e.id] || 0) > 0;
-                const rx = getAssistancePrescription(
-                  e,
+              {exercises.map((exercise) => {
+                const isCurrent = exercise.id === swapSlot.currentId;
+                const hasMax =
+                  !exercise.isBodyweight && (assistanceMaximums?.[exercise.id] || 0) > 0;
+                const prescription = getAssistancePrescription(
+                  exercise,
                   activeWeek,
                   prescriptionData,
                   swapSlot.liftId,
                 );
-                const isNew = !e.isBodyweight && !hasMax;
+                const isNew = !exercise.isBodyweight && !hasMax;
                 return (
                   <Button
-                    key={e.id}
+                    key={exercise.id}
                     onClick={() => {
-                      if (!isCurrent) exerciseSwapped(e.id).then(() => setSwapSlot(null));
+                      if (!isCurrent) exerciseSwapped(exercise.id).then(() => setSwapSlot(null));
                     }}
                     className={cn(
                       "flex items-center w-full box-border px-3 py-2.5 rounded-xl text-left min-h-12 mb-0.5 gap-2.5",
@@ -68,14 +76,14 @@ export const SwapExerciseDrawer = () => {
                         isCurrent ? "font-bold" : "font-medium",
                       )}
                     >
-                      {e.name}
+                      {exercise.name}
                     </span>
                     {isCurrent && (
                       <span className="text-xs font-mono font-bold text-th-a">CURRENT</span>
                     )}
                     {!isCurrent && hasMax && (
                       <span className="text-xs font-mono font-bold text-th-pr bg-th-prd px-2.5 py-0.5 rounded-full">
-                        {rx.weight} {unit}
+                        {prescription.weight} {unit}
                       </span>
                     )}
                     {!isCurrent && isNew && (

@@ -1,4 +1,4 @@
-import type { ThemeMode, CelebState } from "../types";
+import type { ThemeMode, CelebrationState } from "../types";
 import { createStore } from "./polaris";
 
 const THEME_KEY = "unrack-theme";
@@ -30,8 +30,8 @@ type UIState = {
   showConfirm: boolean;
   showSettings: boolean;
   settingsExpanded: boolean;
-  showTemplPicker: boolean;
-  celeb: CelebState | null;
+  showTemplatePicker: boolean;
+  celebration: CelebrationState | null;
   editOneRepMax: EditOneRepMaxState | null;
   editAssistance: EditAssistanceState | null;
 };
@@ -41,8 +41,8 @@ const initialState: UIState = {
   showConfirm: false,
   showSettings: false,
   settingsExpanded: false,
-  showTemplPicker: false,
-  celeb: null,
+  showTemplatePicker: false,
+  celebration: null,
   editOneRepMax: null,
   editAssistance: null,
 };
@@ -66,8 +66,8 @@ export const useUIStore = createStore("ui", {
       set((s) => {
         s.settingsExpanded = !s.settingsExpanded;
       }),
-    setShowTemplPicker: (show: boolean) => set({ showTemplPicker: show }),
-    setCeleb: (celeb: CelebState | null) => set({ celeb }),
+    setShowTemplatePicker: (show: boolean) => set({ showTemplatePicker: show }),
+    setCelebration: (celebration: CelebrationState | null) => set({ celebration }),
     setEditOneRepMax: (edit: EditOneRepMaxState | null) => set({ editOneRepMax: edit }),
     updateEditOneRepMax: (
       updater: (prev: EditOneRepMaxState | null) => EditOneRepMaxState | null,

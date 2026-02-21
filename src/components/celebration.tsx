@@ -6,49 +6,49 @@ import { useUIStore } from "../stores/ui-store";
 import { useProgramStore } from "../stores/program-store";
 
 export const Celebration = () => {
-  const { celeb, setCeleb } = useUIStore();
+  const { celebration, setCelebration } = useUIStore();
   const { trainingMaxAdjusted } = useProgramStore();
 
   useEffect(() => {
-    if (celeb && celeb.type !== "warn") {
-      const t = setTimeout(() => setCeleb(null), 3500);
-      return () => clearTimeout(t);
+    if (celebration && celebration.type !== "warn") {
+      const timeoutId = setTimeout(() => setCelebration(null), 3500);
+      return () => clearTimeout(timeoutId);
     }
-  }, [celeb, setCeleb]);
+  }, [celebration, setCelebration]);
 
-  if (!celeb) return null;
+  if (!celebration) return null;
 
-  const onDone = () => setCeleb(null);
-  const onAction = celeb._liftId
+  const onDone = () => setCelebration(null);
+  const onAction = celebration._liftId
     ? async () => {
         await trainingMaxAdjusted(
-          celeb._liftId!,
-          celeb._suggestedOneRepMax!,
-          celeb._suggestedTrainingMax!,
+          celebration._liftId!,
+          celebration._suggestedOneRepMax!,
+          celebration._suggestedTrainingMax!,
         );
-        setCeleb(null);
+        setCelebration(null);
       }
     : undefined;
 
   const icon =
-    celeb.type === "cycle"
+    celebration.type === "cycle"
       ? String.fromCodePoint(0x1f3c6)
-      : celeb.type === "pr"
+      : celebration.type === "pr"
         ? String.fromCodePoint(0x26a1)
-        : celeb.type === "warn"
+        : celebration.type === "warn"
           ? String.fromCodePoint(0x26a0)
           : String.fromCodePoint(0x1f4aa);
 
   return (
     <div
-      onClick={celeb.type === "warn" ? undefined : onDone}
+      onClick={celebration.type === "warn" ? undefined : onDone}
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 animate-celeb-fade"
     >
       <div
-        onClick={(e) => e.stopPropagation()}
+        onClick={(event) => event.stopPropagation()}
         className={cn(
-          "text-center px-7 py-9 rounded-3xl bg-th-s1 border max-w-80 w-[90%] animate-celeb-pop",
-          celeb.type === "warn" ? "border-th-r/25" : "border-th-b",
+          "text-center px-7 py-9 rounded-3xl bg-th-s1 border max-w-80 w-11/12 animate-celeb-pop",
+          celebration.type === "warn" ? "border-th-r/25" : "border-th-b",
         )}
       >
         <div className="text-5xl mb-3" aria-hidden="true">
@@ -57,30 +57,30 @@ export const Celebration = () => {
         <h2
           className={cn(
             "text-xl font-extrabold mb-1.5",
-            celeb.type === "warn" ? "text-th-r" : "text-th-t",
+            celebration.type === "warn" ? "text-th-r" : "text-th-t",
           )}
         >
-          {celeb.message}
+          {celebration.message}
         </h2>
         <p
           className={cn(
             "text-sm text-th-t2 leading-normal",
-            celeb.type === "warn" ? "mb-4" : "mb-0",
+            celebration.type === "warn" ? "mb-4" : "mb-0",
           )}
         >
-          {celeb.subtitle}
+          {celebration.subtitle}
         </p>
-        {celeb.type === "warn" && onAction && (
+        {celebration.type === "warn" && onAction && (
           <>
-            {celeb.actionSub && (
-              <p className="text-xs font-mono text-th-t3 mb-3">{celeb.actionSub}</p>
+            {celebration.actionSub && (
+              <p className="text-xs font-mono text-th-t3 mb-3">{celebration.actionSub}</p>
             )}
             <div className="flex gap-2">
               <Button
                 onClick={onAction}
                 className="flex-1 py-3.5 rounded-xl border-none bg-th-r text-white text-sm font-bold font-sans cursor-pointer min-h-12"
               >
-                {celeb.actionLabel || "Adjust"}
+                {celebration.actionLabel || "Adjust"}
               </Button>
               <Button
                 onClick={onDone}
@@ -91,7 +91,7 @@ export const Celebration = () => {
             </div>
           </>
         )}
-        {celeb.type === "cycle" && (
+        {celebration.type === "cycle" && (
           <div className="mt-3.5 flex gap-1.5 justify-center">
             {[1, 2, 3, 4, 5].map((i) => (
               <div

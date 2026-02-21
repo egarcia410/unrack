@@ -9,7 +9,7 @@ export const WorkingSetsSection = () => {
   const weekDef = useActiveWeekDef();
   const { checked } = useWorkoutStore();
 
-  const allMainDone = weekDef.sets.every((_, i) => checked[`m${i}`]);
+  const allMainDone = weekDef.sets.every((_, setIndex) => checked[`m${setIndex}`]);
 
   return (
     <Collapsible.Root defaultOpen>
@@ -24,7 +24,7 @@ export const WorkingSetsSection = () => {
               return <AmrapCard key={key} setIndex={i} />;
             }
 
-            return <SetRow key={key} setKey={key} reps={set.reps} pct={set.percentage} />;
+            return <SetRow key={key} setKey={key} reps={set.reps} percentage={set.percentage} />;
           })}
         </div>
       </Collapsible.Panel>
