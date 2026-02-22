@@ -1,6 +1,6 @@
 import type { RestInfo, SetType } from "../types";
 import { TEMPLATES, LIFT_ORDER } from "../constants/program";
-import { ASSISTANCE_WEEKS } from "../constants/exercises";
+import { WEIGHTED_ASSISTANCE_WEEKS, BODYWEIGHT_ASSISTANCE_WEEKS } from "../constants/exercises";
 import { smartRest } from "../lib/calc";
 import {
   getAssistanceForLift,
@@ -137,8 +137,15 @@ export const useWorkoutStore = createStore("workout", {
       const exercise = accessories.find((a) => a.id === accId);
       if (!exercise) return;
 
-      const discovered = isAssistanceDiscovered(exercise, programState.assistanceMaximums);
-      const weekRx = ASSISTANCE_WEEKS[activePhase] || ASSISTANCE_WEEKS[0];
+      const discovered = isAssistanceDiscovered(
+        exercise,
+        programState.assistanceMaximums,
+        programState.bodyweightBaselines,
+      );
+      const weightedWeek = WEIGHTED_ASSISTANCE_WEEKS[activePhase] || WEIGHTED_ASSISTANCE_WEEKS[0];
+      const bodyweightWeek =
+        BODYWEIGHT_ASSISTANCE_WEEKS[activePhase] || BODYWEIGHT_ASSISTANCE_WEEKS[0];
+      const undiscoveredSets = exercise.isBodyweight ? bodyweightWeek.sets : weightedWeek.sets;
       const maxSets = discovered
         ? getAssistancePrescription(
             exercise,
@@ -147,8 +154,8 @@ export const useWorkoutStore = createStore("workout", {
             programState.bodyweightBaselines,
             liftId,
           ).sets
-        : weekRx.sets;
-      const setType: SetType = exercise.isBodyweight ? "acc_bw" : "acc_wt";
+        : undiscoveredSets;
+      const setType: SetType = exercise.isBodyweight ? "acc_bodyweight" : "acc_weighted";
       const isDeload = activePhase === 3;
 
       const setsDone = assistanceSetCounts[accId] || 0;
@@ -158,9 +165,8 @@ export const useWorkoutStore = createStore("workout", {
           assistanceSetCounts: { ...assistanceSetCounts, [accId]: nextSetCount },
         };
         if (nextSetCount >= maxSets) {
-          const weightEntered =
-            exercise.isBodyweight || parseFloat(assistanceLog[accId]?.w || "0") > 0;
-          if (discovered || weightEntered) {
+          const inputEntered = parseFloat(assistanceLog[accId]?.w || "0") > 0;
+          if (discovered || inputEntered) {
             updates.checked = {
               ...state.checked,
               [`a_${accId}`]: true,
@@ -168,7 +174,7 @@ export const useWorkoutStore = createStore("workout", {
           }
         }
         if (nextSetCount < maxSets) {
-          updates.timerInfo = smartRest(setType, weekRx.percentage, isDeload);
+          updates.timerInfo = smartRest(setType, weightedWeek.percentage, isDeload);
           updates.showTimer = true;
           updates.timerKey = timerKey + 1;
         }
@@ -189,8 +195,15 @@ export const useWorkoutStore = createStore("workout", {
       const exercise = accessories.find((a) => a.id === accId);
       if (!exercise) return;
 
-      const discovered = isAssistanceDiscovered(exercise, programState.assistanceMaximums);
-      const weekRx = ASSISTANCE_WEEKS[activePhase] || ASSISTANCE_WEEKS[0];
+      const discovered = isAssistanceDiscovered(
+        exercise,
+        programState.assistanceMaximums,
+        programState.bodyweightBaselines,
+      );
+      const weightedWeek = WEIGHTED_ASSISTANCE_WEEKS[activePhase] || WEIGHTED_ASSISTANCE_WEEKS[0];
+      const bodyweightWeek =
+        BODYWEIGHT_ASSISTANCE_WEEKS[activePhase] || BODYWEIGHT_ASSISTANCE_WEEKS[0];
+      const undiscoveredSets = exercise.isBodyweight ? bodyweightWeek.sets : weightedWeek.sets;
       const maxSets = discovered
         ? getAssistancePrescription(
             exercise,
@@ -199,7 +212,7 @@ export const useWorkoutStore = createStore("workout", {
             programState.bodyweightBaselines,
             liftId,
           ).sets
-        : weekRx.sets;
+        : undiscoveredSets;
 
       const setsDone = assistanceSetCounts[accId] || 0;
       if (setsDone > 0) {

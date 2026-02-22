@@ -4,7 +4,7 @@ export type TemplateId = "classic" | "bbb" | "bbbC" | "fsl" | "ssl";
 
 export type Unit = "lb" | "kg";
 
-export type SetType = "warmup" | "main" | "supp" | "acc_bw" | "acc_wt";
+export type SetType = "warmup" | "main" | "supp" | "acc_bodyweight" | "acc_weighted";
 
 export type Lift = {
   id: string;
@@ -51,25 +51,48 @@ export type Exercise = {
   slot?: number;
 };
 
-export type AssistanceWeek = {
+export type AssistancePhaseLabel = "Volume" | "Moderate" | "Intensity" | "Deload";
+
+export type WeightedAssistanceWeek = {
+  type: "weighted";
   sets: number;
   reps: number;
   percentage: number;
-  label: string;
+  label: AssistancePhaseLabel;
 };
 
-export type AssistancePrescription = {
-  type: "bw" | "wt";
+export type BodyweightAssistanceWeek = {
+  type: "bodyweight";
+  sets: number;
+  multiplier: number;
+  label: AssistancePhaseLabel;
+};
+
+export type AssistanceWeek = WeightedAssistanceWeek | BodyweightAssistanceWeek;
+
+export type WeightedAssistancePrescription = {
+  type: "weighted";
   sets: number;
   reps: number;
-  total?: number;
+  percentage: number;
+  weight: number;
   label: string;
-  base?: number;
-  percentage?: number;
-  weight?: number;
-  maximum?: number;
-  fatigued?: boolean;
+  maximum: number;
+  fatigued: boolean;
 };
+
+export type BodyweightAssistancePrescription = {
+  type: "bodyweight";
+  sets: number;
+  reps: number;
+  total: number;
+  label: AssistancePhaseLabel;
+  base: number;
+};
+
+export type AssistancePrescription =
+  | WeightedAssistancePrescription
+  | BodyweightAssistancePrescription;
 
 export type WorkoutEntry = {
   cycle: number;

@@ -99,7 +99,7 @@ export const AmrapCard = ({ setIndex }: AmrapCardProps) => {
         <div className="overflow-hidden">
           <Button
             onClick={() => activateAmrap(setIndex)}
-            className="flex items-center justify-between w-full box-border bg-none border-none p-0 min-h-14"
+            className="flex items-center justify-between w-full box-border bg-none border-none p-0 cursor-pointer min-h-14"
           >
             <div>
               <span className="text-xl font-extrabold font-mono text-th-t">{amrapWeight}</span>

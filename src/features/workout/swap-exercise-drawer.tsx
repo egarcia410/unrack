@@ -3,7 +3,7 @@ import { useProgramStore } from "../../stores/program-store";
 import { useWorkoutStore } from "../../stores/workout-store";
 import { useOverlayStore } from "../../stores/overlay-store";
 import { EXERCISE_LIB, EXERCISE_CATEGORIES, CAT_LABELS } from "../../constants/exercises";
-import { getAssistancePrescription } from "../../lib/exercises";
+import { getAssistanceForLift, getAssistancePrescription } from "../../lib/exercises";
 import { cn } from "../../lib/cn";
 import { Drawer } from "../../components/drawer";
 
@@ -16,7 +16,22 @@ const CATEGORY_TEXT_CLASSES: Record<string, string> = {
 export const SwapExerciseDrawer = () => {
   const { activeSwapSlot, setActiveSwapSlot } = useOverlayStore();
   const { activePhase } = useWorkoutStore();
-  const { assistanceMaximums, bodyweightBaselines, unit, exerciseSwapped } = useProgramStore();
+  const {
+    assistanceMaximums,
+    bodyweightBaselines,
+    assistanceSlots,
+    customExercises,
+    unit,
+    exerciseSwapped,
+  } = useProgramStore();
+
+  const usedExerciseIds = activeSwapSlot
+    ? new Set(
+        getAssistanceForLift(activeSwapSlot.liftId, assistanceSlots, customExercises)
+          .filter((exercise) => exercise.id !== activeSwapSlot.currentId)
+          .map((exercise) => exercise.id),
+      )
+    : new Set<string>();
 
   return (
     <Drawer
@@ -41,8 +56,11 @@ export const SwapExerciseDrawer = () => {
               </div>
               {exercises.map((exercise) => {
                 const isCurrent = exercise.id === activeSwapSlot.currentId;
+                const isUsed = usedExerciseIds.has(exercise.id);
                 const hasMax =
                   !exercise.isBodyweight && (assistanceMaximums?.[exercise.id] || 0) > 0;
+                const hasBaseline =
+                  exercise.isBodyweight && (bodyweightBaselines?.[exercise.id] || 0) > 0;
                 const prescription = getAssistancePrescription(
                   exercise,
                   activePhase,
@@ -50,24 +68,33 @@ export const SwapExerciseDrawer = () => {
                   bodyweightBaselines,
                   activeSwapSlot.liftId,
                 );
-                const isNew = !exercise.isBodyweight && !hasMax;
+                const isNew = exercise.isBodyweight ? !hasBaseline : !hasMax;
                 return (
                   <Button
                     key={exercise.id}
+                    disabled={isUsed}
                     onClick={() => {
-                      if (!isCurrent) exerciseSwapped(exercise.id);
+                      if (!isCurrent && !isUsed) exerciseSwapped(exercise.id);
                     }}
                     className={cn(
                       "flex items-center w-full box-border px-3 py-2.5 rounded-xl text-left min-h-12 mb-0.5 gap-2.5",
                       isCurrent
                         ? "bg-th-ad border border-th-am cursor-default"
-                        : "bg-transparent border border-transparent cursor-pointer",
+                        : isUsed
+                          ? "bg-transparent border border-transparent cursor-default opacity-35"
+                          : "bg-transparent border border-transparent cursor-pointer",
                     )}
                   >
                     <div
                       className={cn(
                         "w-1.5 h-1.5 rounded-full shrink-0",
-                        isCurrent ? "bg-th-a" : isNew ? "bg-th-t4" : "bg-th-g",
+                        isCurrent
+                          ? "bg-th-a"
+                          : isUsed
+                            ? "bg-th-t4"
+                            : isNew
+                              ? "bg-th-t4"
+                              : "bg-th-g",
                       )}
                     />
                     <span
@@ -81,12 +108,20 @@ export const SwapExerciseDrawer = () => {
                     {isCurrent && (
                       <span className="text-xs font-mono font-bold text-th-a">CURRENT</span>
                     )}
-                    {!isCurrent && hasMax && (
+                    {isUsed && !isCurrent && (
+                      <span className="text-xs font-mono text-th-t4">IN USE</span>
+                    )}
+                    {!isCurrent && !isUsed && hasMax && prescription.type === "weighted" && (
                       <span className="text-xs font-mono font-bold text-th-pr bg-th-prd px-2.5 py-0.5 rounded-full">
                         {prescription.weight} {unit}
                       </span>
                     )}
-                    {!isCurrent && isNew && (
+                    {!isCurrent && !isUsed && hasBaseline && prescription.type === "bodyweight" && (
+                      <span className="text-xs font-mono font-bold text-th-pr bg-th-prd px-2.5 py-0.5 rounded-full">
+                        {prescription.reps} reps
+                      </span>
+                    )}
+                    {!isCurrent && !isUsed && isNew && (
                       <span className="text-xs font-mono text-th-y bg-th-yd px-2 py-0.5 rounded-full">
                         NEW
                       </span>

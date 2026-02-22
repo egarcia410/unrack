@@ -8,7 +8,7 @@ import type {
   WorkoutEntry,
 } from "../types";
 import { LIFTS, LIFT_ORDER, TEMPLATES } from "../constants/program";
-import { ASSISTANCE_WEEKS } from "../constants/exercises";
+import { WEIGHTED_ASSISTANCE_WEEKS } from "../constants/exercises";
 import { roundToNearest, epley, calcWeight } from "../lib/calc";
 import { getAssistanceForLift, getAllAssistanceExercises } from "../lib/exercises";
 import { loadData, saveData, clearData } from "../lib/storage";
@@ -212,6 +212,15 @@ export const useProgramStore = createStore("program", {
         save({ assistanceMaximums: newMaximums });
       },
 
+      bodyweightBaselinesSaved: (editBaselines: Record<string, string | number>) => {
+        const state = get();
+        const newBaselines = { ...state.bodyweightBaselines };
+        Object.entries(editBaselines).forEach(([exerciseId, value]) => {
+          newBaselines[exerciseId] = parseInt(String(value)) || 0;
+        });
+        save({ bodyweightBaselines: newBaselines });
+      },
+
       workoutFinished: () => {
         const state = get();
         const { activePhase, activeDay, amrapReps, assistanceLog, workoutStart } =
@@ -250,12 +259,20 @@ export const useProgramStore = createStore("program", {
             };
         }
 
-        const assistanceHistory = { ...state.assistanceHistory };
+        const assistanceHistory: typeof state.assistanceHistory = {};
+        for (const [key, entries] of Object.entries(state.assistanceHistory)) {
+          assistanceHistory[key] = [...entries];
+        }
         const assistanceMaximums = { ...state.assistanceMaximums };
         const bodyweightBaselines = { ...state.bodyweightBaselines };
         assistanceExercises.forEach((exercise) => {
           if (!assistanceHistory[exercise.id]) assistanceHistory[exercise.id] = [];
+          const logEntry = assistanceLog[exercise.id];
           if (exercise.isBodyweight) {
+            const enteredReps = parseInt(logEntry?.w || "0");
+            if (enteredReps > 0 && !bodyweightBaselines[exercise.id]) {
+              bodyweightBaselines[exercise.id] = enteredReps;
+            }
             assistanceHistory[exercise.id].push({
               datetime: Date.now(),
               cycle: state.cycle,
@@ -263,18 +280,19 @@ export const useProgramStore = createStore("program", {
               isBodyweight: true,
             });
           } else {
-            const log = assistanceLog[exercise.id];
-            if (log && parseFloat(log.w || "0") > 0) {
+            if (logEntry && parseFloat(logEntry.w || "0") > 0) {
               assistanceHistory[exercise.id].push({
-                weight: parseFloat(log.w || "0"),
+                weight: parseFloat(logEntry.w || "0"),
                 datetime: Date.now(),
                 cycle: state.cycle,
                 phase: activePhase,
               });
               if (!assistanceMaximums[exercise.id] || assistanceMaximums[exercise.id] === 0) {
+                const weekPercentage = (
+                  WEIGHTED_ASSISTANCE_WEEKS[activePhase] || WEIGHTED_ASSISTANCE_WEEKS[0]
+                ).percentage;
                 assistanceMaximums[exercise.id] = roundToNearest(
-                  parseFloat(log.w || "0") /
-                    (ASSISTANCE_WEEKS[activePhase] || ASSISTANCE_WEEKS[0]).percentage,
+                  parseFloat(logEntry.w || "0") / weekPercentage,
                 );
               }
             }
@@ -397,7 +415,9 @@ export const useProgramStore = createStore("program", {
           getAllAssistanceExercises(state.customExercises)
             .filter((exercise) => exercise.isBodyweight)
             .forEach((exercise) => {
-              newBodyweightBaselines[exercise.id] = (newBodyweightBaselines[exercise.id] || 8) + 1;
+              if (newBodyweightBaselines[exercise.id] > 0) {
+                newBodyweightBaselines[exercise.id] += 1;
+              }
             });
           save({
             cycle: state.cycle + 1,

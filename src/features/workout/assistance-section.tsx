@@ -6,7 +6,7 @@ import { UndiscoveredAssistanceCard } from "./undiscovered-assistance-card";
 import { useAccessories, useAllAccessoriesDone } from "./use-workout-selectors";
 
 export const AssistanceSection = () => {
-  const { assistanceMaximums } = useProgramStore();
+  const { assistanceMaximums, bodyweightBaselines } = useProgramStore();
   const accessories = useAccessories();
   const allAssistanceDone = useAllAccessoriesDone();
 
@@ -16,7 +16,9 @@ export const AssistanceSection = () => {
       <Collapsible.Panel className="overflow-hidden h-(--collapsible-panel-height) transition-[height] duration-200 data-starting-style:h-0 data-ending-style:h-0">
         <div className="flex flex-col gap-1.5 mb-6">
           {accessories.map((exercise, exerciseIndex) => {
-            const discovered = exercise.isBodyweight || (assistanceMaximums[exercise.id] || 0) > 0;
+            const discovered = exercise.isBodyweight
+              ? (bodyweightBaselines[exercise.id] || 0) > 0
+              : (assistanceMaximums[exercise.id] || 0) > 0;
             return discovered ? (
               <DiscoveredAssistanceCard key={exercise.id} exerciseIndex={exerciseIndex} />
             ) : (

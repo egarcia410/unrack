@@ -11,6 +11,7 @@ type WeightInputProps = {
   required?: boolean;
   min?: number;
   className?: string;
+  suffix?: string;
 };
 
 export const WeightInput = ({
@@ -22,6 +23,7 @@ export const WeightInput = ({
   required = false,
   min = 1,
   className,
+  suffix,
 }: WeightInputProps) => {
   const { unit } = useProgramStore();
   const alignClass = align === "center" ? "text-center" : "text-right";
@@ -45,7 +47,7 @@ export const WeightInput = ({
           )}
         />
       </NumberField.Root>
-      <span className="text-sm text-th-t4 font-mono">{unit}</span>
+      <span className="text-sm text-th-t4 font-mono">{suffix ?? unit}</span>
     </div>
   );
 };

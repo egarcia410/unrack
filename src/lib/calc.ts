@@ -14,8 +14,8 @@ export const calcWeight = (trainingMax: number, percentage: number) =>
 export const smartRest = (setType: SetType, intensity: number, isDeload: boolean): RestInfo => {
   if (isDeload) return { duration: 60, reason: "Deload phase" };
   if (setType === "warmup") return { duration: 60, reason: "Warm-up" };
-  if (setType === "acc_bw") return { duration: 60, reason: "Bodyweight" };
-  if (setType === "acc_wt") return { duration: 90, reason: "Assistance" };
+  if (setType === "acc_bodyweight") return { duration: 60, reason: "Bodyweight" };
+  if (setType === "acc_weighted") return { duration: 90, reason: "Assistance" };
   if (setType === "supp")
     return intensity <= 0.55
       ? { duration: 90, reason: "Volume — metabolic stress" }

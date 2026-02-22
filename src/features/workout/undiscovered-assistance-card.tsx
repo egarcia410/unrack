@@ -2,7 +2,7 @@ import { Button } from "@base-ui/react/button";
 import { ChevronDown } from "lucide-react";
 import { useWorkoutStore } from "../../stores/workout-store";
 import { useOverlayStore } from "../../stores/overlay-store";
-import { ASSISTANCE_WEEKS } from "../../constants/exercises";
+import { WEIGHTED_ASSISTANCE_WEEKS, BODYWEIGHT_ASSISTANCE_WEEKS } from "../../constants/exercises";
 import { cn } from "../../lib/cn";
 import { WeightInput } from "../../components/weight-input";
 import { AssistanceSetButtons } from "./assistance-set-buttons";
@@ -24,14 +24,19 @@ export const UndiscoveredAssistanceCard = ({ exerciseIndex }: UndiscoveredAssist
   const { setActiveSwapSlot } = useOverlayStore();
   const exercise = useAccessoryExercise(exerciseIndex);
 
-  const assistanceWeek = ASSISTANCE_WEEKS[activePhase] || ASSISTANCE_WEEKS[0];
+  const weightedWeek = WEIGHTED_ASSISTANCE_WEEKS[activePhase] || WEIGHTED_ASSISTANCE_WEEKS[0];
+  const bodyweightWeek = BODYWEIGHT_ASSISTANCE_WEEKS[activePhase] || BODYWEIGHT_ASSISTANCE_WEEKS[0];
+  const totalSets = exercise.isBodyweight ? bodyweightWeek.sets : weightedWeek.sets;
+  const prescriptionLabel = exercise.isBodyweight
+    ? `${bodyweightWeek.sets} sets`
+    : `${weightedWeek.sets}x${weightedWeek.reps}`;
   const log = assistanceLog[exercise.id] || {};
-  const hasWeight = parseFloat(log.w || "0") > 0;
+  const hasInput = parseFloat(log.w || "0") > 0;
   const setsDone = assistanceSetCounts[exercise.id] || 0;
-  const allSetsDone = setsDone >= assistanceWeek.sets;
-  const isComplete = allSetsDone && (exercise.isBodyweight || hasWeight);
+  const allSetsDone = setsDone >= totalSets;
+  const isComplete = allSetsDone && hasInput;
 
-  const handleWeightChange = (value: string) => {
+  const handleInputChange = (value: string) => {
     setAssistanceLog((prev) => ({
       ...prev,
       [exercise.id]: { w: value },
@@ -72,26 +77,26 @@ export const UndiscoveredAssistanceCard = ({ exerciseIndex }: UndiscoveredAssist
           <ChevronDown size={12} className="shrink-0 text-th-t4" />
         </div>
         <span className="text-sm font-mono font-semibold text-th-y shrink-0 ml-2">
-          {assistanceWeek.sets}x{assistanceWeek.reps}
+          {prescriptionLabel}
         </span>
       </Button>
       <div className="text-xs text-th-t3 mb-2.5">
         {exercise.isBodyweight
-          ? "Max reps with good form each set."
-          : "Same weight all " + assistanceWeek.sets + " sets. Leave 1-2 reps in the tank."}
+          ? "How many reps can you do comfortably for " + totalSets + " sets?"
+          : "Same weight all " + totalSets + " sets. Leave 1-2 reps in the tank."}
       </div>
-      {!exercise.isBodyweight && (
-        <div className="flex items-center gap-2 mb-2.5">
-          <span className="text-sm font-semibold text-th-t">Weight:</span>
-          <WeightInput
-            inputId={`acc-weight-${exercise.id}`}
-            value={log.w || ""}
-            onChange={handleWeightChange}
-            align="center"
-          />
-        </div>
-      )}
-      <AssistanceSetButtons exerciseId={exercise.id} totalSets={assistanceWeek.sets} />
+      <div className="flex items-center gap-2 mb-2.5">
+        <span className="text-sm font-semibold text-th-t">
+          {exercise.isBodyweight ? "Reps:" : "Weight:"}
+        </span>
+        <WeightInput
+          inputId={`acc-${exercise.isBodyweight ? "reps" : "weight"}-${exercise.id}`}
+          value={log.w || ""}
+          onChange={handleInputChange}
+          align="center"
+        />
+      </div>
+      <AssistanceSetButtons exerciseId={exercise.id} totalSets={totalSets} />
     </div>
   );
 };

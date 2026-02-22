@@ -1,5 +1,5 @@
 import type { Template, Phase, SetType, Exercise } from "../types";
-import { ASSISTANCE_WEEKS } from "../constants/exercises";
+import { WEIGHTED_ASSISTANCE_WEEKS } from "../constants/exercises";
 
 export const WARMUP_SETS = [
   { reps: 5, percentage: 0.4 },
@@ -78,8 +78,8 @@ export const deriveAllSets = (
   })),
   ...accessories.map((accessory) => ({
     key: `a_${accessory.id}`,
-    type: (accessory.isBodyweight ? "acc_bw" : "acc_wt") as SetType,
-    intensity: (ASSISTANCE_WEEKS[phaseIndex] || ASSISTANCE_WEEKS[0]).percentage,
+    type: (accessory.isBodyweight ? "acc_bodyweight" : "acc_weighted") as SetType,
+    intensity: (WEIGHTED_ASSISTANCE_WEEKS[phaseIndex] || WEIGHTED_ASSISTANCE_WEEKS[0]).percentage,
     isDeload,
   })),
 ];

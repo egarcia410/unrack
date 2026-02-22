@@ -1,4 +1,4 @@
-import type { Exercise, AssistanceWeek } from "../types";
+import type { Exercise, WeightedAssistanceWeek, BodyweightAssistanceWeek } from "../types";
 
 export const EXERCISE_LIB: Exercise[] = [
   { id: "dips", name: "Dips", category: "push", isBodyweight: true },
@@ -108,12 +108,16 @@ export const FATIGUE: Record<string, string[]> = {
   ohp: ["push"],
 };
 
-export const ASSISTANCE_WEEKS: AssistanceWeek[] = [
-  { sets: 4, reps: 10, percentage: 0.6, label: "Volume" },
-  { sets: 4, reps: 8, percentage: 0.67, label: "Moderate" },
-  { sets: 4, reps: 6, percentage: 0.75, label: "Intensity" },
-  { sets: 3, reps: 10, percentage: 0.5, label: "Deload" },
+export const WEIGHTED_ASSISTANCE_WEEKS: WeightedAssistanceWeek[] = [
+  { type: "weighted", sets: 4, reps: 10, percentage: 0.6, label: "Volume" },
+  { type: "weighted", sets: 4, reps: 8, percentage: 0.67, label: "Moderate" },
+  { type: "weighted", sets: 4, reps: 6, percentage: 0.75, label: "Intensity" },
+  { type: "weighted", sets: 3, reps: 10, percentage: 0.5, label: "Deload" },
 ];
 
-export const BW_BASE = 8;
-export const BW_DELOAD_DROP = 3;
+export const BODYWEIGHT_ASSISTANCE_WEEKS: BodyweightAssistanceWeek[] = [
+  { type: "bodyweight", sets: 4, multiplier: 1.25, label: "Volume" },
+  { type: "bodyweight", sets: 4, multiplier: 1.0, label: "Moderate" },
+  { type: "bodyweight", sets: 4, multiplier: 0.75, label: "Intensity" },
+  { type: "bodyweight", sets: 3, multiplier: 0.6, label: "Deload" },
+];

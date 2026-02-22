@@ -2,9 +2,8 @@ import type { Exercise, AssistancePrescription } from "../types";
 import {
   EXERCISE_LIB,
   DEFAULT_ACC,
-  ASSISTANCE_WEEKS,
-  BW_BASE,
-  BW_DELOAD_DROP,
+  WEIGHTED_ASSISTANCE_WEEKS,
+  BODYWEIGHT_ASSISTANCE_WEEKS,
   FATIGUE,
 } from "../constants/exercises";
 import { roundToNearest } from "./calc";
@@ -41,8 +40,10 @@ export function getAllAssistanceExercises(customExercises?: Record<string, Exerc
 export function isAssistanceDiscovered(
   exercise: Exercise,
   assistanceMaximums: Record<string, number>,
+  bodyweightBaselines: Record<string, number>,
 ): boolean {
-  return exercise.isBodyweight || (assistanceMaximums?.[exercise.id] || 0) > 0;
+  if (exercise.isBodyweight) return (bodyweightBaselines?.[exercise.id] || 0) > 0;
+  return (assistanceMaximums?.[exercise.id] || 0) > 0;
 }
 
 export function getAssistancePrescription(
@@ -53,25 +54,25 @@ export function getAssistancePrescription(
   liftId?: string,
 ): AssistancePrescription {
   if (exercise.isBodyweight) {
-    const base = bodyweightBaselines?.[exercise.id] || BW_BASE;
-    const isDeload = phaseIndex === 3;
-    const reps = isDeload ? Math.max(3, base - BW_DELOAD_DROP) : base;
+    const base = bodyweightBaselines?.[exercise.id] || 0;
+    const week = BODYWEIGHT_ASSISTANCE_WEEKS[phaseIndex] || BODYWEIGHT_ASSISTANCE_WEEKS[0];
+    const reps = Math.max(1, Math.round(base * week.multiplier));
     return {
-      type: "bw",
-      sets: 4,
+      type: "bodyweight",
+      sets: week.sets,
       reps,
-      total: reps * 4,
-      label: isDeload ? "Deload" : "Working",
+      total: reps * week.sets,
+      label: week.label,
       base,
     };
   }
-  const week = ASSISTANCE_WEEKS[phaseIndex] || ASSISTANCE_WEEKS[0];
+  const week = WEIGHTED_ASSISTANCE_WEEKS[phaseIndex] || WEIGHTED_ASSISTANCE_WEEKS[0];
   const maximum = assistanceMaximums?.[exercise.id] || 0;
   const category = exercise.category;
   const isFatigued = !!(liftId && FATIGUE[liftId] && FATIGUE[liftId].includes(category));
   const fatigueMultiplier = isFatigued ? 0.9 : 1;
   return {
-    type: "wt",
+    type: "weighted",
     sets: week.sets,
     reps: week.reps,
     percentage: week.percentage,

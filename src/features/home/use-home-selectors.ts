@@ -3,7 +3,7 @@ import { LIFT_ORDER } from "../../constants/program";
 import { getAssistanceForLift } from "../../lib/exercises";
 import type { Exercise } from "../../types";
 
-export const useWeightedAccessories = (): Exercise[] => {
+export const useAllUniqueAccessories = (): Exercise[] => {
   const { assistanceSlots, customExercises } = useProgramStore();
   const seen = new Set<string>();
   const result: Exercise[] = [];
@@ -15,5 +15,5 @@ export const useWeightedAccessories = (): Exercise[] => {
       }
     });
   });
-  return result.filter((exercise) => !exercise.isBodyweight);
+  return result;
 };

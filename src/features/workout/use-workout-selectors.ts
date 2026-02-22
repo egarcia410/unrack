@@ -1,6 +1,6 @@
 import { useProgramStore } from "../../stores/program-store";
 import { useWorkoutStore } from "../../stores/workout-store";
-import { ASSISTANCE_WEEKS } from "../../constants/exercises";
+import { WEIGHTED_ASSISTANCE_WEEKS, BODYWEIGHT_ASSISTANCE_WEEKS } from "../../constants/exercises";
 import {
   getAssistanceForLift,
   isAssistanceDiscovered,
@@ -46,9 +46,9 @@ export const useAssistancePrescription = (exerciseIndex: number) => {
 };
 
 export const useIsExerciseDiscovered = (exerciseIndex: number) => {
-  const { assistanceMaximums } = useProgramStore();
+  const { assistanceMaximums, bodyweightBaselines } = useProgramStore();
   const exercise = useAccessoryExercise(exerciseIndex);
-  return isAssistanceDiscovered(exercise, assistanceMaximums);
+  return isAssistanceDiscovered(exercise, assistanceMaximums, bodyweightBaselines);
 };
 
 export const useSupplementalSets = () => {
@@ -65,11 +65,13 @@ export const useAllAccessoriesDone = () => {
   const { assistanceMaximums, bodyweightBaselines } = useProgramStore();
 
   return accessories.every((exercise) => {
-    if (!isAssistanceDiscovered(exercise, assistanceMaximums)) {
+    if (!isAssistanceDiscovered(exercise, assistanceMaximums, bodyweightBaselines)) {
       const assistanceLogEntry = assistanceLog[exercise.id];
-      const assistanceWeek = ASSISTANCE_WEEKS[activePhase] || ASSISTANCE_WEEKS[0];
+      const undiscoveredSets = exercise.isBodyweight
+        ? (BODYWEIGHT_ASSISTANCE_WEEKS[activePhase] || BODYWEIGHT_ASSISTANCE_WEEKS[0]).sets
+        : (WEIGHTED_ASSISTANCE_WEEKS[activePhase] || WEIGHTED_ASSISTANCE_WEEKS[0]).sets;
       return (
-        (assistanceSetCounts[exercise.id] || 0) >= assistanceWeek.sets &&
+        (assistanceSetCounts[exercise.id] || 0) >= undiscoveredSets &&
         assistanceLogEntry &&
         parseFloat(assistanceLogEntry.w || "0") > 0
       );
@@ -94,7 +96,7 @@ export const useAccessoryProgress = () => {
   let done = 0;
   let total = 0;
   accessories.forEach((exercise) => {
-    const discovered = isAssistanceDiscovered(exercise, assistanceMaximums);
+    const discovered = isAssistanceDiscovered(exercise, assistanceMaximums, bodyweightBaselines);
     const prescription = discovered
       ? getAssistancePrescription(
           exercise,
@@ -103,7 +105,11 @@ export const useAccessoryProgress = () => {
           bodyweightBaselines,
           activeLiftId,
         )
-      : { sets: (ASSISTANCE_WEEKS[activePhase] || ASSISTANCE_WEEKS[0]).sets };
+      : {
+          sets: exercise.isBodyweight
+            ? (BODYWEIGHT_ASSISTANCE_WEEKS[activePhase] || BODYWEIGHT_ASSISTANCE_WEEKS[0]).sets
+            : (WEIGHTED_ASSISTANCE_WEEKS[activePhase] || WEIGHTED_ASSISTANCE_WEEKS[0]).sets,
+        };
     total += prescription.sets;
     done += assistanceSetCounts[exercise.id] || 0;
   });
