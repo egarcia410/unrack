@@ -5,6 +5,7 @@ import { Minus, Plus } from "lucide-react";
 import { useProgramStore } from "../../stores/program-store";
 import { SectionHeader } from "../../components/section-header";
 import { IconButton } from "../../components/icon-button";
+import { DeleteProgramButton } from "./delete-program-button";
 import { cn } from "../../lib/cn";
 
 export const ProgramSettings = () => {
@@ -57,6 +58,7 @@ export const ProgramSettings = () => {
             </IconButton>
           </div>
         </div>
+        <DeleteProgramButton />
       </Collapsible.Panel>
     </Collapsible.Root>
   );

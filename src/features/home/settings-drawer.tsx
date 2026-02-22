@@ -11,7 +11,7 @@ import { ProgramSettings } from "./program-settings";
 
 export const SettingsDrawer = () => {
   const [mode, setMode] = useState(getThemeMode);
-  const { showSettings, setShowSettings, setShowDeleteConfirm } = useOverlayStore();
+  const { showSettings, setShowSettings } = useOverlayStore();
 
   return (
     <Drawer
@@ -39,18 +39,6 @@ export const SettingsDrawer = () => {
       <OneRepMaxEditor />
       <AssistanceEditor />
       <ProgramSettings />
-
-      <div className="border-t border-th-b pt-4 mt-2">
-        <Button
-          onClick={() => {
-            setShowSettings(false);
-            setShowDeleteConfirm(true);
-          }}
-          className="w-full p-3.5 rounded-xl border border-th-r/[0.19] bg-th-rd text-th-r text-sm font-semibold font-sans cursor-pointer min-h-12"
-        >
-          Delete Program
-        </Button>
-      </div>
     </Drawer>
   );
 };
