@@ -12,7 +12,6 @@ const HistoryPage = () => {
     <div className="max-w-115 mx-auto px-4 py-3 pb-20">
       <header className="flex justify-between items-center py-2 pb-4 min-h-11">
         <BackButton />
-        <div />
       </header>
       <main>
         <h1 className="text-2xl font-extrabold m-0 mb-4">History</h1>

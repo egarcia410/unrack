@@ -17,7 +17,6 @@ const WorkoutPage = () => (
       <WorkingSetsSection />
       <SupplementalSection />
       <AssistanceSection />
-      <div className="h-18" />
     </main>
     <WorkoutBottomBar />
   </div>
