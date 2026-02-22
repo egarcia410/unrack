@@ -1,5 +1,5 @@
+import { useState } from "react";
 import { useProgramStore, extractProgramData } from "../../stores/program-store";
-import { useUIStore } from "../../stores/ui-store";
 import { LIFT_ORDER } from "../../constants/program";
 import { ASSISTANCE_WEEKS } from "../../constants/exercises";
 import { roundToNearest } from "../../lib/calc";
@@ -9,6 +9,10 @@ import { PrimaryButton } from "../../components/primary-button";
 import { SectionLabel } from "../../components/section-label";
 import { cn } from "../../lib/cn";
 import type { Exercise } from "../../types";
+
+type EditAssistanceState = {
+  [accId: string]: string | number;
+};
 
 const getAllUsedAccessories = (prog: Parameters<typeof getAssistanceForLift>[1]) => {
   const seen = new Set<string>();
@@ -25,7 +29,7 @@ const getAllUsedAccessories = (prog: Parameters<typeof getAssistanceForLift>[1])
 };
 
 export const AssistanceEditor = () => {
-  const { editAssistance, setEditAssistance, updateEditAssistance } = useUIStore();
+  const [editAssistance, setEditAssistance] = useState<EditAssistanceState | null>(null);
   const programState = useProgramStore();
   const { assistanceMaximums, week, assistanceMaximumsSaved } = programState;
 
@@ -67,7 +71,7 @@ export const AssistanceEditor = () => {
                     : String(workingMax || "")
                 }
                 onChange={(val) => {
-                  updateEditAssistance((previousValues) => {
+                  setEditAssistance((previousValues) => {
                     const base: Record<string, string | number> = {};
                     weightedAccs.forEach((accessory) => {
                       base[accessory.id] =

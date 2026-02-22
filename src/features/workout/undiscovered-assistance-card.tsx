@@ -1,6 +1,7 @@
 import { Button } from "@base-ui/react/button";
 import { ChevronDown } from "lucide-react";
 import { useWorkoutStore } from "../../stores/workout-store";
+import { useOverlayStore } from "../../stores/overlay-store";
 import { ASSISTANCE_WEEKS } from "../../constants/exercises";
 import { cn } from "../../lib/cn";
 import { WeightInput } from "../../components/weight-input";
@@ -12,14 +13,9 @@ type UndiscoveredAssistanceCardProps = {
 };
 
 export const UndiscoveredAssistanceCard = ({ exerciseIndex }: UndiscoveredAssistanceCardProps) => {
-  const {
-    activeWeek,
-    assistanceSetCounts,
-    assistanceLog,
-    setSwapSlot,
-    setAssistanceLog,
-    setChecked,
-  } = useWorkoutStore();
+  const { activeWeek, assistanceSetCounts, assistanceLog, setAssistanceLog, setChecked } =
+    useWorkoutStore();
+  const { setActiveSwapSlot } = useOverlayStore();
   const liftId = useActiveLiftId();
   const exercise = useAccessoryExercise(exerciseIndex);
 
@@ -58,7 +54,7 @@ export const UndiscoveredAssistanceCard = ({ exerciseIndex }: UndiscoveredAssist
     >
       <Button
         onClick={() =>
-          setSwapSlot({
+          setActiveSwapSlot({
             liftId,
             slot: exercise.slot!,
             currentId: exercise.id,

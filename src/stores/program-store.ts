@@ -6,6 +6,7 @@ import { getAssistanceForLift, getAllAssistanceExercises } from "../lib/exercise
 import { loadData, saveData, clearData } from "../lib/storage";
 import { createStore } from "./polaris";
 import { useWorkoutStore } from "./workout-store";
+import { useOverlayStore } from "./overlay-store";
 
 type ProgramState = {
   template: TemplateId;
@@ -128,9 +129,9 @@ export const useProgramStore = createStore("program", {
 
       exerciseSwapped: async (newExId: string) => {
         const state = get();
-        const { swapSlot } = useWorkoutStore.getState();
-        if (!swapSlot) return;
-        const { liftId, slot: slotIdx } = swapSlot;
+        const { activeSwapSlot } = useOverlayStore.getState();
+        if (!activeSwapSlot) return;
+        const { liftId, slot: slotIdx } = activeSwapSlot;
         const current = state.assistanceSlots || {};
         const defaults = (await import("../constants/exercises")).DEFAULT_ACC;
         const liftSlots = [...(current[liftId] || defaults[liftId])];

@@ -1,6 +1,5 @@
 import { createFileRoute, redirect } from "@tanstack/react-router";
 import { hasActiveWorkout } from "../stores/workout-store";
-import { SwapExerciseDrawer } from "../features/workout/swap-exercise-drawer";
 import { WorkoutHeader } from "../features/workout/workout-header";
 import { RestTimer } from "../components/rest-timer";
 import { WarmupSection } from "../features/workout/warmup-section";
@@ -11,7 +10,6 @@ import { WorkoutBottomBar } from "../features/workout/workout-bottom-bar";
 
 const WorkoutPage = () => (
   <div className="mx-auto max-w-115 px-4 py-3 pb-20">
-    <SwapExerciseDrawer />
     <WorkoutHeader />
     <main>
       <RestTimer />

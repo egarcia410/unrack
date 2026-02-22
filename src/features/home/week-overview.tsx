@@ -1,13 +1,13 @@
 import { Button } from "@base-ui/react/button";
 import { ChevronDown } from "lucide-react";
 import { useProgramStore } from "../../stores/program-store";
-import { useUIStore } from "../../stores/ui-store";
+import { useOverlayStore } from "../../stores/overlay-store";
 import { TEMPLATES } from "../../constants/program";
 import { Badge } from "../../components/badge";
 
 export const WeekOverview = () => {
   const { cycle, week, template } = useProgramStore();
-  const { setShowTemplatePicker } = useUIStore();
+  const { setShowTemplatePicker } = useOverlayStore();
 
   const variant = TEMPLATES[template];
   const weekDef = variant.weeks[week];

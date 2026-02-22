@@ -31,6 +31,15 @@
 - Static access (route guards): `useProgramStore.getState()` or `useProgramStore.status("init")`
 - Never use `.getState()` in components — only in store files, route guards, or exported static selectors
 
+## Overlay State Naming
+- `show*` prefix for boolean open/close state (e.g. `showSettings`, `showDeleteConfirm`)
+- `active*` prefix for data-carrying overlay state where `null` = closed (e.g. `activeCelebration`, `activeSwapSlot`)
+
+## Component Naming
+- Dialogs: `*Dialog` suffix (e.g. `DeleteConfirmDialog`, `CelebrationDialog`)
+- Drawers: `*Drawer` suffix (e.g. `SettingsDrawer`, `TemplatePickerDrawer`)
+- Collapsible sections: `*Section` suffix (e.g. `WarmupSection`, `AssistanceSection`)
+
 ## Conditional Styling
 - Use CVA variants for conditional class logic when a component has discrete visual states
 - Compose CVA with `cn()` for merging variant classes with additional overrides: `cn(myVariants({ status }), "extra-class")`

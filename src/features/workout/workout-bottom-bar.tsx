@@ -5,7 +5,7 @@ import { Check } from "lucide-react";
 import { cva } from "class-variance-authority";
 import { useProgramStore } from "../../stores/program-store";
 import { useWorkoutStore } from "../../stores/workout-store";
-import { useUIStore } from "../../stores/ui-store";
+import { useOverlayStore } from "../../stores/overlay-store";
 import { cn } from "../../lib/cn";
 import { LiveClock } from "../../components/live-clock";
 import {
@@ -29,7 +29,7 @@ export const WorkoutBottomBar = () => {
   const navigate = useNavigate();
 
   const { workoutFinished } = useProgramStore();
-  const { setCelebration } = useUIStore();
+  const { setActiveCelebration } = useOverlayStore();
 
   const { checked, workoutStart } = useWorkoutStore();
 
@@ -53,7 +53,7 @@ export const WorkoutBottomBar = () => {
     WARMUP_SETS.length + weekDef.sets.length + supplementalSets.length + assistanceSetsTotal;
 
   const handleFinish = () => {
-    setCelebration(workoutFinished());
+    setActiveCelebration(workoutFinished());
     navigate({ to: "/" });
   };
 

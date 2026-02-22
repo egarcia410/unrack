@@ -1,14 +1,18 @@
+import { useState } from "react";
 import { Form } from "@base-ui/react/form";
 import { useProgramStore } from "../../stores/program-store";
-import { useUIStore } from "../../stores/ui-store";
 import { LIFTS } from "../../constants/program";
 import { LiftInputRow } from "../../components/lift-input-row";
 import { PrimaryButton } from "../../components/primary-button";
 import { SectionLabel } from "../../components/section-label";
 import { cn } from "../../lib/cn";
 
+type EditOneRepMaxState = {
+  [liftId: string]: string;
+};
+
 export const OneRepMaxEditor = () => {
-  const { editOneRepMax, setEditOneRepMax, updateEditOneRepMax } = useUIStore();
+  const [editOneRepMax, setEditOneRepMax] = useState<EditOneRepMaxState | null>(null);
   const { oneRepMaxes, oneRepMaxesSaved } = useProgramStore();
 
   return (
@@ -34,7 +38,7 @@ export const OneRepMaxEditor = () => {
                 : String(oneRepMaxes[lift.id])
             }
             onChange={(val) => {
-              updateEditOneRepMax((previousValues) => {
+              setEditOneRepMax((previousValues) => {
                 const prev =
                   previousValues ||
                   Object.fromEntries(Object.entries(oneRepMaxes).map(([k, v]) => [k, String(v)]));

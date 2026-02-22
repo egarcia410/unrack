@@ -1,12 +1,12 @@
 import { Dot } from "lucide-react";
 import { useProgramStore } from "../../stores/program-store";
-import { useUIStore } from "../../stores/ui-store";
+import { useOverlayStore } from "../../stores/overlay-store";
 import { TEMPLATES, LIFT_ORDER } from "../../constants/program";
 import { PrimaryButton } from "../../components/primary-button";
 
 export const WeekCompleteBanner = () => {
   const { workouts, cycle, week, template, weekAdvanced } = useProgramStore();
-  const { setCelebration } = useUIStore();
+  const { setActiveCelebration } = useOverlayStore();
 
   const variant = TEMPLATES[template];
   const weekDef = variant.weeks[week];
@@ -24,7 +24,7 @@ export const WeekCompleteBanner = () => {
   const handleAdvanceWeek = () => {
     const result = weekAdvanced();
     if (result.type === "cycle") {
-      setCelebration({
+      setActiveCelebration({
         type: "cycle",
         message: result.message!,
         subtitle: result.subtitle!,

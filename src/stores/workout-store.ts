@@ -1,4 +1,4 @@
-import type { RestInfo, SwapSlot, SetType } from "../types";
+import type { RestInfo, SetType } from "../types";
 import { TEMPLATES, LIFT_ORDER } from "../constants/program";
 import { ASSISTANCE_WEEKS } from "../constants/exercises";
 import { smartRest } from "../lib/calc";
@@ -22,7 +22,6 @@ type WorkoutState = {
   timerKey: number;
   showTimer: boolean;
   timerInfo: RestInfo;
-  swapSlot: SwapSlot | null;
   workoutStart: number | null;
 };
 
@@ -36,7 +35,6 @@ const initialState: WorkoutState = {
   timerKey: 0,
   showTimer: false,
   timerInfo: { duration: 90, reason: "" },
-  swapSlot: null,
   workoutStart: null,
 };
 
@@ -224,7 +222,6 @@ export const useWorkoutStore = createStore("workout", {
     },
 
     dismissTimer: () => set({ showTimer: false }),
-    setSwapSlot: (slot: SwapSlot | null) => set({ swapSlot: slot }),
 
     setChecked: (updater: (prev: Record<string, boolean>) => Record<string, boolean>) => {
       set((s) => {

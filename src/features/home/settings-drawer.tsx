@@ -1,6 +1,7 @@
 import { Sun, Moon } from "lucide-react";
 import { Button } from "@base-ui/react/button";
 import { useUIStore } from "../../stores/ui-store";
+import { useOverlayStore } from "../../stores/overlay-store";
 import { Drawer } from "../../components/drawer";
 import { SectionLabel } from "../../components/section-label";
 import { OneRepMaxEditor } from "./one-rep-max-editor";
@@ -8,13 +9,14 @@ import { AssistanceEditor } from "./assistance-editor";
 import { ProgramSettings } from "./program-settings";
 
 export const SettingsDrawer = () => {
-  const { showSettings, mode, closeSettings, setShowConfirm, toggleMode } = useUIStore();
+  const { mode, toggleMode } = useUIStore();
+  const { showSettings, setShowSettings, setShowDeleteConfirm } = useOverlayStore();
 
   return (
     <Drawer
       open={showSettings}
       onOpenChange={(open) => {
-        if (!open) closeSettings();
+        if (!open) setShowSettings(false);
       }}
       title="Settings"
     >
@@ -40,8 +42,8 @@ export const SettingsDrawer = () => {
       <div className="border-t border-th-b pt-4 mt-2">
         <Button
           onClick={() => {
-            closeSettings();
-            setShowConfirm(true);
+            setShowSettings(false);
+            setShowDeleteConfirm(true);
           }}
           className="w-full p-3.5 rounded-xl border border-th-r/[0.19] bg-th-rd text-th-r text-sm font-semibold font-sans cursor-pointer min-h-12"
         >

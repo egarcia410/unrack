@@ -1,10 +1,10 @@
 import { useNavigate } from "@tanstack/react-router";
 import { AlertDialog } from "@base-ui/react/alert-dialog";
-import { useUIStore } from "../stores/ui-store";
+import { useOverlayStore } from "../stores/overlay-store";
 import { useProgramStore } from "../stores/program-store";
 
 export const DeleteConfirmDialog = () => {
-  const { showConfirm, setShowConfirm } = useUIStore();
+  const { showDeleteConfirm, setShowDeleteConfirm } = useOverlayStore();
   const { programReset } = useProgramStore();
   const navigate = useNavigate();
 
@@ -14,7 +14,10 @@ export const DeleteConfirmDialog = () => {
   };
 
   return (
-    <AlertDialog.Root open={showConfirm} onOpenChange={(open) => !open && setShowConfirm(false)}>
+    <AlertDialog.Root
+      open={showDeleteConfirm}
+      onOpenChange={(open) => !open && setShowDeleteConfirm(false)}
+    >
       <AlertDialog.Portal>
         <AlertDialog.Backdrop className="fixed inset-0 z-50 bg-black/60 transition-opacity duration-200 data-ending-style:opacity-0 data-starting-style:opacity-0" />
         <AlertDialog.Popup className="fixed inset-0 z-50 bg-th-s1 border border-th-b rounded-2xl p-6 max-w-80 w-11/12 m-auto h-fit transition-[opacity,transform] duration-200 data-starting-style:opacity-0 data-starting-style:scale-95 data-ending-style:opacity-0 data-ending-style:scale-95">

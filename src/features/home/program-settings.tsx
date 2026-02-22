@@ -1,28 +1,19 @@
+import { useState } from "react";
 import { Collapsible } from "@base-ui/react/collapsible";
 import { Button } from "@base-ui/react/button";
-import { ChevronDown, Minus, Plus } from "lucide-react";
+import { Minus, Plus } from "lucide-react";
 import { useProgramStore } from "../../stores/program-store";
-import { useUIStore } from "../../stores/ui-store";
-import { SectionLabel } from "../../components/section-label";
+import { SectionHeader } from "../../components/section-header";
 import { IconButton } from "../../components/icon-button";
 import { cn } from "../../lib/cn";
 
 export const ProgramSettings = () => {
-  const { settingsExpanded, setSettingsExpanded } = useUIStore();
+  const [settingsExpanded, setSettingsExpanded] = useState(false);
   const { unit, trainingMaxPercent, unitToggled, trainingMaxPercentChanged } = useProgramStore();
 
   return (
     <Collapsible.Root open={settingsExpanded} onOpenChange={setSettingsExpanded}>
-      <Collapsible.Trigger className="flex items-center justify-between w-full box-border bg-none border-none py-2 px-0 cursor-pointer min-h-11">
-        <SectionLabel>Program Settings</SectionLabel>
-        <ChevronDown
-          size={14}
-          className={cn(
-            "text-th-t4 transition-transform duration-200",
-            settingsExpanded ? "rotate-0" : "-rotate-90",
-          )}
-        />
-      </Collapsible.Trigger>
+      <SectionHeader label="Program Settings" />
       <Collapsible.Panel className="overflow-hidden h-(--collapsible-panel-height) transition-[height] duration-200 data-starting-style:h-0 data-ending-style:h-0">
         <div className="mb-4">
           <p className="text-xs font-bold text-th-t3 tracking-wide mb-2 mt-1">Units</p>

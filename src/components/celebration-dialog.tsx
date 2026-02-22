@@ -3,7 +3,7 @@ import { ArrowRight, Dot, Dumbbell, Star, TriangleAlert, Trophy, Zap } from "luc
 import { Dialog } from "@base-ui/react/dialog";
 import { cva } from "class-variance-authority";
 import { cn } from "../lib/cn";
-import { useUIStore } from "../stores/ui-store";
+import { useOverlayStore } from "../stores/overlay-store";
 import { useProgramStore } from "../stores/program-store";
 
 const celebrationVariants = cva(
@@ -40,43 +40,43 @@ const titleColorVariants = cva("text-xl font-extrabold mb-1.5", {
 });
 
 export const CelebrationDialog = () => {
-  const { celebration, setCelebration } = useUIStore();
+  const { activeCelebration, setActiveCelebration } = useOverlayStore();
   const { trainingMaxAdjusted } = useProgramStore();
 
   useEffect(() => {
-    if (celebration && celebration.type !== "warn") {
-      const timeoutId = setTimeout(() => setCelebration(null), 3500);
+    if (activeCelebration && activeCelebration.type !== "warn") {
+      const timeoutId = setTimeout(() => setActiveCelebration(null), 3500);
       return () => clearTimeout(timeoutId);
     }
-  }, [celebration, setCelebration]);
+  }, [activeCelebration, setActiveCelebration]);
 
-  const onAction = celebration?._liftId
+  const onAction = activeCelebration?._liftId
     ? () => {
         trainingMaxAdjusted(
-          celebration._liftId!,
-          celebration._suggestedOneRepMax!,
-          celebration._suggestedTrainingMax!,
+          activeCelebration._liftId!,
+          activeCelebration._suggestedOneRepMax!,
+          activeCelebration._suggestedTrainingMax!,
         );
-        setCelebration(null);
+        setActiveCelebration(null);
       }
     : undefined;
 
   const Icon =
-    celebration?.type === "cycle"
+    activeCelebration?.type === "cycle"
       ? Trophy
-      : celebration?.type === "pr"
+      : activeCelebration?.type === "pr"
         ? Zap
-        : celebration?.type === "warn"
+        : activeCelebration?.type === "warn"
           ? TriangleAlert
           : Dumbbell;
 
-  const variantType = celebration?.type === "warn" ? "warn" : "default";
+  const variantType = activeCelebration?.type === "warn" ? "warn" : "default";
 
   return (
     <Dialog.Root
-      open={!!celebration}
+      open={!!activeCelebration}
       onOpenChange={(open) => {
-        if (!open && celebration?.type !== "warn") setCelebration(null);
+        if (!open && activeCelebration?.type !== "warn") setActiveCelebration(null);
       }}
     >
       <Dialog.Portal>
@@ -86,54 +86,55 @@ export const CelebrationDialog = () => {
             <Icon size={48} className={iconColorVariants({ type: variantType })} />
           </div>
           <Dialog.Title className={cn(titleColorVariants({ type: variantType }))}>
-            {celebration?.message}
+            {activeCelebration?.message}
           </Dialog.Title>
           <Dialog.Description
             render={<div />}
             className={cn(
               "text-sm text-th-t2 leading-normal",
-              celebration?.type === "warn" ? "mb-4" : "mb-0",
+              activeCelebration?.type === "warn" ? "mb-4" : "mb-0",
             )}
           >
             <p className="flex items-center justify-center">
-              {celebration?.subtitle}
-              {celebration?.subtitleDetail && (
+              {activeCelebration?.subtitle}
+              {activeCelebration?.subtitleDetail && (
                 <>
                   <Dot size={16} />
-                  {celebration.subtitleDetail}
+                  {activeCelebration.subtitleDetail}
                 </>
               )}
             </p>
-            {celebration?.type === "warn" && (
+            {activeCelebration?.type === "warn" && (
               <>
-                {celebration.actionSubFrom && celebration.actionSubTo && (
+                {activeCelebration.actionSubFrom && activeCelebration.actionSubTo && (
                   <p className="text-xs font-mono text-th-t3 mt-3 flex items-center justify-center gap-1">
-                    {celebration.actionSubFrom} <ArrowRight size={12} /> {celebration.actionSubTo}
+                    {activeCelebration.actionSubFrom} <ArrowRight size={12} />{" "}
+                    {activeCelebration.actionSubTo}
                   </p>
                 )}
-                {celebration.actionSub && !celebration.actionSubFrom && (
-                  <p className="text-xs font-mono text-th-t3 mt-3">{celebration.actionSub}</p>
+                {activeCelebration.actionSub && !activeCelebration.actionSubFrom && (
+                  <p className="text-xs font-mono text-th-t3 mt-3">{activeCelebration.actionSub}</p>
                 )}
               </>
             )}
           </Dialog.Description>
-          {celebration?.type === "warn" && onAction && (
+          {activeCelebration?.type === "warn" && onAction && (
             <div className="flex gap-2">
               <Dialog.Close
                 onClick={onAction}
                 className="flex-1 py-3.5 rounded-xl border-none bg-th-r text-white text-sm font-bold min-h-12"
               >
-                {celebration.actionLabel || "Adjust"}
+                {activeCelebration.actionLabel || "Adjust"}
               </Dialog.Close>
               <Dialog.Close
-                onClick={() => setCelebration(null)}
+                onClick={() => setActiveCelebration(null)}
                 className="py-3.5 px-4 rounded-xl border border-th-b bg-th-s2 text-th-t3 text-sm font-semibold min-h-12"
               >
                 Keep
               </Dialog.Close>
             </div>
           )}
-          {celebration?.type === "cycle" && (
+          {activeCelebration?.type === "cycle" && (
             <div className="mt-3.5 flex gap-1.5 justify-center">
               {[1, 2, 3, 4, 5].map((i) => (
                 <div
