@@ -11,11 +11,6 @@ export const getThemeMode = (): ThemeMode => {
   return "dark";
 };
 
-export const initTheme = () => {
-  const mode = getThemeMode();
-  document.documentElement.classList.toggle("dark", mode === "dark");
-};
-
 export const toggleTheme = (): ThemeMode => {
   const next: ThemeMode = getThemeMode() === "dark" ? "light" : "dark";
   localStorage.setItem(THEME_KEY, next);

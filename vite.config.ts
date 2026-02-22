@@ -1,6 +1,6 @@
 import { defineConfig } from "vite";
 import tailwindcss from "@tailwindcss/vite";
-import { TanStackRouterVite } from "@tanstack/router-plugin/vite";
+import { tanstackRouter } from "@tanstack/router-plugin/vite";
 import react from "@vitejs/plugin-react";
 import { VitePWA } from "vite-plugin-pwa";
 
@@ -8,7 +8,7 @@ import { VitePWA } from "vite-plugin-pwa";
 export default defineConfig({
   base: "/unrack/",
   plugins: [
-    TanStackRouterVite({ autoCodeSplitting: true }),
+    tanstackRouter(),
     tailwindcss(),
     react(),
     VitePWA({
