@@ -25,8 +25,8 @@ export const DiscoveredAssistanceCard = ({ exerciseIndex }: DiscoveredAssistance
 
   const prescriptionText =
     prescription.type === "bw"
-      ? `${prescription.sets}\u00D7${prescription.reps}`
-      : `${prescription.sets}\u00D7${prescription.reps}${prescription.weight && prescription.weight > 0 ? " @ " + prescription.weight + " " + unit : ""}`;
+      ? `${prescription.sets}x${prescription.reps}`
+      : `${prescription.sets}x${prescription.reps}${prescription.weight && prescription.weight > 0 ? " @ " + prescription.weight + " " + unit : ""}`;
 
   return (
     <div

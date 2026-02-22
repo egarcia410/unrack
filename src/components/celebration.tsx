@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { Star } from "lucide-react";
+import { ArrowRight, Dot, Dumbbell, Star, TriangleAlert, Trophy, Zap } from "lucide-react";
 import { Button } from "@base-ui/react/button";
 import { cn } from "../lib/cn";
 import { useUIStore } from "../stores/ui-store";
@@ -30,14 +30,14 @@ export const Celebration = () => {
       }
     : undefined;
 
-  const icon =
+  const Icon =
     celebration.type === "cycle"
-      ? String.fromCodePoint(0x1f3c6)
+      ? Trophy
       : celebration.type === "pr"
-        ? String.fromCodePoint(0x26a1)
+        ? Zap
         : celebration.type === "warn"
-          ? String.fromCodePoint(0x26a0)
-          : String.fromCodePoint(0x1f4aa);
+          ? TriangleAlert
+          : Dumbbell;
 
   return (
     <div
@@ -51,8 +51,8 @@ export const Celebration = () => {
           celebration.type === "warn" ? "border-th-r/25" : "border-th-b",
         )}
       >
-        <div className="text-5xl mb-3" aria-hidden="true">
-          {icon}
+        <div className="mb-3 flex justify-center" aria-hidden="true">
+          <Icon size={48} className={celebration.type === "warn" ? "text-th-r" : "text-th-a"} />
         </div>
         <h2
           className={cn(
@@ -64,15 +64,26 @@ export const Celebration = () => {
         </h2>
         <p
           className={cn(
-            "text-sm text-th-t2 leading-normal",
+            "text-sm text-th-t2 leading-normal flex items-center justify-center",
             celebration.type === "warn" ? "mb-4" : "mb-0",
           )}
         >
           {celebration.subtitle}
+          {celebration.subtitleDetail && (
+            <>
+              <Dot size={16} />
+              {celebration.subtitleDetail}
+            </>
+          )}
         </p>
         {celebration.type === "warn" && onAction && (
           <>
-            {celebration.actionSub && (
+            {celebration.actionSubFrom && celebration.actionSubTo && (
+              <p className="text-xs font-mono text-th-t3 mb-3 flex items-center justify-center gap-1">
+                {celebration.actionSubFrom} <ArrowRight size={12} /> {celebration.actionSubTo}
+              </p>
+            )}
+            {celebration.actionSub && !celebration.actionSubFrom && (
               <p className="text-xs font-mono text-th-t3 mb-3">{celebration.actionSub}</p>
             )}
             <div className="flex gap-2">

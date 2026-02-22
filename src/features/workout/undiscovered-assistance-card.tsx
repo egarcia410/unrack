@@ -71,15 +71,13 @@ export const UndiscoveredAssistanceCard = ({ exerciseIndex }: UndiscoveredAssist
           <ChevronDown size={12} className="shrink-0 text-th-t4" />
         </div>
         <span className="text-sm font-mono font-semibold text-th-y shrink-0 ml-2">
-          {assistanceWeek.sets}
-          {"\u00D7"}
-          {assistanceWeek.reps}
+          {assistanceWeek.sets}x{assistanceWeek.reps}
         </span>
       </Button>
       <div className="text-xs text-th-t3 mb-2.5">
         {exercise.isBodyweight
           ? "Max reps with good form each set."
-          : "Same weight all " + assistanceWeek.sets + " sets. Leave 1\u20132 reps in the tank."}
+          : "Same weight all " + assistanceWeek.sets + " sets. Leave 1-2 reps in the tank."}
       </div>
       {!exercise.isBodyweight && (
         <div className="flex items-center gap-2 mb-2.5">

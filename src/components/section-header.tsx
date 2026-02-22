@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 import { Collapsible } from "@base-ui/react/collapsible";
-import { ChevronDown } from "lucide-react";
+import { Check, ChevronDown } from "lucide-react";
 
 type SectionHeaderProps = {
   label: string;
@@ -10,9 +10,9 @@ type SectionHeaderProps = {
 
 export const SectionHeader = ({ label, done, extra }: SectionHeaderProps) => (
   <Collapsible.Trigger className="group text-xs font-bold uppercase tracking-widest text-th-t2 mb-2.5 flex items-center justify-between w-full box-border bg-none border-none cursor-pointer py-2 px-0 min-h-11">
-    <span>
+    <span className="flex items-center gap-1">
       {label}
-      {done ? " \u2713" : ""}
+      {done && <Check size={12} />}
     </span>
     <div className="flex gap-2 items-center">
       {extra}

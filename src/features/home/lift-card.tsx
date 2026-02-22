@@ -1,6 +1,6 @@
 import { useNavigate } from "@tanstack/react-router";
 import { Button } from "@base-ui/react/button";
-import { Check } from "lucide-react";
+import { Check, Dot } from "lucide-react";
 import { cva } from "class-variance-authority";
 import { useProgramStore } from "../../stores/program-store";
 import { useWorkoutStore } from "../../stores/workout-store";
@@ -85,12 +85,19 @@ export const LiftCard = ({ liftIndex }: LiftCardProps) => {
       <div className="flex-1">
         <strong className="text-base font-semibold text-th-t">{lift.name}</strong>
         {isDone && doneEntry && (
-          <p className="text-xs text-th-t3 font-mono mt-0.5 m-0">
+          <p className="text-xs text-th-t3 font-mono mt-0.5 m-0 flex items-center">
             {new Date(doneEntry.datetime).toLocaleDateString(undefined, {
               month: "short",
               day: "numeric",
             })}
-            {doneEntry.duration ? ` \u00B7 ${Math.floor(doneEntry.duration / 60)} min` : ""}
+            {doneEntry.duration ? (
+              <>
+                <Dot size={14} />
+                {Math.floor(doneEntry.duration / 60)} min
+              </>
+            ) : (
+              ""
+            )}
           </p>
         )}
       </div>

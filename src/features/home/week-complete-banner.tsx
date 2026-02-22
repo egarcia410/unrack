@@ -1,3 +1,4 @@
+import { Dot } from "lucide-react";
 import { useProgramStore } from "../../stores/program-store";
 import { useUIStore } from "../../stores/ui-store";
 import { TEMPLATES, LIFT_ORDER } from "../../constants/program";
@@ -34,13 +35,18 @@ export const WeekCompleteBanner = () => {
   return (
     <section className="bg-th-ad border border-th-am rounded-2xl px-4 py-5 mb-6 text-center">
       <h2 className="text-lg font-extrabold text-th-a mb-1">{weekDef.label} Complete</h2>
-      <p className="text-sm text-th-t2 mb-3">
+      <p className="text-sm text-th-t2 mb-3 flex items-center justify-center">
         {isDeload
           ? "Recovery done. Next cycle starts fresh."
           : weekPRs > 0
             ? weekPRs + " PR" + (weekPRs > 1 ? "s" : "")
             : "All lifts logged"}
-        {!isDeload && isLastWeek ? " \u2022 Cycle complete!" : ""}
+        {!isDeload && isLastWeek && (
+          <>
+            <Dot size={16} />
+            Cycle complete!
+          </>
+        )}
       </p>
       <PrimaryButton onClick={handleAdvanceWeek}>{nextLabel}</PrimaryButton>
     </section>

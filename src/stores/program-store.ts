@@ -200,8 +200,10 @@ export const useProgramStore = createStore("program", {
         type: "done" | "pr" | "warn";
         message: string;
         subtitle: string;
+        subtitleDetail?: string;
         actionLabel?: string;
-        actionSub?: string;
+        actionSubFrom?: string;
+        actionSubTo?: string;
         _liftId?: string;
         _suggestedOneRepMax?: number;
         _suggestedTrainingMax?: number;
@@ -313,7 +315,8 @@ export const useProgramStore = createStore("program", {
               message: "Missed AMRAP",
               subtitle: `0 reps at ${amrapWeight} ${next.unit}`,
               actionLabel: `Adjust TM to ${suggestedTrainingMax}`,
-              actionSub: `1RM: ${next.oneRepMaxes![liftId]} \u2192 ${suggestedOneRepMax} ${next.unit}`,
+              actionSubFrom: `1RM: ${next.oneRepMaxes![liftId]}`,
+              actionSubTo: `${suggestedOneRepMax} ${next.unit}`,
               _liftId: liftId,
               _suggestedOneRepMax: suggestedOneRepMax,
               _suggestedTrainingMax: suggestedTrainingMax,
@@ -328,7 +331,8 @@ export const useProgramStore = createStore("program", {
               message: "Below Target",
               subtitle: `${repsHit} rep${repsHit > 1 ? "s" : ""} at ${amrapWeight} ${next.unit} (needed ${minReps}+)`,
               actionLabel: `Adjust TM to ${suggestedTrainingMax}`,
-              actionSub: `1RM: ${next.oneRepMaxes![liftId]} \u2192 ${realOneRepMax} ${next.unit}`,
+              actionSubFrom: `1RM: ${next.oneRepMaxes![liftId]}`,
+              actionSubTo: `${realOneRepMax} ${next.unit}`,
               _liftId: liftId,
               _suggestedOneRepMax: realOneRepMax,
               _suggestedTrainingMax: suggestedTrainingMax,
@@ -337,14 +341,16 @@ export const useProgramStore = createStore("program", {
             return {
               type: "pr" as const,
               message: "New 1RM!",
-              subtitle: `${lift.name}: ${newOneRepMax.old} to ${newOneRepMax.newValue} ${next.unit} \u00B7 ${durationFmt}`,
+              subtitle: `${lift.name}: ${newOneRepMax.old} to ${newOneRepMax.newValue} ${next.unit}`,
+              subtitleDetail: durationFmt,
             };
           }
         }
         return {
           type: "done" as const,
           message: "Workout Logged",
-          subtitle: `${lift.name} \u00B7 ${durationFmt}`,
+          subtitle: lift.name,
+          subtitleDetail: durationFmt,
         };
       },
 

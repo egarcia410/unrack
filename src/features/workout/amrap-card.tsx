@@ -1,4 +1,4 @@
-import { Minus, Plus, ArrowRight } from "lucide-react";
+import { Dot, Minus, Plus, ArrowRight } from "lucide-react";
 import { cva } from "class-variance-authority";
 import { useProgramStore } from "../../stores/program-store";
 import { useWorkoutStore } from "../../stores/workout-store";
@@ -111,9 +111,14 @@ export const AmrapCard = ({ setIndex }: AmrapCardProps) => {
         </Button>
       ) : (
         <div>
-          <div className="text-sm text-th-t4 font-mono mb-2 text-center">
+          <div className="text-sm text-th-t4 font-mono mb-2 text-center flex items-center justify-center">
             {amrapWeight} {unit}
-            {goalReps ? ` \u00B7 PR at ${goalReps}+` : ""}
+            {goalReps && (
+              <>
+                <Dot size={16} />
+                PR at {goalReps}+
+              </>
+            )}
           </div>
           <div className="flex items-center justify-center gap-3">
             <IconButton size="large" onClick={stepDown}>

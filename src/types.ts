@@ -122,8 +122,11 @@ export type CelebrationState = {
   type: "done" | "pr" | "cycle" | "warn";
   message: string;
   subtitle: string;
+  subtitleDetail?: string;
   actionLabel?: string;
   actionSub?: string;
+  actionSubFrom?: string;
+  actionSubTo?: string;
   _liftId?: string;
   _suggestedOneRepMax?: number;
   _suggestedTrainingMax?: number;
