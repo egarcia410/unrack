@@ -4,7 +4,11 @@ import { createRouter, RouterProvider } from "@tanstack/react-router";
 import { routeTree } from "./routeTree.gen";
 import "./index.css";
 
-const router = createRouter({ routeTree, basepath: "/unrack" });
+const router = createRouter({
+  routeTree,
+  basepath: "/unrack",
+  defaultViewTransition: true,
+});
 
 declare module "@tanstack/react-router" {
   interface Register {
