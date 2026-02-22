@@ -37,8 +37,8 @@ type ProgramState = {
   >;
   assistanceMaximums: Record<string, number>;
   bodyweightBaselines: Record<string, number>;
-  assistanceSlots?: Record<string, string[]>;
-  customExercises?: Record<string, Exercise>;
+  assistanceSlots: Record<string, string[]>;
+  customExercises: Record<string, Exercise>;
   timestamp: number;
 };
 
@@ -59,6 +59,8 @@ const initialState: ProgramState = {
   assistanceHistory: {},
   assistanceMaximums: {},
   bodyweightBaselines: {},
+  assistanceSlots: {},
+  customExercises: {},
   timestamp: 0,
 };
 

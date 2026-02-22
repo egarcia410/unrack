@@ -108,8 +108,8 @@ export type ProgramData = {
   >;
   assistanceMaximums: Record<string, number>;
   bodyweightBaselines: Record<string, number>;
-  assistanceSlots?: Record<string, string[]>;
-  customExercises?: Record<string, Exercise>;
+  assistanceSlots: Record<string, string[]>;
+  customExercises: Record<string, Exercise>;
   timestamp: number;
 };
 
