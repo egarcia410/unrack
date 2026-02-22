@@ -3,6 +3,7 @@ import { ChevronRight, Pause, X } from "lucide-react";
 import { cva } from "class-variance-authority";
 import { cn } from "../lib/cn";
 import { playTimerDone } from "../lib/audio";
+import { showTimerNotification } from "../lib/notifications";
 import { useWorkoutStore } from "../stores/workout-store";
 import { IconButton } from "./icon-button";
 
@@ -85,6 +86,7 @@ export const RestTimer = () => {
     if (left <= 0 && !played.current) {
       played.current = true;
       playTimerDone();
+      showTimerNotification();
     }
   }, [left]);
 
@@ -109,7 +111,7 @@ export const RestTimer = () => {
               {done ? "GO!" : formatTime(left)}
             </div>
             <div className={cn(subtitleVariants({ status }))}>
-              {done ? "Next set ready" : reason || "Rest"}
+              {done ? "Time to unrack" : reason || "Rest"}
             </div>
           </div>
           <div className="flex gap-1.5 shrink-0">

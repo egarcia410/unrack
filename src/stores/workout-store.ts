@@ -9,6 +9,7 @@ import {
 } from "../lib/exercises";
 import { deriveSupplementalSets, deriveAllSets } from "../lib/sets";
 import type { WorkoutSet } from "../lib/sets";
+import { requestNotificationPermission, clearTimerNotification } from "../lib/notifications";
 import { createStore } from "./polaris";
 import { useProgramStore } from "./program-store";
 
@@ -79,6 +80,7 @@ export const useWorkoutStore = createStore("workout", {
   actions: (set, get) => ({
     startWorkout: (day: number) => {
       const { phase } = useProgramStore.getState();
+      requestNotificationPermission();
       set({
         ...initialState,
         activePhase: phase,
@@ -96,6 +98,7 @@ export const useWorkoutStore = createStore("workout", {
         const allSets = deriveWorkoutSets(state, programState);
         const nextSet = findNextUncheckedSet(allSets, key, next);
         if (nextSet) {
+          clearTimerNotification();
           set({
             checked: next,
             timerInfo: smartRest(nextSet.type, nextSet.intensity || 0, nextSet.isDeload),
@@ -174,6 +177,7 @@ export const useWorkoutStore = createStore("workout", {
           }
         }
         if (nextSetCount < maxSets) {
+          clearTimerNotification();
           updates.timerInfo = smartRest(setType, weightedWeek.percentage, isDeload);
           updates.showTimer = true;
           updates.timerKey = timerKey + 1;
@@ -251,6 +255,7 @@ export const useWorkoutStore = createStore("workout", {
       };
 
       if (nextSet) {
+        clearTimerNotification();
         updates.timerInfo = smartRest(nextSet.type, nextSet.intensity || 0, nextSet.isDeload);
         updates.showTimer = true;
         updates.timerKey = timerKey + 1;
@@ -259,7 +264,10 @@ export const useWorkoutStore = createStore("workout", {
       set(updates);
     },
 
-    dismissTimer: () => set({ showTimer: false }),
+    dismissTimer: () => {
+      clearTimerNotification();
+      set({ showTimer: false });
+    },
 
     setChecked: (updater: (prev: Record<string, boolean>) => Record<string, boolean>) => {
       set((s) => {
@@ -268,6 +276,7 @@ export const useWorkoutStore = createStore("workout", {
     },
 
     activateTimer: (setType: SetType, intensity: number, isDeload: boolean) => {
+      clearTimerNotification();
       set({
         timerInfo: smartRest(setType, intensity, isDeload),
         showTimer: true,
