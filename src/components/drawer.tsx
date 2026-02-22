@@ -14,17 +14,24 @@ export const Drawer = ({ open, onOpenChange, title, children }: DrawerProps) => 
   <DrawerPrimitive.Root open={open} onOpenChange={onOpenChange}>
     <DrawerPrimitive.Portal>
       <DrawerPrimitive.Backdrop className="fixed inset-0 z-50 bg-black opacity-[calc(0.5*(1-var(--drawer-swipe-progress)))] transition-opacity duration-200 data-swiping:duration-0 data-ending-style:opacity-0 data-starting-style:opacity-0" />
-      <DrawerPrimitive.Popup className="fixed inset-x-0 bottom-0 z-50 mx-auto flex max-h-[85vh] max-w-115 flex-col rounded-t-3xl bg-th-s1 [transform:translateY(var(--drawer-swipe-movement-y))] transition-transform duration-200 data-starting-style:[transform:translateY(100%)] data-ending-style:[transform:translateY(100%)] data-swiping:transition-none">
-        <header className="flex shrink-0 items-center justify-between border-b border-th-b px-5 pb-3 pt-4">
-          <DrawerPrimitive.Title className="text-lg font-bold text-th-t">
-            {title}
-          </DrawerPrimitive.Title>
-          <DrawerPrimitive.Close render={<IconButton className="bg-th-s2 text-th-t4" />}>
-            <X size={18} />
-          </DrawerPrimitive.Close>
-        </header>
-        <div className="flex-1 overflow-y-auto px-5 pb-6 pt-4">{children}</div>
-      </DrawerPrimitive.Popup>
+      <DrawerPrimitive.Viewport className="pointer-events-none fixed inset-0 z-50">
+        <DrawerPrimitive.Popup className="pointer-events-auto fixed inset-x-0 bottom-0 z-50 mx-auto flex max-h-[85vh] max-w-115 flex-col rounded-t-3xl bg-th-s1 [transform:translateY(var(--drawer-swipe-movement-y))] transition-transform duration-200 data-starting-style:[transform:translateY(100%)] data-ending-style:[transform:translateY(100%)] data-swiping:transition-none">
+          <div className="flex justify-center pb-1 pt-3">
+            <div className="h-1 w-10 rounded-full bg-th-t4" />
+          </div>
+          <header className="flex shrink-0 items-center justify-between border-b border-th-b px-5 pb-3">
+            <DrawerPrimitive.Title className="text-lg font-bold text-th-t">
+              {title}
+            </DrawerPrimitive.Title>
+            <DrawerPrimitive.Close render={<IconButton className="bg-th-s2 text-th-t4" />}>
+              <X size={18} />
+            </DrawerPrimitive.Close>
+          </header>
+          <DrawerPrimitive.Content className="flex-1 overflow-y-auto px-5 pb-6 pt-4">
+            {children}
+          </DrawerPrimitive.Content>
+        </DrawerPrimitive.Popup>
+      </DrawerPrimitive.Viewport>
     </DrawerPrimitive.Portal>
   </DrawerPrimitive.Root>
 );
