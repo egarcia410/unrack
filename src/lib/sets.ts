@@ -25,38 +25,30 @@ export const deriveSupplementalSets = (
   phase: Phase,
   phaseIndex: number,
 ): SupplementalSet[] => {
-  const supplementalSets: SupplementalSet[] = [];
-  if (template.supplemental) {
-    for (let setIndex = 0; setIndex < template.supplemental.numSets; setIndex++)
-      supplementalSets.push({
-        reps: template.supplemental.reps,
-        percentage: template.supplemental.percentage,
-        key: `s${setIndex}`,
-      });
-  } else if (template.supplementalWeekly) {
-    const weeklySupp = template.supplementalWeekly[phaseIndex];
-    for (let setIndex = 0; setIndex < weeklySupp.numSets; setIndex++)
-      supplementalSets.push({
-        reps: weeklySupp.reps,
-        percentage: weeklySupp.percentage,
-        key: `s${setIndex}`,
-      });
-  } else if (template.firstSetLast) {
-    for (let setIndex = 0; setIndex < template.firstSetLast.numSets; setIndex++)
-      supplementalSets.push({
-        reps: template.firstSetLast.reps,
-        percentage: phase.sets[0].percentage,
-        key: `s${setIndex}`,
-      });
-  } else if (template.secondSetLast) {
-    for (let setIndex = 0; setIndex < template.secondSetLast.numSets; setIndex++)
-      supplementalSets.push({
-        reps: template.secondSetLast.reps,
-        percentage: phase.sets[1].percentage,
-        key: `s${setIndex}`,
-      });
+  const supplemental = template.supplemental;
+  if (!supplemental) return [];
+
+  let percentage: number;
+  switch (supplemental.source) {
+    case "fixedPercentage":
+      percentage = supplemental.percentage;
+      break;
+    case "weeklyPercentage":
+      percentage = supplemental.percentages[phaseIndex];
+      break;
+    case "firstSetLast":
+      percentage = phase.sets[0].percentage;
+      break;
+    case "secondSetLast":
+      percentage = phase.sets[1].percentage;
+      break;
   }
-  return supplementalSets;
+
+  return Array.from({ length: supplemental.numSets }, (_, setIndex) => ({
+    reps: supplemental.reps,
+    percentage,
+    key: `s${setIndex}`,
+  }));
 };
 
 export const deriveAllSets = (

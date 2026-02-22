@@ -14,8 +14,7 @@ export const SupplementalSection = () => {
 
   if (supplementalSets.length === 0) return null;
 
-  const supplementalLabel =
-    templateId === "bbb" || templateId === "bbbC" ? "BBB" : templateId === "fsl" ? "FSL" : "SSL";
+  const supplementalLabel = templateId.toUpperCase();
 
   return (
     <Collapsible.Root defaultOpen>

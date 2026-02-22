@@ -24,20 +24,22 @@ export type Phase = {
   sets: WeekSet[];
 };
 
-export type SupplementalDef = {
-  numSets: number;
-  reps: number;
-  percentage: number;
-};
+export type Supplemental =
+  | { source: "fixedPercentage"; numSets: number; reps: number; percentage: number }
+  | {
+      source: "weeklyPercentage";
+      numSets: number;
+      reps: number;
+      percentages: [number, number, number, number];
+    }
+  | { source: "firstSetLast"; numSets: number; reps: number }
+  | { source: "secondSetLast"; numSets: number; reps: number };
 
 export type Template = {
   name: string;
   description: string;
   phases: Phase[];
-  supplemental?: SupplementalDef;
-  supplementalWeekly?: SupplementalDef[];
-  firstSetLast?: { numSets: number; reps: number };
-  secondSetLast?: { numSets: number; reps: number };
+  supplemental?: Supplemental;
 };
 
 export type Exercise = {
