@@ -1,6 +1,6 @@
 import { createRootRoute, Outlet } from "@tanstack/react-router";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { initTheme } from "../stores/ui-store";
+import { initTheme } from "../lib/theme";
 import { AppOverlays } from "../components/app-overlays";
 
 const queryClient = new QueryClient();
