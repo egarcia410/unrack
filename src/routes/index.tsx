@@ -1,6 +1,6 @@
 import { createFileRoute, redirect } from "@tanstack/react-router";
 import { hasProgramData } from "../stores/program-store";
-import { Celebration } from "../components/celebration";
+import { CelebrationDialog } from "../components/celebration-dialog";
 import { DeleteConfirmDialog } from "../components/delete-confirm-dialog";
 import { HomeHeader } from "../features/home/home-header";
 import { SettingsDrawer } from "../features/home/settings-drawer";
@@ -12,7 +12,7 @@ import { WeekCompleteBanner } from "../features/home/week-complete-banner";
 
 const HomePage = () => (
   <div className="mx-auto max-w-115 px-4 py-3 pb-20">
-    <Celebration />
+    <CelebrationDialog />
     <DeleteConfirmDialog />
     <SettingsDrawer />
     <TemplatePickerDrawer />

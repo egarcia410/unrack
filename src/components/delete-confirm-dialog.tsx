@@ -1,5 +1,5 @@
 import { useNavigate } from "@tanstack/react-router";
-import { Button } from "@base-ui/react/button";
+import { AlertDialog } from "@base-ui/react/alert-dialog";
 import { useUIStore } from "../stores/ui-store";
 import { useProgramStore } from "../stores/program-store";
 
@@ -8,42 +8,35 @@ export const DeleteConfirmDialog = () => {
   const { programReset } = useProgramStore();
   const navigate = useNavigate();
 
-  if (!showConfirm) return null;
-
-  const handleDelete = async () => {
-    await programReset();
-    setShowConfirm(false);
+  const handleDelete = () => {
+    programReset();
     navigate({ to: "/setup" });
   };
 
   return (
-    <div
-      onClick={() => setShowConfirm(false)}
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/60"
-    >
-      <div
-        onClick={(e) => e.stopPropagation()}
-        className="bg-th-s1 border border-th-b rounded-2xl p-6 max-w-80 w-[85%]"
-      >
-        <h2 className="text-lg font-bold text-th-t mb-1.5">Delete Program?</h2>
-        <p className="text-sm text-th-t3 mb-5 leading-normal">
-          All progress, history and PRs will be permanently lost.
-        </p>
-        <div className="flex gap-2">
-          <Button
-            onClick={() => setShowConfirm(false)}
-            className="flex-1 py-3.5 rounded-xl border border-th-b bg-th-s2 text-th-t text-base font-semibold font-sans cursor-pointer min-h-12"
-          >
-            Cancel
-          </Button>
-          <Button
-            onClick={handleDelete}
-            className="flex-1 py-3.5 rounded-xl border-none bg-th-r text-th-inv text-base font-semibold font-sans cursor-pointer min-h-12"
-          >
-            Delete
-          </Button>
-        </div>
-      </div>
-    </div>
+    <AlertDialog.Root open={showConfirm} onOpenChange={(open) => !open && setShowConfirm(false)}>
+      <AlertDialog.Portal>
+        <AlertDialog.Backdrop className="fixed inset-0 z-50 bg-black/60 transition-opacity duration-200 data-ending-style:opacity-0 data-starting-style:opacity-0" />
+        <AlertDialog.Popup className="fixed inset-0 z-50 bg-th-s1 border border-th-b rounded-2xl p-6 max-w-80 w-11/12 m-auto h-fit">
+          <AlertDialog.Title className="text-lg font-bold text-th-t mb-1.5">
+            Delete Program?
+          </AlertDialog.Title>
+          <AlertDialog.Description className="text-sm text-th-t3 mb-5 leading-normal">
+            All progress, history and PRs will be permanently lost.
+          </AlertDialog.Description>
+          <div className="flex gap-2">
+            <AlertDialog.Close className="flex-1 py-3.5 rounded-xl border border-th-b bg-th-s2 text-th-t text-base font-semibold min-h-12">
+              Cancel
+            </AlertDialog.Close>
+            <AlertDialog.Close
+              onClick={handleDelete}
+              className="flex-1 py-3.5 rounded-xl border-none bg-th-r text-th-inv text-base font-semibold min-h-12"
+            >
+              Delete
+            </AlertDialog.Close>
+          </div>
+        </AlertDialog.Popup>
+      </AlertDialog.Portal>
+    </AlertDialog.Root>
   );
 };
