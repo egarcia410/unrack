@@ -13,8 +13,8 @@ type DrawerProps = {
 export const Drawer = ({ open, onOpenChange, title, children }: DrawerProps) => (
   <DrawerPrimitive.Root open={open} onOpenChange={onOpenChange}>
     <DrawerPrimitive.Portal>
-      <DrawerPrimitive.Backdrop className="fixed inset-0 z-50 bg-black/50 transition-opacity duration-200 data-[ending-style]:opacity-0 data-[starting-style]:opacity-0" />
-      <DrawerPrimitive.Popup className="fixed inset-x-0 bottom-0 z-50 mx-auto flex max-h-[85vh] max-w-115 flex-col rounded-t-3xl bg-th-s1">
+      <DrawerPrimitive.Backdrop className="fixed inset-0 z-50 bg-black opacity-[calc(0.5*(1-var(--drawer-swipe-progress)))] transition-opacity duration-200 data-swiping:duration-0 data-ending-style:opacity-0 data-starting-style:opacity-0" />
+      <DrawerPrimitive.Popup className="fixed inset-x-0 bottom-0 z-50 mx-auto flex max-h-[85vh] max-w-115 flex-col rounded-t-3xl bg-th-s1 [transform:translateY(var(--drawer-swipe-movement-y))] transition-transform duration-200 data-starting-style:[transform:translateY(100%)] data-ending-style:[transform:translateY(100%)] data-swiping:transition-none">
         <header className="flex shrink-0 items-center justify-between border-b border-th-b px-5 pb-3 pt-4">
           <DrawerPrimitive.Title className="text-lg font-bold text-th-t">
             {title}

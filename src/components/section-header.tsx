@@ -18,7 +18,7 @@ export const SectionHeader = ({ label, done, extra }: SectionHeaderProps) => (
       {extra}
       <ChevronDown
         size={14}
-        className="text-th-t4 transition-transform duration-200 -rotate-90 group-data-[panel-open]:rotate-0"
+        className="text-th-t4 transition-transform duration-200 -rotate-90 group-data-panel-open:rotate-0"
       />
     </div>
   </Collapsible.Trigger>

@@ -17,7 +17,7 @@ export const DeleteConfirmDialog = () => {
     <AlertDialog.Root open={showConfirm} onOpenChange={(open) => !open && setShowConfirm(false)}>
       <AlertDialog.Portal>
         <AlertDialog.Backdrop className="fixed inset-0 z-50 bg-black/60 transition-opacity duration-200 data-ending-style:opacity-0 data-starting-style:opacity-0" />
-        <AlertDialog.Popup className="fixed inset-0 z-50 bg-th-s1 border border-th-b rounded-2xl p-6 max-w-80 w-11/12 m-auto h-fit">
+        <AlertDialog.Popup className="fixed inset-0 z-50 bg-th-s1 border border-th-b rounded-2xl p-6 max-w-80 w-11/12 m-auto h-fit transition-[opacity,transform] duration-200 data-starting-style:opacity-0 data-starting-style:scale-95 data-ending-style:opacity-0 data-ending-style:scale-95">
           <AlertDialog.Title className="text-lg font-bold text-th-t mb-1.5">
             Delete Program?
           </AlertDialog.Title>

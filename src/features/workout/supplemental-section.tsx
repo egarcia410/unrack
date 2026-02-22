@@ -24,7 +24,7 @@ export const SupplementalSection = () => {
         done={allSuppDone}
         extra={<span className="text-th-t4">{supplementalLabel}</span>}
       />
-      <Collapsible.Panel>
+      <Collapsible.Panel className="overflow-hidden h-(--collapsible-panel-height) transition-[height] duration-200 data-starting-style:h-0 data-ending-style:h-0">
         <div className="flex flex-col gap-1 mb-6">
           {supplementalSets.map((supplementalSet) => (
             <SetRow

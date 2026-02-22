@@ -14,7 +14,7 @@ export const WorkingSetsSection = () => {
   return (
     <Collapsible.Root defaultOpen>
       <SectionHeader label="Working Sets" done={allMainDone} />
-      <Collapsible.Panel>
+      <Collapsible.Panel className="overflow-hidden h-(--collapsible-panel-height) transition-[height] duration-200 data-starting-style:h-0 data-ending-style:h-0">
         <div className="flex flex-col gap-1 mb-6">
           {weekDef.sets.map((set, i) => {
             const key = `m${i}`;

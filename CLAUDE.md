@@ -31,6 +31,10 @@
 - Static access (route guards): `useProgramStore.getState()` or `useProgramStore.status("init")`
 - Never use `.getState()` in components — only in store files, route guards, or exported static selectors
 
+## Conditional Styling
+- Use CVA variants for conditional class logic when a component has discrete visual states
+- Compose CVA with `cn()` for merging variant classes with additional overrides: `cn(myVariants({ status }), "extra-class")`
+
 ## Derived State & Selectors
 - Derive computed values from stores using composed selector hooks — not helper functions that take store data as arguments
 - Components should never pull broad store data (`useProgramData()`) just to pass it into a function — encapsulate that in a hook

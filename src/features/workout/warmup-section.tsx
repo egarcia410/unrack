@@ -12,7 +12,7 @@ export const WarmupSection = () => {
   return (
     <Collapsible.Root defaultOpen>
       <SectionHeader label="Warm-up" done={allWarmupDone} />
-      <Collapsible.Panel>
+      <Collapsible.Panel className="overflow-hidden h-(--collapsible-panel-height) transition-[height] duration-200 data-starting-style:h-0 data-ending-style:h-0">
         <div className="flex flex-col gap-1 mb-6">
           {WARMUP_SETS.map((warmupSet, setIndex) => {
             const key = `w${setIndex}`;

@@ -31,6 +31,15 @@ const amrapCardVariants = cva("rounded-2xl p-4 transition-all duration-250 borde
   defaultVariants: { status: "inactive" },
 });
 
+const gridCollapseVariants = cva("grid transition-[grid-template-rows] duration-200", {
+  variants: {
+    expanded: {
+      true: "grid-rows-[1fr]",
+      false: "grid-rows-[0fr]",
+    },
+  },
+});
+
 type AmrapCardProps = {
   setIndex: number;
 };
@@ -86,31 +95,35 @@ export const AmrapCard = ({ setIndex }: AmrapCardProps) => {
 
   return (
     <div className={cn(amrapCardVariants({ status: amrapStatus }))}>
-      {!amrapDone ? (
-        <Button
-          onClick={() => activateAmrap(setIndex)}
-          className="flex items-center justify-between w-full box-border bg-none border-none p-0 cursor-pointer min-h-14"
-        >
-          <div>
-            <span className="text-xl font-extrabold font-mono text-th-t">{amrapWeight}</span>
-            <span className="text-sm text-th-t4 font-mono font-semibold"> {unit}</span>
-            {goalReps && (
-              <div className="text-xs text-th-t4 font-mono mt-1">
-                PR at <span className="text-th-go font-bold">{goalReps}+</span>
-              </div>
-            )}
-          </div>
-          <PRRing
-            size={58}
-            min={minReps}
-            prGoal={goalReps}
-            value={0}
-            active={true}
-            activated={false}
-          />
-        </Button>
-      ) : (
-        <div>
+      <div className={gridCollapseVariants({ expanded: !amrapDone })}>
+        <div className="overflow-hidden">
+          <Button
+            onClick={() => activateAmrap(setIndex)}
+            className="flex items-center justify-between w-full box-border bg-none border-none p-0 min-h-14"
+          >
+            <div>
+              <span className="text-xl font-extrabold font-mono text-th-t">{amrapWeight}</span>
+              <span className="text-sm text-th-t4 font-mono font-semibold"> {unit}</span>
+              {goalReps && (
+                <div className="text-xs text-th-t4 font-mono mt-1">
+                  PR at <span className="text-th-go font-bold">{goalReps}+</span>
+                </div>
+              )}
+            </div>
+            <PRRing
+              size={58}
+              min={minReps}
+              prGoal={goalReps}
+              value={0}
+              active={true}
+              activated={false}
+            />
+          </Button>
+        </div>
+      </div>
+
+      <div className={gridCollapseVariants({ expanded: amrapDone })}>
+        <div className="overflow-hidden">
           <div className="text-sm text-th-t4 font-mono mb-2 text-center flex items-center justify-center">
             {amrapWeight} {unit}
             {goalReps && (
@@ -142,7 +155,7 @@ export const AmrapCard = ({ setIndex }: AmrapCardProps) => {
             </div>
           )}
         </div>
-      )}
+      </div>
     </div>
   );
 };

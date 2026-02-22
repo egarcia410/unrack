@@ -35,7 +35,7 @@
 
   --animate-pr-pulse: pr-pulse 2s ease-in-out infinite;
   --animate-gold-glow: gold-glow 1.5s ease-in-out infinite;
-  --animate-sheet-up: sheet-up 0.2s ease-out;
+
   --animate-timer-pulse: timer-pulse 1s infinite;
   --animate-celeb-star: celeb-star 0.4s both;
 }
@@ -124,15 +124,6 @@ body {
     box-shadow:
       0 0 18px rgba(255, 215, 0, 0.6),
       0 0 40px rgba(255, 215, 0, 0.2);
-  }
-}
-
-@keyframes sheet-up {
-  from {
-    transform: translateY(100%);
-  }
-  to {
-    transform: translateY(0);
   }
 }
 

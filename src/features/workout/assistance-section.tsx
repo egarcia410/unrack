@@ -13,7 +13,7 @@ export const AssistanceSection = () => {
   return (
     <Collapsible.Root defaultOpen>
       <SectionHeader label="Assistance" done={allAssistanceDone} />
-      <Collapsible.Panel>
+      <Collapsible.Panel className="overflow-hidden h-(--collapsible-panel-height) transition-[height] duration-200 data-starting-style:h-0 data-ending-style:h-0">
         <div className="flex flex-col gap-1.5 mb-6">
           {accessories.map((exercise, exerciseIndex) => {
             const discovered = exercise.isBodyweight || (assistanceMaximums[exercise.id] || 0) > 0;

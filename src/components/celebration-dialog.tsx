@@ -1,9 +1,43 @@
 import { useEffect } from "react";
 import { ArrowRight, Dot, Dumbbell, Star, TriangleAlert, Trophy, Zap } from "lucide-react";
 import { Dialog } from "@base-ui/react/dialog";
+import { cva } from "class-variance-authority";
 import { cn } from "../lib/cn";
 import { useUIStore } from "../stores/ui-store";
 import { useProgramStore } from "../stores/program-store";
+
+const celebrationVariants = cva(
+  "fixed z-50 inset-0 m-auto h-fit text-center px-7 py-9 rounded-3xl bg-th-s1 border max-w-80 w-11/12 transition-[opacity,transform] duration-200 data-starting-style:opacity-0 data-starting-style:scale-95 data-ending-style:opacity-0 data-ending-style:scale-95",
+  {
+    variants: {
+      type: {
+        default: "border-th-b",
+        warn: "border-th-r/25",
+      },
+    },
+    defaultVariants: { type: "default" },
+  },
+);
+
+const iconColorVariants = cva("", {
+  variants: {
+    type: {
+      default: "text-th-a",
+      warn: "text-th-r",
+    },
+  },
+  defaultVariants: { type: "default" },
+});
+
+const titleColorVariants = cva("text-xl font-extrabold mb-1.5", {
+  variants: {
+    type: {
+      default: "text-th-t",
+      warn: "text-th-r",
+    },
+  },
+  defaultVariants: { type: "default" },
+});
 
 export const CelebrationDialog = () => {
   const { celebration, setCelebration } = useUIStore();
@@ -36,6 +70,8 @@ export const CelebrationDialog = () => {
           ? TriangleAlert
           : Dumbbell;
 
+  const variantType = celebration?.type === "warn" ? "warn" : "default";
+
   return (
     <Dialog.Root
       open={!!celebration}
@@ -45,21 +81,11 @@ export const CelebrationDialog = () => {
     >
       <Dialog.Portal>
         <Dialog.Backdrop className="fixed inset-0 z-50 bg-black/75 transition-opacity duration-200 data-ending-style:opacity-0 data-starting-style:opacity-0" />
-        <Dialog.Popup
-          className={cn(
-            "fixed z-50 inset-0 m-auto h-fit text-center px-7 py-9 rounded-3xl bg-th-s1 border max-w-80 w-11/12",
-            celebration?.type === "warn" ? "border-th-r/25" : "border-th-b",
-          )}
-        >
+        <Dialog.Popup className={cn(celebrationVariants({ type: variantType }))}>
           <div className="mb-3 flex justify-center" aria-hidden="true">
-            <Icon size={48} className={celebration?.type === "warn" ? "text-th-r" : "text-th-a"} />
+            <Icon size={48} className={iconColorVariants({ type: variantType })} />
           </div>
-          <Dialog.Title
-            className={cn(
-              "text-xl font-extrabold mb-1.5",
-              celebration?.type === "warn" ? "text-th-r" : "text-th-t",
-            )}
-          >
+          <Dialog.Title className={cn(titleColorVariants({ type: variantType }))}>
             {celebration?.message}
           </Dialog.Title>
           <Dialog.Description

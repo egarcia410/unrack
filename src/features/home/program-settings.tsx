@@ -23,7 +23,7 @@ export const ProgramSettings = () => {
           )}
         />
       </Collapsible.Trigger>
-      <Collapsible.Panel>
+      <Collapsible.Panel className="overflow-hidden h-(--collapsible-panel-height) transition-[height] duration-200 data-starting-style:h-0 data-ending-style:h-0">
         <div className="mb-4">
           <p className="text-xs font-bold text-th-t3 tracking-wide mb-2 mt-1">Units</p>
           <div className="grid grid-cols-2 gap-2 mb-4">

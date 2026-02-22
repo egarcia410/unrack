@@ -1,9 +1,62 @@
 import { useState, useEffect, useRef } from "react";
 import { ChevronRight, Pause, X } from "lucide-react";
+import { cva } from "class-variance-authority";
 import { cn } from "../lib/cn";
 import { playTimerDone } from "../lib/audio";
 import { useWorkoutStore } from "../stores/workout-store";
 import { IconButton } from "./icon-button";
+
+type TimerStatus = "active" | "urgent" | "done";
+
+const timerVariants = cva("px-5 py-3.5 transition-all duration-300 border-b-2", {
+  variants: {
+    status: {
+      active: "bg-th-s1 border-th-s3 shadow-[0_4px_12px_rgba(0,0,0,0.15)]",
+      urgent: "bg-th-s1 border-th-s3 shadow-[0_4px_12px_rgba(0,0,0,0.15)]",
+      done: "bg-th-g border-th-gb shadow-[0_0_20px_var(--color-th-gb)]",
+    },
+  },
+});
+
+const countdownVariants = cva("text-3xl font-extrabold font-mono leading-none", {
+  variants: {
+    status: {
+      active: "text-th-t",
+      urgent: "text-th-t",
+      done: "text-th-inv animate-timer-pulse",
+    },
+  },
+});
+
+const subtitleVariants = cva("text-xs font-semibold mt-1", {
+  variants: {
+    status: {
+      active: "text-th-t3",
+      urgent: "text-th-t3",
+      done: "text-black/50",
+    },
+  },
+});
+
+const trackVariants = cva("h-2 rounded overflow-hidden", {
+  variants: {
+    status: {
+      active: "bg-th-s3",
+      urgent: "bg-th-s3",
+      done: "bg-black/15",
+    },
+  },
+});
+
+const fillVariants = cva("h-full rounded transition-[width] duration-1000 ease-linear", {
+  variants: {
+    status: {
+      active: "bg-th-a",
+      urgent: "bg-th-y",
+      done: "bg-black/20",
+    },
+  },
+});
 
 export const RestTimer = () => {
   const { showTimer, timerInfo, timerKey, dismissTimer } = useWorkoutStore();
@@ -35,59 +88,47 @@ export const RestTimer = () => {
     }
   }, [left]);
 
-  if (!showTimer) return null;
-
   const formatTime = (totalSeconds: number) =>
     `${Math.floor(totalSeconds / 60)}:${String(totalSeconds % 60).padStart(2, "0")}`;
   const done = left <= 0;
   const urgent = !done && left <= 10;
   const percentage = duration > 0 ? ((duration - left) / duration) * 100 : 100;
+  const status: TimerStatus = done ? "done" : urgent ? "urgent" : "active";
 
   return (
     <div
       className={cn(
-        "sticky top-0 z-20 mx-[-16px] px-5 py-3.5 transition-all duration-300",
-        done
-          ? "bg-th-g border-b-2 border-th-gb shadow-[0_0_20px_var(--color-th-gb)]"
-          : "bg-th-s1 border-b-2 border-th-s3 shadow-[0_4px_12px_rgba(0,0,0,0.15)]",
+        "fixed inset-x-0 top-0 z-20 mx-auto max-w-115 transition-transform duration-200",
+        showTimer ? "translate-y-0" : "-translate-y-full",
       )}
     >
-      <div className="flex items-center gap-3.5 mb-2">
-        <div className="flex-1 min-w-0">
-          <div
-            className={cn(
-              "text-3xl font-extrabold font-mono leading-none",
-              done ? "text-th-inv animate-timer-pulse" : "text-th-t",
+      <div className={cn(timerVariants({ status }))}>
+        <div className="flex items-center gap-3.5 mb-2">
+          <div className="flex-1 min-w-0">
+            <div className={cn(countdownVariants({ status }))}>
+              {done ? "GO!" : formatTime(left)}
+            </div>
+            <div className={cn(subtitleVariants({ status }))}>
+              {done ? "Next set ready" : reason || "Rest"}
+            </div>
+          </div>
+          <div className="flex gap-1.5 shrink-0">
+            {!done && (
+              <IconButton onClick={() => setPaused(!paused)}>
+                {paused ? <ChevronRight size={18} /> : <Pause size={18} />}
+              </IconButton>
             )}
-          >
-            {done ? "GO!" : formatTime(left)}
-          </div>
-          <div className={cn("text-xs font-semibold mt-1", done ? "text-black/50" : "text-th-t3")}>
-            {done ? "Next set ready" : reason || "Rest"}
-          </div>
-        </div>
-        <div className="flex gap-1.5 shrink-0">
-          {!done && (
-            <IconButton onClick={() => setPaused(!paused)}>
-              {paused ? <ChevronRight size={18} /> : <Pause size={18} />}
+            <IconButton
+              onClick={dismissTimer}
+              className={cn(done ? "border-transparent bg-black/10 text-black/50" : "")}
+            >
+              <X size={18} />
             </IconButton>
-          )}
-          <IconButton
-            onClick={dismissTimer}
-            className={cn(done ? "border-transparent bg-black/10 text-black/50" : "")}
-          >
-            <X size={18} />
-          </IconButton>
+          </div>
         </div>
-      </div>
-      <div className={cn("h-2 rounded overflow-hidden", done ? "bg-black/15" : "bg-th-s3")}>
-        <div
-          className={cn(
-            "h-full rounded transition-[width] duration-1000 ease-linear",
-            done ? "bg-black/20" : urgent ? "bg-th-y" : "bg-th-a",
-          )}
-          style={{ width: `${percentage}%` }}
-        />
+        <div className={cn(trackVariants({ status }))}>
+          <div className={cn(fillVariants({ status }))} style={{ width: `${percentage}%` }} />
+        </div>
       </div>
     </div>
   );
