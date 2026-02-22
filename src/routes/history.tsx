@@ -1,6 +1,6 @@
 import { createFileRoute, redirect } from "@tanstack/react-router";
 import { hasProgramData } from "../stores/program-store";
-import { useHistoryData } from "../features/history/use-history-data";
+import { useHistoryData } from "../features/history/use-history-selectors";
 import { LiftProgressCard } from "../features/history/lift-progress-card";
 import { RecentWorkoutRow } from "../features/history/recent-workout-row";
 import { BackButton } from "../components/back-button";

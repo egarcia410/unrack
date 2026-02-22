@@ -18,7 +18,7 @@ export type WeekSet = {
   percentage: number;
 };
 
-export type WeekDef = {
+export type Phase = {
   label: string;
   title: string;
   sets: WeekSet[];
@@ -33,7 +33,7 @@ export type SupplementalDef = {
 export type Template = {
   name: string;
   description: string;
-  weeks: WeekDef[];
+  phases: Phase[];
   supplemental?: SupplementalDef;
   supplementalWeekly?: SupplementalDef[];
   firstSetLast?: { numSets: number; reps: number };
@@ -71,7 +71,7 @@ export type AssistancePrescription = {
 
 export type WorkoutEntry = {
   cycle: number;
-  week: number;
+  phase: number;
   day: number;
   lift: string;
   datetime: number;
@@ -88,20 +88,20 @@ export type WorkoutEntry = {
 };
 
 export type ProgramData = {
-  template: TemplateId;
+  templateId: TemplateId;
   unit: Unit;
   trainingMaxPercent: number;
   trainingMaxes: Record<string, number>;
   oneRepMaxes: Record<string, number>;
   cycle: number;
-  week: number;
+  phase: number;
   workouts: WorkoutEntry[];
   assistanceHistory: Record<
     string,
     Array<{
       datetime?: number;
       cycle?: number;
-      week?: number;
+      phase?: number;
       weight?: number;
       isBodyweight?: boolean;
     }>

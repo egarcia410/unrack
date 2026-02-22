@@ -7,7 +7,7 @@ import { cn } from "../../lib/cn";
 import { PRRing } from "../../components/pr-ring";
 import { IconButton } from "../../components/icon-button";
 import { Button } from "@base-ui/react/button";
-import { useActiveLiftId, useActiveTrainingMax, useActiveWeekDef } from "./use-workout-selectors";
+import { useActiveTrainingMax, useActivePhase } from "./use-workout-selectors";
 
 type AmrapStatus =
   | "inactive"
@@ -47,24 +47,24 @@ type AmrapCardProps = {
 export const AmrapCard = ({ setIndex }: AmrapCardProps) => {
   const { unit, oneRepMaxes } = useProgramStore();
   const trainingMax = useActiveTrainingMax();
-  const liftId = useActiveLiftId();
-  const weekDef = useActiveWeekDef();
+  const { activeLiftId } = useWorkoutStore();
+  const phase = useActivePhase();
 
   const { checked, amrapReps, activateAmrap, setAmrapReps } = useWorkoutStore();
 
-  const set = weekDef.sets[setIndex];
+  const set = phase.sets[setIndex];
   const setKey = `m${setIndex}`;
   const amrapWeight = calcWeight(trainingMax, set.percentage);
   const minReps = parseInt(String(set.reps).replace("+", "")) || 1;
 
-  const goalReps = oneRepMaxes[liftId]
-    ? Math.max(1, Math.ceil((oneRepMaxes[liftId] / amrapWeight - 1) * 30) + 1)
+  const goalReps = oneRepMaxes[activeLiftId]
+    ? Math.max(1, Math.ceil((oneRepMaxes[activeLiftId] / amrapWeight - 1) * 30) + 1)
     : null;
 
   const amrapDone = !!checked[setKey];
   const entered = parseInt(amrapReps[setKey]) || 0;
   const currentEstimate = entered > 0 ? epley(amrapWeight, entered) : 0;
-  const previousEstimate = oneRepMaxes[liftId] || 0;
+  const previousEstimate = oneRepMaxes[activeLiftId] || 0;
   const isPR = amrapDone && entered > 0 && goalReps && entered >= goalReps;
 
   const stepDown = () => {

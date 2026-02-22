@@ -4,7 +4,7 @@ import { Check, Dot } from "lucide-react";
 import { cva } from "class-variance-authority";
 import { useProgramStore } from "../../stores/program-store";
 import { useWorkoutStore } from "../../stores/workout-store";
-import { TEMPLATES, LIFTS, LIFT_ORDER } from "../../constants/program";
+import { LIFTS, LIFT_ORDER } from "../../constants/program";
 import { calcWeight } from "../../lib/calc";
 import { PRRing } from "../../components/pr-ring";
 import { cn } from "../../lib/cn";
@@ -38,18 +38,15 @@ type LiftCardProps = {
 
 export const LiftCard = ({ liftIndex }: LiftCardProps) => {
   const navigate = useNavigate();
-  const { week, cycle, workouts, template, trainingMaxes, oneRepMaxes } = useProgramStore();
+  const { currentPhase, currentPhaseWorkouts, trainingMaxes, oneRepMaxes } = useProgramStore();
   const { startWorkout } = useWorkoutStore();
 
   const liftId = LIFT_ORDER[liftIndex];
   const lift = LIFTS.find((candidate) => candidate.id === liftId)!;
-  const variant = TEMPLATES[template];
-  const weekDef = variant.weeks[week];
-  const weekDone = workouts.filter((workout) => workout.cycle === cycle && workout.week === week);
-  const isDone = weekDone.some((workout) => workout.lift === liftId);
-  const doneEntry = weekDone.find((workout) => workout.lift === liftId);
+  const isDone = currentPhaseWorkouts.some((workout) => workout.lift === liftId);
+  const doneEntry = currentPhaseWorkouts.find((workout) => workout.lift === liftId);
 
-  const amrapSet = weekDef.sets.find((candidate) => String(candidate.reps).includes("+"));
+  const amrapSet = currentPhase.sets.find((candidate) => String(candidate.reps).includes("+"));
   const amrapWeight = amrapSet ? calcWeight(trainingMaxes[liftId], amrapSet.percentage) : 0;
 
   let doneReps = 0;

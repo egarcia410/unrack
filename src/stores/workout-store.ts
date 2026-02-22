@@ -10,10 +10,10 @@ import {
 import { deriveSupplementalSets, deriveAllSets } from "../lib/sets";
 import type { WorkoutSet } from "../lib/sets";
 import { createStore } from "./polaris";
-import { useProgramStore, extractProgramData } from "./program-store";
+import { useProgramStore } from "./program-store";
 
 type WorkoutState = {
-  activeWeek: number;
+  activePhase: number;
   activeDay: number;
   checked: Record<string, boolean>;
   amrapReps: Record<string, string>;
@@ -26,7 +26,7 @@ type WorkoutState = {
 };
 
 const initialState: WorkoutState = {
-  activeWeek: 0,
+  activePhase: 0,
   activeDay: 0,
   checked: {},
   amrapReps: {},
@@ -42,15 +42,18 @@ const deriveWorkoutSets = (
   workoutState: WorkoutState,
   programState: ReturnType<typeof useProgramStore.getState>,
 ): WorkoutSet[] => {
-  const { activeWeek, activeDay } = workoutState;
-  const programData = extractProgramData(programState);
-  const variant = TEMPLATES[programData.template];
-  const weekDef = variant.weeks[activeWeek];
+  const { activePhase, activeDay } = workoutState;
+  const template = TEMPLATES[programState.templateId];
+  const phase = template.phases[activePhase];
   const liftId = LIFT_ORDER[activeDay % LIFT_ORDER.length];
-  const isDeload = activeWeek === 3;
-  const accessories = getAssistanceForLift(liftId, programData);
-  const supplementalSets = deriveSupplementalSets(variant, weekDef, activeWeek);
-  return deriveAllSets(activeWeek, weekDef, supplementalSets, accessories, isDeload);
+  const isDeload = activePhase === 3;
+  const accessories = getAssistanceForLift(
+    liftId,
+    programState.assistanceSlots,
+    programState.customExercises,
+  );
+  const supplementalSets = deriveSupplementalSets(template, phase, activePhase);
+  return deriveAllSets(activePhase, phase, supplementalSets, accessories, isDeload);
 };
 
 const findNextUncheckedSet = (
@@ -68,12 +71,17 @@ const findNextUncheckedSet = (
 export const useWorkoutStore = createStore("workout", {
   state: initialState,
 
+  computed: {
+    activeLiftId: (state: WorkoutState): string => LIFT_ORDER[state.activeDay % LIFT_ORDER.length],
+    isDeload: (state: WorkoutState): boolean => state.activePhase === 3,
+  },
+
   actions: (set, get) => ({
     startWorkout: (day: number) => {
-      const { week } = useProgramStore.getState();
+      const { phase } = useProgramStore.getState();
       set({
         ...initialState,
-        activeWeek: week,
+        activePhase: phase,
         activeDay: day,
         workoutStart: Date.now(),
       });
@@ -118,21 +126,30 @@ export const useWorkoutStore = createStore("workout", {
 
     incrementAssistanceSet: (accId: string) => {
       const state = get();
-      const { activeWeek, activeDay, assistanceSetCounts, assistanceLog, timerKey } = state;
+      const { activePhase, activeDay, assistanceSetCounts, assistanceLog, timerKey } = state;
       const programState = useProgramStore.getState();
-      const programData = extractProgramData(programState);
       const liftId = LIFT_ORDER[activeDay % LIFT_ORDER.length];
-      const accessories = getAssistanceForLift(liftId, programData);
+      const accessories = getAssistanceForLift(
+        liftId,
+        programState.assistanceSlots,
+        programState.customExercises,
+      );
       const exercise = accessories.find((a) => a.id === accId);
       if (!exercise) return;
 
-      const discovered = isAssistanceDiscovered(exercise, programData);
-      const weekRx = ASSISTANCE_WEEKS[activeWeek] || ASSISTANCE_WEEKS[0];
+      const discovered = isAssistanceDiscovered(exercise, programState.assistanceMaximums);
+      const weekRx = ASSISTANCE_WEEKS[activePhase] || ASSISTANCE_WEEKS[0];
       const maxSets = discovered
-        ? getAssistancePrescription(exercise, activeWeek, programData, liftId).sets
+        ? getAssistancePrescription(
+            exercise,
+            activePhase,
+            programState.assistanceMaximums,
+            programState.bodyweightBaselines,
+            liftId,
+          ).sets
         : weekRx.sets;
       const setType: SetType = exercise.isBodyweight ? "acc_bw" : "acc_wt";
-      const isDeload = activeWeek === 3;
+      const isDeload = activePhase === 3;
 
       const setsDone = assistanceSetCounts[accId] || 0;
       if (setsDone < maxSets) {
@@ -161,18 +178,27 @@ export const useWorkoutStore = createStore("workout", {
 
     decrementAssistanceSet: (accId: string) => {
       const state = get();
-      const { activeWeek, activeDay, assistanceSetCounts } = state;
+      const { activePhase, activeDay, assistanceSetCounts } = state;
       const programState = useProgramStore.getState();
-      const programData = extractProgramData(programState);
       const liftId = LIFT_ORDER[activeDay % LIFT_ORDER.length];
-      const accessories = getAssistanceForLift(liftId, programData);
+      const accessories = getAssistanceForLift(
+        liftId,
+        programState.assistanceSlots,
+        programState.customExercises,
+      );
       const exercise = accessories.find((a) => a.id === accId);
       if (!exercise) return;
 
-      const discovered = isAssistanceDiscovered(exercise, programData);
-      const weekRx = ASSISTANCE_WEEKS[activeWeek] || ASSISTANCE_WEEKS[0];
+      const discovered = isAssistanceDiscovered(exercise, programState.assistanceMaximums);
+      const weekRx = ASSISTANCE_WEEKS[activePhase] || ASSISTANCE_WEEKS[0];
       const maxSets = discovered
-        ? getAssistancePrescription(exercise, activeWeek, programData, liftId).sets
+        ? getAssistancePrescription(
+            exercise,
+            activePhase,
+            programState.assistanceMaximums,
+            programState.bodyweightBaselines,
+            liftId,
+          ).sets
         : weekRx.sets;
 
       const setsDone = assistanceSetCounts[accId] || 0;
@@ -196,11 +222,10 @@ export const useWorkoutStore = createStore("workout", {
       if (checked[setKey]) return;
 
       const programState = useProgramStore.getState();
-      const programData = extractProgramData(programState);
-      const { activeWeek } = state;
-      const variant = TEMPLATES[programData.template];
-      const weekDef = variant.weeks[activeWeek];
-      const setDef = weekDef.sets[setIndex];
+      const { activePhase } = state;
+      const template = TEMPLATES[programState.templateId];
+      const phase = template.phases[activePhase];
+      const setDef = phase.sets[setIndex];
       const minReps = parseInt(String(setDef.reps).replace("+", "")) || 1;
 
       const allSets = deriveWorkoutSets(state, programState);

@@ -6,7 +6,7 @@ import { SetRow } from "../../components/set-row";
 import { useSupplementalSets } from "./use-workout-selectors";
 
 export const SupplementalSection = () => {
-  const { template } = useProgramStore();
+  const { templateId } = useProgramStore();
   const { checked } = useWorkoutStore();
   const supplementalSets = useSupplementalSets();
 
@@ -15,7 +15,7 @@ export const SupplementalSection = () => {
   if (supplementalSets.length === 0) return null;
 
   const supplementalLabel =
-    template === "bbb" || template === "bbbC" ? "BBB" : template === "fsl" ? "FSL" : "SSL";
+    templateId === "bbb" || templateId === "bbbC" ? "BBB" : templateId === "fsl" ? "FSL" : "SSL";
 
   return (
     <Collapsible.Root defaultOpen>

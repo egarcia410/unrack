@@ -6,7 +6,6 @@ import { EXERCISE_LIB, EXERCISE_CATEGORIES, CAT_LABELS } from "../../constants/e
 import { getAssistancePrescription } from "../../lib/exercises";
 import { cn } from "../../lib/cn";
 import { Drawer } from "../../components/drawer";
-import type { ProgramData } from "../../types";
 
 const CATEGORY_TEXT_CLASSES: Record<string, string> = {
   push: "text-th-pr",
@@ -16,10 +15,8 @@ const CATEGORY_TEXT_CLASSES: Record<string, string> = {
 
 export const SwapExerciseDrawer = () => {
   const { activeSwapSlot, setActiveSwapSlot } = useOverlayStore();
-  const { activeWeek } = useWorkoutStore();
+  const { activePhase } = useWorkoutStore();
   const { assistanceMaximums, bodyweightBaselines, unit, exerciseSwapped } = useProgramStore();
-
-  const prescriptionData = { assistanceMaximums, bodyweightBaselines } as ProgramData;
 
   return (
     <Drawer
@@ -48,8 +45,9 @@ export const SwapExerciseDrawer = () => {
                   !exercise.isBodyweight && (assistanceMaximums?.[exercise.id] || 0) > 0;
                 const prescription = getAssistancePrescription(
                   exercise,
-                  activeWeek,
-                  prescriptionData,
+                  activePhase,
+                  assistanceMaximums,
+                  bodyweightBaselines,
                   activeSwapSlot.liftId,
                 );
                 const isNew = !exercise.isBodyweight && !hasMax;

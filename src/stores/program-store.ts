@@ -1,4 +1,12 @@
-import type { ProgramData, TemplateId, Unit, Exercise } from "../types";
+import type {
+  ProgramData,
+  TemplateId,
+  Unit,
+  Exercise,
+  Template,
+  Phase,
+  WorkoutEntry,
+} from "../types";
 import { LIFTS, LIFT_ORDER, TEMPLATES } from "../constants/program";
 import { ASSISTANCE_WEEKS } from "../constants/exercises";
 import { roundToNearest, epley, calcWeight } from "../lib/calc";
@@ -9,36 +17,20 @@ import { useWorkoutStore } from "./workout-store";
 import { useOverlayStore } from "./overlay-store";
 
 type ProgramState = {
-  template: TemplateId;
+  templateId: TemplateId;
   unit: Unit;
   trainingMaxPercent: number;
   trainingMaxes: Record<string, number>;
   oneRepMaxes: Record<string, number>;
   cycle: number;
-  week: number;
-  workouts: Array<{
-    cycle: number;
-    week: number;
-    day: number;
-    lift: string;
-    datetime: number;
-    duration: number;
-    amrapReps: Record<string, string>;
-    assistanceLog: Record<string, { w?: string }>;
-    newOneRepMax: {
-      lift: string;
-      old: number;
-      newValue: number;
-      reps: number;
-      weight: number;
-    } | null;
-  }>;
+  phase: number;
+  workouts: WorkoutEntry[];
   assistanceHistory: Record<
     string,
     Array<{
       datetime?: number;
       cycle?: number;
-      week?: number;
+      phase?: number;
       weight?: number;
       isBodyweight?: boolean;
     }>
@@ -56,13 +48,13 @@ const inferUnit = (): Unit =>
     : "kg";
 
 const initialState: ProgramState = {
-  template: "fsl",
+  templateId: "fsl",
   unit: inferUnit(),
   trainingMaxPercent: 90,
   trainingMaxes: {},
   oneRepMaxes: {},
   cycle: 1,
-  week: 0,
+  phase: 0,
   workouts: [],
   assistanceHistory: {},
   assistanceMaximums: {},
@@ -72,17 +64,30 @@ const initialState: ProgramState = {
 
 const loadInitialState = (): ProgramState => {
   const saved = loadData();
-  return saved ? { ...initialState, ...(saved as Partial<ProgramState>) } : initialState;
+  if (!saved) return initialState;
+  // Map legacy field names from storage
+  const mapped: Partial<ProgramState> = {
+    ...saved,
+    templateId: (saved as any).templateId ?? (saved as any).template,
+    phase: (saved as any).phase ?? (saved as any).week,
+    workouts: ((saved as any).workouts || []).map((w: any) => ({
+      ...w,
+      phase: w.phase ?? w.week,
+    })),
+  };
+  delete (mapped as any).template;
+  delete (mapped as any).week;
+  return { ...initialState, ...mapped };
 };
 
-export const extractProgramData = (state: ProgramState): ProgramData => ({
-  template: state.template,
+const extractProgramData = (state: ProgramState): ProgramData => ({
+  templateId: state.templateId,
   unit: state.unit,
   trainingMaxPercent: state.trainingMaxPercent,
   trainingMaxes: state.trainingMaxes,
   oneRepMaxes: state.oneRepMaxes,
   cycle: state.cycle,
-  week: state.week,
+  phase: state.phase,
   workouts: state.workouts,
   assistanceHistory: state.assistanceHistory,
   assistanceMaximums: state.assistanceMaximums,
@@ -94,6 +99,13 @@ export const extractProgramData = (state: ProgramState): ProgramData => ({
 
 export const useProgramStore = createStore("program", {
   state: loadInitialState(),
+
+  computed: {
+    template: (state: ProgramState): Template => TEMPLATES[state.templateId],
+    currentPhase: (state: ProgramState): Phase => TEMPLATES[state.templateId].phases[state.phase],
+    currentPhaseWorkouts: (state: ProgramState): WorkoutEntry[] =>
+      state.workouts.filter((w) => w.cycle === state.cycle && w.phase === state.phase),
+  },
 
   actions: (set, get) => {
     const save = (updates: Partial<ProgramState>) => {
@@ -124,7 +136,7 @@ export const useProgramStore = createStore("program", {
       },
 
       templateChanged: (templateId: TemplateId) => {
-        save({ template: templateId });
+        save({ templateId });
       },
 
       exerciseSwapped: async (newExId: string) => {
@@ -210,18 +222,21 @@ export const useProgramStore = createStore("program", {
         _suggestedTrainingMax?: number;
       } => {
         const state = get();
-        const { activeWeek, activeDay, amrapReps, assistanceLog, workoutStart } =
+        const { activePhase, activeDay, amrapReps, assistanceLog, workoutStart } =
           useWorkoutStore.getState();
-        const programData = extractProgramData(state);
-        const template = TEMPLATES[state.template];
-        const weekDef = template.weeks[activeWeek];
+        const template = TEMPLATES[state.templateId];
+        const phase = template.phases[activePhase];
         const liftId = LIFT_ORDER[activeDay % LIFT_ORDER.length];
         const lift = LIFTS.find((exercise) => exercise.id === liftId)!;
         const trainingMax = state.trainingMaxes[liftId];
-        const assistanceExercises = getAssistanceForLift(liftId, programData);
+        const assistanceExercises = getAssistanceForLift(
+          liftId,
+          state.assistanceSlots,
+          state.customExercises,
+        );
 
-        const amrapSet = weekDef.sets.find((s) => String(s.reps).includes("+"));
-        const amrapIdx = amrapSet ? weekDef.sets.indexOf(amrapSet) : -1;
+        const amrapSet = phase.sets.find((s) => String(s.reps).includes("+"));
+        const amrapIdx = amrapSet ? phase.sets.indexOf(amrapSet) : -1;
         const repsHit = parseInt(amrapReps[`m${amrapIdx}`]);
         let newOneRepMax: {
           lift: string;
@@ -252,7 +267,7 @@ export const useProgramStore = createStore("program", {
             assistanceHistory[exercise.id].push({
               datetime: Date.now(),
               cycle: state.cycle,
-              week: activeWeek,
+              phase: activePhase,
               isBodyweight: true,
             });
           } else {
@@ -262,12 +277,12 @@ export const useProgramStore = createStore("program", {
                 weight: parseFloat(log.w || "0"),
                 datetime: Date.now(),
                 cycle: state.cycle,
-                week: activeWeek,
+                phase: activePhase,
               });
               if (!assistanceMaximums[exercise.id] || assistanceMaximums[exercise.id] === 0) {
                 assistanceMaximums[exercise.id] = roundToNearest(
                   parseFloat(log.w || "0") /
-                    (ASSISTANCE_WEEKS[activeWeek] || ASSISTANCE_WEEKS[0]).percentage,
+                    (ASSISTANCE_WEEKS[activePhase] || ASSISTANCE_WEEKS[0]).percentage,
                 );
               }
             }
@@ -277,7 +292,7 @@ export const useProgramStore = createStore("program", {
         const durationSec = workoutStart ? Math.floor((Date.now() - workoutStart) / 1000) : 0;
         const entry = {
           cycle: state.cycle,
-          week: activeWeek,
+          phase: activePhase,
           day: activeDay,
           lift: liftId,
           datetime: Date.now(),
@@ -299,7 +314,7 @@ export const useProgramStore = createStore("program", {
 
         const durationMin = Math.floor(durationSec / 60);
         const durationFmt = durationMin > 0 ? durationMin + " min" : "< 1 min";
-        const isDeload = activeWeek === 3;
+        const isDeload = activePhase === 3;
 
         if (amrapSet && !isDeload) {
           const minReps = parseInt(String(amrapSet.reps).replace("+", "")) || 1;
@@ -355,17 +370,16 @@ export const useProgramStore = createStore("program", {
         };
       },
 
-      weekAdvanced: (): {
+      phaseAdvanced: (): {
         type: "cycle" | "advance";
         message?: string;
         subtitle?: string;
       } => {
         const state = get();
-        const programData = extractProgramData(state);
-        const template = TEMPLATES[state.template];
-        const nextWeek = state.week + 1;
+        const template = TEMPLATES[state.templateId];
+        const nextPhase = state.phase + 1;
 
-        if (nextWeek >= template.weeks.length) {
+        if (nextPhase >= template.phases.length) {
           const newTrainingMaxes = { ...state.trainingMaxes };
           LIFTS.forEach((lift) => {
             if (state.oneRepMaxes[lift.id] > 0) {
@@ -381,7 +395,7 @@ export const useProgramStore = createStore("program", {
             }
           });
           const newAssistanceMaximums = { ...state.assistanceMaximums };
-          getAllAssistanceExercises(programData)
+          getAllAssistanceExercises(state.customExercises)
             .filter((exercise) => !exercise.isBodyweight)
             .forEach((exercise) => {
               if (newAssistanceMaximums[exercise.id])
@@ -389,14 +403,14 @@ export const useProgramStore = createStore("program", {
                   newAssistanceMaximums[exercise.id] + (exercise.weightIncrement || 5);
             });
           const newBodyweightBaselines = { ...state.bodyweightBaselines };
-          getAllAssistanceExercises(programData)
+          getAllAssistanceExercises(state.customExercises)
             .filter((exercise) => exercise.isBodyweight)
             .forEach((exercise) => {
               newBodyweightBaselines[exercise.id] = (newBodyweightBaselines[exercise.id] || 8) + 1;
             });
           save({
             cycle: state.cycle + 1,
-            week: 0,
+            phase: 0,
             trainingMaxes: newTrainingMaxes,
             assistanceMaximums: newAssistanceMaximums,
             bodyweightBaselines: newBodyweightBaselines,
@@ -407,7 +421,7 @@ export const useProgramStore = createStore("program", {
             subtitle: "TMs updated. Assistance progressed.",
           };
         } else {
-          save({ week: nextWeek });
+          save({ phase: nextPhase });
           return { type: "advance" as const };
         }
       },

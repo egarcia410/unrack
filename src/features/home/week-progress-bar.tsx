@@ -3,10 +3,9 @@ import { useProgramStore } from "../../stores/program-store";
 import { LIFT_ORDER } from "../../constants/program";
 
 export const WeekProgressBar = () => {
-  const { workouts, cycle, week } = useProgramStore();
+  const { currentPhaseWorkouts } = useProgramStore();
 
-  const weekDone = workouts.filter((workout) => workout.cycle === cycle && workout.week === week);
-  const progress = weekDone.length;
+  const progress = currentPhaseWorkouts.length;
   const total = LIFT_ORDER.length;
 
   return (

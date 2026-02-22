@@ -256,7 +256,7 @@ export function createStore<
     if (!_initRun && def.init) triggerInit();
     const snap = useSnapshot(state) as TState;
     const statusSnap = useSnapshot(statusProxy);
-    const computed = applyComputed(snapshot(state) as TState, computedMap);
+    const computed = applyComputed(snap, computedMap);
     const result = { ...computed, ...boundActions, status: statusSnap.current };
     for (const key of stateKeys) {
       Object.defineProperty(result, key, {

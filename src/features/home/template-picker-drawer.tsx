@@ -8,7 +8,7 @@ import type { TemplateId } from "../../types";
 
 export const TemplatePickerDrawer = () => {
   const { showTemplatePicker, setShowTemplatePicker } = useOverlayStore();
-  const { template, templateChanged } = useProgramStore();
+  const { templateId, templateChanged } = useProgramStore();
 
   return (
     <Drawer
@@ -20,7 +20,7 @@ export const TemplatePickerDrawer = () => {
     >
       <ul className="p-0 m-0 list-none">
         {Object.entries(TEMPLATES).map(([k, vr]) => {
-          const isCurrent = k === template;
+          const isCurrent = k === templateId;
           return (
             <li key={k}>
               <Button

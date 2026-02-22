@@ -23,13 +23,35 @@
 
 ## Polaris Stores
 - Define stores with `createStore(name, { state, actions, init? })` from `src/stores/polaris`
-- Consume state and actions via destructuring: `const { week, weekAdvanced } = useProgramStore()`
+- Consume state and actions via destructuring: `const { phase, phaseAdvanced } = useProgramStore()`
 - Valtio proxy tracking gives granular reactivity — only accessed properties trigger re-renders
 - Use `set({ key: value })` for partial merges, `set((s) => { s.key = value })` for mutations
 - Extract `initialState` constant — reuse in store init and reset actions
+- Every store property has a concrete initial value — no optional (`?`) properties in state types
+- Use `false` for booleans, `0` for numbers, `""` for strings, `null` for data-carrying objects, `{}` for dynamic lookup maps
 - Cross-store reads use `useOtherStore.getState()` inside actions
 - Static access (route guards): `useProgramStore.getState()` or `useProgramStore.status("init")`
 - Never use `.getState()` in components — only in store files, route guards, or exported static selectors
+
+## Store Organization
+
+### State types
+- Store-internal state types (`ProgramState`, `WorkoutState`) stay inline — never export them
+- Shared types that cross module boundaries live in `src/types.ts`
+
+### Computed
+- Use store `computed` for values derived from a single store's state (e.g. `activeLiftId` from `activeDay`, `template` from `templateId`)
+- Do not use computed for cross-store derivations — use selector hooks instead
+- Do not use computed when it would read most/all state properties (defeats granular reactivity)
+
+### Static selectors
+- Static selectors (`hasProgramData`, `hasActiveWorkout`) live in store files — for route guards and non-reactive contexts
+
+### Selector hooks
+- Name files `use-*-selectors.ts` (e.g. `use-workout-selectors.ts`, `use-home-selectors.ts`)
+- Colocate with the consuming feature
+- Use for cross-store derivations and parameterized queries
+- Selector hooks read specific store properties — never pass the full store state to utility functions
 
 ## Overlay State Naming
 - `show*` prefix for boolean open/close state (e.g. `showSettings`, `showDeleteConfirm`)

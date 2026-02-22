@@ -10,7 +10,7 @@ import { cn } from "../../lib/cn";
 import { LiveClock } from "../../components/live-clock";
 import {
   WARMUP_SETS,
-  useActiveWeekDef,
+  useActivePhase,
   useSupplementalSets,
   useAllAccessoriesDone,
   useAccessoryProgress,
@@ -33,24 +33,24 @@ export const WorkoutBottomBar = () => {
 
   const { checked, workoutStart } = useWorkoutStore();
 
-  const weekDef = useActiveWeekDef();
+  const phase = useActivePhase();
   const supplementalSets = useSupplementalSets();
   const allAssistanceDone = useAllAccessoriesDone();
   const { done: assistanceSetsDone, total: assistanceSetsTotal } = useAccessoryProgress();
 
   const allWarmup = WARMUP_SETS.every((_, setIndex) => checked[`w${setIndex}`]);
-  const allMain = weekDef.sets.every((_, setIndex) => checked[`m${setIndex}`]);
+  const allMain = phase.sets.every((_, setIndex) => checked[`m${setIndex}`]);
   const allSupp = supplementalSets.every((supplementalSet) => checked[supplementalSet.key]);
   const canFinish = allWarmup && allMain && allSupp && allAssistanceDone;
 
   const warmupDone = WARMUP_SETS.filter((_, setIndex) => checked[`w${setIndex}`]).length;
-  const mainDone = weekDef.sets.filter((_, setIndex) => checked[`m${setIndex}`]).length;
+  const mainDone = phase.sets.filter((_, setIndex) => checked[`m${setIndex}`]).length;
   const suppDone = supplementalSets.filter(
     (supplementalSet) => checked[supplementalSet.key],
   ).length;
   const done = warmupDone + mainDone + suppDone + assistanceSetsDone;
   const total =
-    WARMUP_SETS.length + weekDef.sets.length + supplementalSets.length + assistanceSetsTotal;
+    WARMUP_SETS.length + phase.sets.length + supplementalSets.length + assistanceSetsTotal;
 
   const handleFinish = () => {
     setActiveCelebration(workoutFinished());

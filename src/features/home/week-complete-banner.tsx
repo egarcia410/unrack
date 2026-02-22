@@ -1,28 +1,24 @@
 import { Dot } from "lucide-react";
 import { useProgramStore } from "../../stores/program-store";
 import { useOverlayStore } from "../../stores/overlay-store";
-import { TEMPLATES, LIFT_ORDER } from "../../constants/program";
+import { LIFT_ORDER } from "../../constants/program";
 import { PrimaryButton } from "../../components/primary-button";
 
 export const WeekCompleteBanner = () => {
-  const { workouts, cycle, week, template, weekAdvanced } = useProgramStore();
+  const { phase, template, currentPhase, currentPhaseWorkouts, phaseAdvanced } = useProgramStore();
   const { setActiveCelebration } = useOverlayStore();
 
-  const variant = TEMPLATES[template];
-  const weekDef = variant.weeks[week];
-  const weekDone = workouts.filter((workout) => workout.cycle === cycle && workout.week === week);
+  if (currentPhaseWorkouts.length < LIFT_ORDER.length) return null;
 
-  if (weekDone.length < LIFT_ORDER.length) return null;
+  const weekPRs = currentPhaseWorkouts.filter((workout) => workout.newOneRepMax).length;
+  const isLastPhase = phase >= template.phases.length - 1;
+  const isDeload = !currentPhase.sets.some((s) => String(s.reps).includes("+"));
+  const nextLabel = isLastPhase
+    ? "Start Cycle " + (useProgramStore.getState().cycle + 1)
+    : "Start " + template.phases[phase + 1].label + " Phase";
 
-  const weekPRs = weekDone.filter((workout) => workout.newOneRepMax).length;
-  const isLastWeek = week >= variant.weeks.length - 1;
-  const isDeload = !weekDef.sets.some((s) => String(s.reps).includes("+"));
-  const nextLabel = isLastWeek
-    ? "Start Cycle " + (cycle + 1)
-    : "Start " + variant.weeks[week + 1].label + " Phase";
-
-  const handleAdvanceWeek = () => {
-    const result = weekAdvanced();
+  const handleAdvancePhase = () => {
+    const result = phaseAdvanced();
     if (result.type === "cycle") {
       setActiveCelebration({
         type: "cycle",
@@ -34,21 +30,21 @@ export const WeekCompleteBanner = () => {
 
   return (
     <section className="bg-th-ad border border-th-am rounded-2xl px-4 py-5 mb-6 text-center">
-      <h2 className="text-lg font-extrabold text-th-a mb-1">{weekDef.label} Complete</h2>
+      <h2 className="text-lg font-extrabold text-th-a mb-1">{currentPhase.label} Complete</h2>
       <p className="text-sm text-th-t2 mb-3 flex items-center justify-center">
         {isDeload
           ? "Recovery done. Next cycle starts fresh."
           : weekPRs > 0
             ? weekPRs + " PR" + (weekPRs > 1 ? "s" : "")
             : "All lifts logged"}
-        {!isDeload && isLastWeek && (
+        {!isDeload && isLastPhase && (
           <>
             <Dot size={16} />
             Cycle complete!
           </>
         )}
       </p>
-      <PrimaryButton onClick={handleAdvanceWeek}>{nextLabel}</PrimaryButton>
+      <PrimaryButton onClick={handleAdvancePhase}>{nextLabel}</PrimaryButton>
     </section>
   );
 };

@@ -1,4 +1,4 @@
-import type { Template, WeekDef, SetType, Exercise } from "../types";
+import type { Template, Phase, SetType, Exercise } from "../types";
 import { ASSISTANCE_WEEKS } from "../constants/exercises";
 
 export const WARMUP_SETS = [
@@ -21,38 +21,38 @@ export type WorkoutSet = {
 };
 
 export const deriveSupplementalSets = (
-  variant: Template,
-  weekDef: WeekDef,
-  activeWeek: number,
+  template: Template,
+  phase: Phase,
+  phaseIndex: number,
 ): SupplementalSet[] => {
   const supplementalSets: SupplementalSet[] = [];
-  if (variant.supplemental) {
-    for (let setIndex = 0; setIndex < variant.supplemental.numSets; setIndex++)
+  if (template.supplemental) {
+    for (let setIndex = 0; setIndex < template.supplemental.numSets; setIndex++)
       supplementalSets.push({
-        reps: variant.supplemental.reps,
-        percentage: variant.supplemental.percentage,
+        reps: template.supplemental.reps,
+        percentage: template.supplemental.percentage,
         key: `s${setIndex}`,
       });
-  } else if (variant.supplementalWeekly) {
-    const weeklySupp = variant.supplementalWeekly[activeWeek];
+  } else if (template.supplementalWeekly) {
+    const weeklySupp = template.supplementalWeekly[phaseIndex];
     for (let setIndex = 0; setIndex < weeklySupp.numSets; setIndex++)
       supplementalSets.push({
         reps: weeklySupp.reps,
         percentage: weeklySupp.percentage,
         key: `s${setIndex}`,
       });
-  } else if (variant.firstSetLast) {
-    for (let setIndex = 0; setIndex < variant.firstSetLast.numSets; setIndex++)
+  } else if (template.firstSetLast) {
+    for (let setIndex = 0; setIndex < template.firstSetLast.numSets; setIndex++)
       supplementalSets.push({
-        reps: variant.firstSetLast.reps,
-        percentage: weekDef.sets[0].percentage,
+        reps: template.firstSetLast.reps,
+        percentage: phase.sets[0].percentage,
         key: `s${setIndex}`,
       });
-  } else if (variant.secondSetLast) {
-    for (let setIndex = 0; setIndex < variant.secondSetLast.numSets; setIndex++)
+  } else if (template.secondSetLast) {
+    for (let setIndex = 0; setIndex < template.secondSetLast.numSets; setIndex++)
       supplementalSets.push({
-        reps: variant.secondSetLast.reps,
-        percentage: weekDef.sets[1].percentage,
+        reps: template.secondSetLast.reps,
+        percentage: phase.sets[1].percentage,
         key: `s${setIndex}`,
       });
   }
@@ -60,8 +60,8 @@ export const deriveSupplementalSets = (
 };
 
 export const deriveAllSets = (
-  activeWeek: number,
-  weekDef: WeekDef,
+  phaseIndex: number,
+  phase: Phase,
   supplementalSets: SupplementalSet[],
   accessories: Exercise[],
   isDeload: boolean,
@@ -72,7 +72,7 @@ export const deriveAllSets = (
     intensity: warmupSet.percentage,
     isDeload,
   })),
-  ...weekDef.sets.map((mainSet, setIndex) => ({
+  ...phase.sets.map((mainSet, setIndex) => ({
     key: `m${setIndex}`,
     type: "main" as SetType,
     intensity: mainSet.percentage,
@@ -87,7 +87,7 @@ export const deriveAllSets = (
   ...accessories.map((accessory) => ({
     key: `a_${accessory.id}`,
     type: (accessory.isBodyweight ? "acc_bw" : "acc_wt") as SetType,
-    intensity: (ASSISTANCE_WEEKS[activeWeek] || ASSISTANCE_WEEKS[0]).percentage,
+    intensity: (ASSISTANCE_WEEKS[phaseIndex] || ASSISTANCE_WEEKS[0]).percentage,
     isDeload,
   })),
 ];

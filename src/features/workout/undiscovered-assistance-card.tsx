@@ -6,20 +6,25 @@ import { ASSISTANCE_WEEKS } from "../../constants/exercises";
 import { cn } from "../../lib/cn";
 import { WeightInput } from "../../components/weight-input";
 import { AssistanceSetButtons } from "./assistance-set-buttons";
-import { useActiveLiftId, useAccessoryExercise } from "./use-workout-selectors";
+import { useAccessoryExercise } from "./use-workout-selectors";
 
 type UndiscoveredAssistanceCardProps = {
   exerciseIndex: number;
 };
 
 export const UndiscoveredAssistanceCard = ({ exerciseIndex }: UndiscoveredAssistanceCardProps) => {
-  const { activeWeek, assistanceSetCounts, assistanceLog, setAssistanceLog, setChecked } =
-    useWorkoutStore();
+  const {
+    activePhase,
+    activeLiftId,
+    assistanceSetCounts,
+    assistanceLog,
+    setAssistanceLog,
+    setChecked,
+  } = useWorkoutStore();
   const { setActiveSwapSlot } = useOverlayStore();
-  const liftId = useActiveLiftId();
   const exercise = useAccessoryExercise(exerciseIndex);
 
-  const assistanceWeek = ASSISTANCE_WEEKS[activeWeek] || ASSISTANCE_WEEKS[0];
+  const assistanceWeek = ASSISTANCE_WEEKS[activePhase] || ASSISTANCE_WEEKS[0];
   const log = assistanceLog[exercise.id] || {};
   const hasWeight = parseFloat(log.w || "0") > 0;
   const setsDone = assistanceSetCounts[exercise.id] || 0;
@@ -55,7 +60,7 @@ export const UndiscoveredAssistanceCard = ({ exerciseIndex }: UndiscoveredAssist
       <Button
         onClick={() =>
           setActiveSwapSlot({
-            liftId,
+            liftId: activeLiftId,
             slot: exercise.slot!,
             currentId: exercise.id,
           })

@@ -1,5 +1,5 @@
 import { cn } from "../../lib/cn";
-import type { RecentWorkoutEntry } from "./use-history-data";
+import type { RecentWorkoutEntry } from "./use-history-selectors";
 
 type RecentWorkoutRowProps = {
   entry: RecentWorkoutEntry;

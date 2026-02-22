@@ -1,6 +1,6 @@
 import { ArrowRight } from "lucide-react";
 import { useProgramStore } from "../../stores/program-store";
-import type { LiftProgressEntry } from "./use-history-data";
+import type { LiftProgressEntry } from "./use-history-selectors";
 
 type LiftProgressCardProps = {
   entry: LiftProgressEntry;

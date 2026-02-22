@@ -5,11 +5,7 @@ import { useWorkoutStore } from "../../stores/workout-store";
 import { useOverlayStore } from "../../stores/overlay-store";
 import { cn } from "../../lib/cn";
 import { AssistanceSetButtons } from "./assistance-set-buttons";
-import {
-  useActiveLiftId,
-  useAccessoryExercise,
-  useAssistancePrescription,
-} from "./use-workout-selectors";
+import { useAccessoryExercise, useAssistancePrescription } from "./use-workout-selectors";
 
 type DiscoveredAssistanceCardProps = {
   exerciseIndex: number;
@@ -19,7 +15,7 @@ export const DiscoveredAssistanceCard = ({ exerciseIndex }: DiscoveredAssistance
   const { assistanceSetCounts } = useWorkoutStore();
   const { setActiveSwapSlot } = useOverlayStore();
   const { unit } = useProgramStore();
-  const liftId = useActiveLiftId();
+  const { activeLiftId } = useWorkoutStore();
   const exercise = useAccessoryExercise(exerciseIndex);
   const prescription = useAssistancePrescription(exerciseIndex);
   const setsDone = assistanceSetCounts[exercise.id] || 0;
@@ -40,7 +36,7 @@ export const DiscoveredAssistanceCard = ({ exerciseIndex }: DiscoveredAssistance
       <Button
         onClick={() =>
           setActiveSwapSlot({
-            liftId,
+            liftId: activeLiftId,
             slot: exercise.slot!,
             currentId: exercise.id,
           })

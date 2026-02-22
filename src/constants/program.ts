@@ -4,7 +4,7 @@ export const TEMPLATES: Record<TemplateId, Template> = {
   classic: {
     name: "5/3/1 Classic",
     description: "Original 3 working sets",
-    weeks: [
+    phases: [
       {
         label: "5s",
         title: "5s",
@@ -46,7 +46,7 @@ export const TEMPLATES: Record<TemplateId, Template> = {
   bbb: {
     name: "Boring But Big",
     description: "5x10 supplemental at 50%",
-    weeks: [
+    phases: [
       {
         label: "5s",
         title: "5s",
@@ -89,7 +89,7 @@ export const TEMPLATES: Record<TemplateId, Template> = {
   bbbC: {
     name: "BBB Challenge",
     description: "Escalating 50/60/70%",
-    weeks: [
+    phases: [
       {
         label: "5s",
         title: "5s",
@@ -137,7 +137,7 @@ export const TEMPLATES: Record<TemplateId, Template> = {
   fsl: {
     name: "First Set Last",
     description: "5x5 at first set weight",
-    weeks: [
+    phases: [
       {
         label: "5s",
         title: "5s",
@@ -180,7 +180,7 @@ export const TEMPLATES: Record<TemplateId, Template> = {
   ssl: {
     name: "Second Set Last",
     description: "5x5 at second set weight",
-    weeks: [
+    phases: [
       {
         label: "5s",
         title: "5s",
