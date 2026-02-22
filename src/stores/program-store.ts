@@ -69,6 +69,11 @@ const initialState: ProgramState = {
   timestamp: 0,
 };
 
+const loadInitialState = (): ProgramState => {
+  const saved = loadData();
+  return saved ? { ...initialState, ...(saved as Partial<ProgramState>) } : initialState;
+};
+
 export const extractProgramData = (state: ProgramState): ProgramData => ({
   template: state.template,
   unit: state.unit,
@@ -87,14 +92,7 @@ export const extractProgramData = (state: ProgramState): ProgramData => ({
 });
 
 export const useProgramStore = createStore("program", {
-  state: initialState,
-
-  init: (set) => {
-    const saved = loadData();
-    if (saved) {
-      set(saved as Partial<ProgramState>);
-    }
-  },
+  state: loadInitialState(),
 
   actions: (set, get) => {
     const save = (updates: Partial<ProgramState>) => {
@@ -423,6 +421,5 @@ export const useProgramStore = createStore("program", {
 });
 
 export const hasProgramData = () => {
-  const state = useProgramStore.getState();
-  return useProgramStore.status("init").success && state.timestamp > 0;
+  return useProgramStore.getState().timestamp > 0;
 };
