@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { ChevronRight, Pause, X } from "lucide-react";
+import { Pause, Play, X } from "lucide-react";
 import { cva } from "class-variance-authority";
 import { cn } from "../lib/cn";
 import { playTimerDone } from "../lib/audio";
@@ -65,22 +65,35 @@ export const RestTimer = () => {
   const duration = timerInfo.duration;
   const reason = timerInfo.reason;
 
-  const [left, setLeft] = useState(duration);
-  const [paused, setPaused] = useState(false);
+  const [now, setNow] = useState(Date.now);
+  const startRef = useRef(Date.now());
+  const pausedAtRef = useRef<number | null>(null);
+  const pausedMsRef = useRef(0);
   const played = useRef(false);
 
   useEffect(() => {
-    setLeft(duration);
-    setPaused(false);
+    const timestamp = Date.now();
+    startRef.current = timestamp;
+    pausedAtRef.current = null;
+    pausedMsRef.current = 0;
     played.current = false;
+    setNow(timestamp);
   }, [timerKey, duration]);
+
+  const paused = pausedAtRef.current !== null;
+  const currentPausedMs =
+    pausedMsRef.current + (pausedAtRef.current !== null ? now - pausedAtRef.current : 0);
+  const left = Math.max(
+    0,
+    duration - Math.floor((now - startRef.current - currentPausedMs) / 1000),
+  );
 
   useEffect(() => {
     if (!paused && left > 0) {
-      const timeoutId = setTimeout(() => setLeft((previous) => previous - 1), 1000);
-      return () => clearTimeout(timeoutId);
+      const intervalId = setInterval(() => setNow(Date.now()), 1000);
+      return () => clearInterval(intervalId);
     }
-  }, [left, paused]);
+  }, [paused, left > 0]);
 
   useEffect(() => {
     if (left <= 0 && !played.current) {
@@ -89,6 +102,16 @@ export const RestTimer = () => {
       showTimerNotification();
     }
   }, [left]);
+
+  const togglePause = () => {
+    if (pausedAtRef.current !== null) {
+      pausedMsRef.current += Date.now() - pausedAtRef.current;
+      pausedAtRef.current = null;
+    } else {
+      pausedAtRef.current = Date.now();
+    }
+    setNow(Date.now());
+  };
 
   const formatTime = (totalSeconds: number) =>
     `${Math.floor(totalSeconds / 60)}:${String(totalSeconds % 60).padStart(2, "0")}`;
@@ -116,8 +139,8 @@ export const RestTimer = () => {
           </div>
           <div className="flex gap-1.5 shrink-0">
             {!done && (
-              <IconButton onClick={() => setPaused(!paused)}>
-                {paused ? <ChevronRight size={18} /> : <Pause size={18} />}
+              <IconButton onClick={togglePause}>
+                {paused ? <Play size={18} /> : <Pause size={18} />}
               </IconButton>
             )}
             <IconButton
