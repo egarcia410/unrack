@@ -177,7 +177,7 @@ export function createStore<
 
         if (!result || typeof result.then !== "function") {
           runHook("afterAction", actionName, args);
-          return result;
+          return;
         }
 
         tracker.setPending(actionName);

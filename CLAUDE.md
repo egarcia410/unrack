@@ -32,6 +32,8 @@
 - Cross-store reads use `useOtherStore.getState()` inside actions
 - Static access (route guards): `useProgramStore.getState()` or `useProgramStore.status("init")`
 - Never use `.getState()` in components — only in store files, route guards, or exported static selectors
+- Actions are commands — they always return `void`, never values
+- Cross-store side-effects (e.g. setting celebration state) happen inside the action via `useOtherStore.getState()`
 
 ## Store Organization
 

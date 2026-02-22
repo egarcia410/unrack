@@ -149,6 +149,7 @@ export const useProgramStore = createStore("program", {
         const liftSlots = [...(current[liftId] || defaults[liftId])];
         liftSlots[slotIdx] = newExId;
         save({ assistanceSlots: { ...current, [liftId]: liftSlots } });
+        useOverlayStore.actions.setActiveSwapSlot(null);
       },
 
       unitToggled: () => {
@@ -209,18 +210,7 @@ export const useProgramStore = createStore("program", {
         save({ assistanceMaximums: newMaximums });
       },
 
-      workoutFinished: (): {
-        type: "done" | "pr" | "warn";
-        message: string;
-        subtitle: string;
-        subtitleDetail?: string;
-        actionLabel?: string;
-        actionSubFrom?: string;
-        actionSubTo?: string;
-        _liftId?: string;
-        _suggestedOneRepMax?: number;
-        _suggestedTrainingMax?: number;
-      } => {
+      workoutFinished: () => {
         const state = get();
         const { activePhase, activeDay, amrapReps, assistanceLog, workoutStart } =
           useWorkoutStore.getState();
@@ -326,8 +316,8 @@ export const useProgramStore = createStore("program", {
             const suggestedTrainingMax = roundToNearest(
               suggestedOneRepMax * (next.trainingMaxPercent / 100),
             );
-            return {
-              type: "warn" as const,
+            useOverlayStore.actions.setActiveCelebration({
+              type: "warn",
               message: "Missed AMRAP",
               subtitle: `0 reps at ${amrapWeight} ${next.unit}`,
               actionLabel: `Adjust TM to ${suggestedTrainingMax}`,
@@ -336,14 +326,15 @@ export const useProgramStore = createStore("program", {
               _liftId: liftId,
               _suggestedOneRepMax: suggestedOneRepMax,
               _suggestedTrainingMax: suggestedTrainingMax,
-            };
+            });
+            return;
           } else if (repsHit < minReps) {
             const realOneRepMax = roundToNearest(epley(amrapWeight, repsHit));
             const suggestedTrainingMax = roundToNearest(
               realOneRepMax * (next.trainingMaxPercent / 100),
             );
-            return {
-              type: "warn" as const,
+            useOverlayStore.actions.setActiveCelebration({
+              type: "warn",
               message: "Below Target",
               subtitle: `${repsHit} rep${repsHit > 1 ? "s" : ""} at ${amrapWeight} ${next.unit} (needed ${minReps}+)`,
               actionLabel: `Adjust TM to ${suggestedTrainingMax}`,
@@ -352,29 +343,27 @@ export const useProgramStore = createStore("program", {
               _liftId: liftId,
               _suggestedOneRepMax: realOneRepMax,
               _suggestedTrainingMax: suggestedTrainingMax,
-            };
+            });
+            return;
           } else if (newOneRepMax) {
-            return {
-              type: "pr" as const,
+            useOverlayStore.actions.setActiveCelebration({
+              type: "pr",
               message: "New 1RM!",
               subtitle: `${lift.name}: ${newOneRepMax.old} to ${newOneRepMax.newValue} ${next.unit}`,
               subtitleDetail: durationFmt,
-            };
+            });
+            return;
           }
         }
-        return {
-          type: "done" as const,
+        useOverlayStore.actions.setActiveCelebration({
+          type: "done",
           message: "Workout Logged",
           subtitle: lift.name,
           subtitleDetail: durationFmt,
-        };
+        });
       },
 
-      phaseAdvanced: (): {
-        type: "cycle" | "advance";
-        message?: string;
-        subtitle?: string;
-      } => {
+      phaseAdvanced: () => {
         const state = get();
         const template = TEMPLATES[state.templateId];
         const nextPhase = state.phase + 1;
@@ -415,14 +404,13 @@ export const useProgramStore = createStore("program", {
             assistanceMaximums: newAssistanceMaximums,
             bodyweightBaselines: newBodyweightBaselines,
           });
-          return {
-            type: "cycle" as const,
+          useOverlayStore.actions.setActiveCelebration({
+            type: "cycle",
             message: "Cycle Complete!",
             subtitle: "TMs updated. Assistance progressed.",
-          };
+          });
         } else {
           save({ phase: nextPhase });
-          return { type: "advance" as const };
         }
       },
 

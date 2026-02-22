@@ -68,8 +68,8 @@ export type ActionCreator<TState> = (
 ) => Record<string, (...args: any[]) => any>;
 
 export type BoundActions<TActions extends Record<string, (...args: any[]) => any>> = {
-  [K in keyof TActions]: TActions[K] extends (...args: infer P) => infer R
-    ? (...args: P) => R extends Promise<any> ? Promise<void> : R
+  [K in keyof TActions]: TActions[K] extends (...args: infer P) => any
+    ? (...args: P) => void
     : never;
 };
 

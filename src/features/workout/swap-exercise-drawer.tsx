@@ -55,8 +55,7 @@ export const SwapExerciseDrawer = () => {
                   <Button
                     key={exercise.id}
                     onClick={() => {
-                      if (!isCurrent)
-                        exerciseSwapped(exercise.id).then(() => setActiveSwapSlot(null));
+                      if (!isCurrent) exerciseSwapped(exercise.id);
                     }}
                     className={cn(
                       "flex items-center w-full box-border px-3 py-2.5 rounded-xl text-left min-h-12 mb-0.5 gap-2.5",

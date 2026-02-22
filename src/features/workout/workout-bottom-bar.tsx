@@ -5,7 +5,6 @@ import { Check } from "lucide-react";
 import { cva } from "class-variance-authority";
 import { useProgramStore } from "../../stores/program-store";
 import { useWorkoutStore } from "../../stores/workout-store";
-import { useOverlayStore } from "../../stores/overlay-store";
 import { cn } from "../../lib/cn";
 import { LiveClock } from "../../components/live-clock";
 import {
@@ -29,8 +28,6 @@ export const WorkoutBottomBar = () => {
   const navigate = useNavigate();
 
   const { workoutFinished } = useProgramStore();
-  const { setActiveCelebration } = useOverlayStore();
-
   const { checked, workoutStart } = useWorkoutStore();
 
   const phase = useActivePhase();
@@ -53,7 +50,7 @@ export const WorkoutBottomBar = () => {
     WARMUP_SETS.length + phase.sets.length + supplementalSets.length + assistanceSetsTotal;
 
   const handleFinish = () => {
-    setActiveCelebration(workoutFinished());
+    workoutFinished();
     navigate({ to: "/" });
   };
 
@@ -70,7 +67,7 @@ export const WorkoutBottomBar = () => {
             {canFinish ? (
               <Button
                 onClick={handleFinish}
-                className="w-full px-5 py-4.5 bg-none border-none flex items-center justify-center gap-2"
+                className="w-full px-5 py-4.5 bg-none border-none flex items-center justify-center gap-2 cursor-pointer"
               >
                 <Check size={13} strokeWidth={3} />
                 <span className="text-lg font-bold text-th-inv">Complete Workout</span>

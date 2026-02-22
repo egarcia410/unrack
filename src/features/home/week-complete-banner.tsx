@@ -1,13 +1,10 @@
 import { Dot } from "lucide-react";
 import { useProgramStore } from "../../stores/program-store";
-import { useOverlayStore } from "../../stores/overlay-store";
 import { LIFT_ORDER } from "../../constants/program";
 import { PrimaryButton } from "../../components/primary-button";
 
 export const WeekCompleteBanner = () => {
   const { phase, template, currentPhase, currentPhaseWorkouts, phaseAdvanced } = useProgramStore();
-  const { setActiveCelebration } = useOverlayStore();
-
   if (currentPhaseWorkouts.length < LIFT_ORDER.length) return null;
 
   const weekPRs = currentPhaseWorkouts.filter((workout) => workout.newOneRepMax).length;
@@ -18,14 +15,7 @@ export const WeekCompleteBanner = () => {
     : "Start " + template.phases[phase + 1].label + " Phase";
 
   const handleAdvancePhase = () => {
-    const result = phaseAdvanced();
-    if (result.type === "cycle") {
-      setActiveCelebration({
-        type: "cycle",
-        message: result.message!,
-        subtitle: result.subtitle!,
-      });
-    }
+    phaseAdvanced();
   };
 
   return (
