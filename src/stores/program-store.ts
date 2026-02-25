@@ -8,7 +8,7 @@ import type {
   WorkoutEntry,
 } from "../types";
 import { LIFTS, LIFT_ORDER, TEMPLATES } from "../constants/program";
-import { WEIGHTED_ASSISTANCE_WEEKS } from "../constants/exercises";
+import { WEIGHTED_ASSISTANCE_WEEKS, BODYWEIGHT_ASSISTANCE_WEEKS } from "../constants/exercises";
 import { roundToNearest, epley, calcWeight } from "../lib/calc";
 import { getAssistanceForLift, getAllAssistanceExercises } from "../lib/exercises";
 import { loadData, saveData, clearData } from "../lib/storage";
@@ -271,7 +271,9 @@ export const useProgramStore = createStore("program", {
           if (exercise.isBodyweight) {
             const enteredReps = parseInt(logEntry?.w || "0");
             if (enteredReps > 0 && !bodyweightBaselines[exercise.id]) {
-              bodyweightBaselines[exercise.id] = enteredReps;
+              const currentWeek =
+                BODYWEIGHT_ASSISTANCE_WEEKS[activePhase] || BODYWEIGHT_ASSISTANCE_WEEKS[0];
+              bodyweightBaselines[exercise.id] = Math.round(enteredReps / currentWeek.multiplier);
             }
             assistanceHistory[exercise.id].push({
               datetime: Date.now(),
