@@ -32,6 +32,8 @@
     "zustand": "^5.0.11"
   },
   "devDependencies": {
+    "@commitlint/cli": "^20.4.2",
+    "@commitlint/config-conventional": "^20.4.2",
     "@tanstack/router-plugin": "^1.160.2",
     "@types/node": "^24.10.1",
     "@types/react": "^19.2.7",
