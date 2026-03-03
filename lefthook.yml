@@ -9,6 +9,9 @@ pre-commit:
       glob: "*.{js,ts,jsx,tsx,css,html,json}"
       run: pnpm oxfmt --write {staged_files} && git add {staged_files}
 
+    - name: test
+      run: pnpm test:run
+
 commit-msg:
   jobs:
     - name: conventional-commit

@@ -9,6 +9,8 @@
     "build:pages": "tsc -b && vite build && cp dist/index.html dist/404.html",
     "lint": "oxlint",
     "fmt": "oxfmt --write src",
+    "test": "vitest",
+    "test:run": "vitest run",
     "preview": "vite preview",
     "prepare": "lefthook install"
   },
@@ -40,7 +42,8 @@
     "oxlint": "^1.48.0",
     "typescript": "~5.9.3",
     "vite": "^7.3.1",
-    "vite-plugin-pwa": "^1.2.0"
+    "vite-plugin-pwa": "^1.2.0",
+    "vitest": "^4.0.18"
   },
   "packageManager": "pnpm@10.12.1",
   "pnpm": {
