@@ -4,7 +4,7 @@ import { cva } from "class-variance-authority";
 import { cn } from "../lib/cn";
 import { playTimerDone } from "../lib/audio";
 import { showTimerNotification } from "../lib/notifications";
-import { useWorkoutStore } from "../stores/workout-store";
+import { useRestTimer, dismissTimer } from "../stores/polaris";
 import { IconButton } from "./icon-button";
 
 type TimerStatus = "active" | "urgent" | "done";
@@ -60,10 +60,8 @@ const fillVariants = cva("h-full rounded transition-[width] duration-1000 ease-l
 });
 
 export const RestTimer = () => {
-  const { showTimer, timerInfo, timerKey, dismissTimer } = useWorkoutStore();
-
-  const duration = timerInfo.duration;
-  const reason = timerInfo.reason;
+  const restTimer = useRestTimer();
+  const { visible: showTimer, key: timerKey, duration, reason } = restTimer;
 
   const [now, setNow] = useState(Date.now);
   const startRef = useRef(Date.now());

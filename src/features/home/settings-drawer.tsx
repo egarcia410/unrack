@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Sun, Moon } from "lucide-react";
 import { Button } from "@base-ui/react/button";
 import { getThemeMode, toggleTheme } from "../../lib/theme";
-import { useOverlayStore } from "../../stores/overlay-store";
+import { useShowSettings, setShowSettings } from "../../stores/polaris";
 import { Drawer } from "../../components/drawer";
 import { SectionLabel } from "../../components/section-label";
 import { OneRepMaxEditor } from "./one-rep-max-editor";
@@ -11,7 +11,7 @@ import { ProgramSettings } from "./program-settings";
 
 export const SettingsDrawer = () => {
   const [mode, setMode] = useState(getThemeMode);
-  const { showSettings, setShowSettings } = useOverlayStore();
+  const showSettings = useShowSettings();
 
   return (
     <Drawer

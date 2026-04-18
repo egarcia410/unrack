@@ -1,11 +1,11 @@
 import { Collapsible } from "@base-ui/react/collapsible";
-import { useWorkoutStore } from "../../stores/workout-store";
+import { useChecked } from "../../stores/polaris";
 import { SectionHeader } from "../../components/section-header";
 import { SetRow } from "../../components/set-row";
 import { WARMUP_SETS } from "./use-workout-selectors";
 
 export const WarmupSection = () => {
-  const { checked } = useWorkoutStore();
+  const checked = useChecked();
 
   const allWarmupDone = WARMUP_SETS.every((_, setIndex) => checked[`w${setIndex}`]);
 

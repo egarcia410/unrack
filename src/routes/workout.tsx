@@ -1,5 +1,5 @@
 import { createFileRoute, redirect } from "@tanstack/react-router";
-import { hasActiveWorkout } from "../stores/workout-store";
+import { hasActiveWorkout } from "../stores/polaris";
 import { WorkoutHeader } from "../features/workout/workout-header";
 import { RestTimer } from "../components/rest-timer";
 import { WarmupSection } from "../features/workout/warmup-section";

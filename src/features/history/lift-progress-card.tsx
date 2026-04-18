@@ -1,5 +1,5 @@
 import { ArrowRight } from "lucide-react";
-import { useProgramStore } from "../../stores/program-store";
+import { useUnit } from "../../stores/polaris";
 import type { LiftProgressEntry } from "./use-history-selectors";
 
 type LiftProgressCardProps = {
@@ -7,7 +7,7 @@ type LiftProgressCardProps = {
 };
 
 export const LiftProgressCard = ({ entry }: LiftProgressCardProps) => {
-  const { unit } = useProgramStore();
+  const unit = useUnit();
 
   return (
     <div className="bg-th-s1 border border-th-b rounded-xl px-4 py-3.5">

@@ -1,8 +1,11 @@
 import { Button } from "@base-ui/react/button";
 import { ChevronDown } from "lucide-react";
-import { useProgramStore } from "../../stores/program-store";
-import { useWorkoutStore } from "../../stores/workout-store";
-import { useOverlayStore } from "../../stores/overlay-store";
+import {
+  useUnit,
+  useAssistanceSetCounts,
+  useActiveLiftId,
+  setActiveSwapSlot,
+} from "../../stores/polaris";
 import { cn } from "../../lib/cn";
 import { AssistanceSetButtons } from "./assistance-set-buttons";
 import { useAccessoryExercise, useAssistancePrescription } from "./use-workout-selectors";
@@ -12,10 +15,9 @@ type DiscoveredAssistanceCardProps = {
 };
 
 export const DiscoveredAssistanceCard = ({ exerciseIndex }: DiscoveredAssistanceCardProps) => {
-  const { assistanceSetCounts } = useWorkoutStore();
-  const { setActiveSwapSlot } = useOverlayStore();
-  const { unit } = useProgramStore();
-  const { activeLiftId } = useWorkoutStore();
+  const assistanceSetCounts = useAssistanceSetCounts();
+  const unit = useUnit();
+  const activeLiftId = useActiveLiftId();
   const exercise = useAccessoryExercise(exerciseIndex);
   const prescription = useAssistancePrescription(exerciseIndex);
   const setsDone = assistanceSetCounts[exercise.id] || 0;

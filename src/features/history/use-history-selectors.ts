@@ -1,4 +1,4 @@
-import { useProgramStore } from "../../stores/program-store";
+import { useWorkouts, useOneRepMaxes } from "../../stores/polaris";
 import { LIFTS } from "../../constants/program";
 import type { Lift } from "../../types";
 
@@ -28,9 +28,10 @@ export type RecentWorkoutEntry = {
 };
 
 export const useHistoryData = () => {
-  const programState = useProgramStore();
+  const workouts = useWorkouts();
+  const oneRepMaxes = useOneRepMaxes();
 
-  const personalRecords = programState.workouts
+  const personalRecords = workouts
     .filter((workout) => workout.newOneRepMax)
     .map((workout) => ({
       ...workout.newOneRepMax!,
@@ -43,7 +44,7 @@ export const useHistoryData = () => {
       .filter((record) => record.lift === lift.id)
       .sort((a, b) => a.datetime - b.datetime);
     const recordValues = liftRecords.map((record) => record.newValue);
-    const current = programState.oneRepMaxes[lift.id];
+    const current = oneRepMaxes[lift.id];
     const first = recordValues.length > 0 ? recordValues[0] : current;
     const best = recordValues.length > 0 ? Math.max(...recordValues) : current;
     const lastPersonalRecord = liftRecords.length > 0 ? liftRecords[liftRecords.length - 1] : null;
@@ -57,7 +58,7 @@ export const useHistoryData = () => {
     };
   });
 
-  const recentWorkouts: RecentWorkoutEntry[] = programState.workouts
+  const recentWorkouts: RecentWorkoutEntry[] = workouts
     .slice(-8)
     .reverse()
     .map((workout) => {

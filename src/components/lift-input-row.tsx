@@ -1,6 +1,6 @@
 import { Field } from "@base-ui/react/field";
 import { roundToNearest } from "../lib/calc";
-import { useProgramStore } from "../stores/program-store";
+import { useTrainingMaxPercent, useUnit } from "../stores/polaris";
 import { WeightInput } from "./weight-input";
 
 type LiftInputRowProps = {
@@ -17,7 +17,8 @@ const validateOneRepMax = (value: unknown) => {
 };
 
 export const LiftInputRow = ({ liftId, liftName, value, onChange }: LiftInputRowProps) => {
-  const { trainingMaxPercent, unit } = useProgramStore();
+  const trainingMaxPercent = useTrainingMaxPercent();
+  const unit = useUnit();
   const parsed = Number(value);
   const trainingMax = parsed >= 1 ? roundToNearest(parsed * (trainingMaxPercent / 100)) : 0;
 

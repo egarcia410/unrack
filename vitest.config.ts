@@ -4,7 +4,7 @@ export default defineConfig({
   test: {
     globals: true,
     environment: "node",
-    setupFiles: ["src/stores/polaris-v2/__tests__/setup.ts"],
-    include: ["src/stores/polaris-v2/__tests__/**/*.test.ts"],
+    setupFiles: ["src/stores/polaris/__tests__/setup.ts"],
+    include: ["src/stores/polaris/__tests__/**/*.test.ts"],
   },
 });

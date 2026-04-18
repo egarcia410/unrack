@@ -1,5 +1,5 @@
 import { Collapsible } from "@base-ui/react/collapsible";
-import { useWorkoutStore } from "../../stores/workout-store";
+import { useChecked } from "../../stores/polaris";
 import { SectionHeader } from "../../components/section-header";
 import { SetRow } from "../../components/set-row";
 import { AmrapCard } from "./amrap-card";
@@ -7,7 +7,7 @@ import { useActivePhase } from "./use-workout-selectors";
 
 export const WorkingSetsSection = () => {
   const phase = useActivePhase();
-  const { checked } = useWorkoutStore();
+  const checked = useChecked();
 
   const allMainDone = phase.sets.every((_, setIndex) => checked[`m${setIndex}`]);
 

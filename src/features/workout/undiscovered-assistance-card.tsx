@@ -1,7 +1,14 @@
 import { Button } from "@base-ui/react/button";
 import { ChevronDown } from "lucide-react";
-import { useWorkoutStore } from "../../stores/workout-store";
-import { useOverlayStore } from "../../stores/overlay-store";
+import {
+  useActivePhase,
+  useActiveLiftId,
+  useAssistanceSetCounts,
+  useAssistanceLog,
+  setAssistanceLog,
+  setChecked,
+  setActiveSwapSlot,
+} from "../../stores/polaris";
 import { WEIGHTED_ASSISTANCE_WEEKS, BODYWEIGHT_ASSISTANCE_WEEKS } from "../../constants/exercises";
 import { cn } from "../../lib/cn";
 import { WeightInput } from "../../components/weight-input";
@@ -13,15 +20,10 @@ type UndiscoveredAssistanceCardProps = {
 };
 
 export const UndiscoveredAssistanceCard = ({ exerciseIndex }: UndiscoveredAssistanceCardProps) => {
-  const {
-    activePhase,
-    activeLiftId,
-    assistanceSetCounts,
-    assistanceLog,
-    setAssistanceLog,
-    setChecked,
-  } = useWorkoutStore();
-  const { setActiveSwapSlot } = useOverlayStore();
+  const activePhase = useActivePhase();
+  const activeLiftId = useActiveLiftId();
+  const assistanceSetCounts = useAssistanceSetCounts();
+  const assistanceLog = useAssistanceLog();
   const exercise = useAccessoryExercise(exerciseIndex);
 
   const weightedWeek = WEIGHTED_ASSISTANCE_WEEKS[activePhase] || WEIGHTED_ASSISTANCE_WEEKS[0];
@@ -30,8 +32,8 @@ export const UndiscoveredAssistanceCard = ({ exerciseIndex }: UndiscoveredAssist
   const prescriptionLabel = exercise.isBodyweight
     ? `${bodyweightWeek.sets} sets`
     : `${weightedWeek.sets}x${weightedWeek.reps}`;
-  const log = assistanceLog[exercise.id] || {};
-  const hasInput = parseFloat(log.w || "0") > 0;
+  const log = assistanceLog[exercise.id] || "";
+  const hasInput = parseFloat(log || "0") > 0;
   const setsDone = assistanceSetCounts[exercise.id] || 0;
   const allSetsDone = setsDone >= totalSets;
   const isComplete = allSetsDone && hasInput;
@@ -39,7 +41,7 @@ export const UndiscoveredAssistanceCard = ({ exerciseIndex }: UndiscoveredAssist
   const handleInputChange = (value: string) => {
     setAssistanceLog((prev) => ({
       ...prev,
-      [exercise.id]: { w: value },
+      [exercise.id]: value,
     }));
     const hasValue = parseFloat(value) > 0;
     if (hasValue && allSetsDone)
@@ -91,7 +93,7 @@ export const UndiscoveredAssistanceCard = ({ exerciseIndex }: UndiscoveredAssist
         </span>
         <WeightInput
           inputId={`acc-${exercise.isBodyweight ? "reps" : "weight"}-${exercise.id}`}
-          value={log.w || ""}
+          value={log || ""}
           onChange={handleInputChange}
           align="center"
         />

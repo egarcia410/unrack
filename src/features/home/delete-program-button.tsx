@@ -1,9 +1,7 @@
 import { Button } from "@base-ui/react/button";
-import { useOverlayStore } from "../../stores/overlay-store";
+import { setShowSettings, setShowDeleteConfirm } from "../../stores/polaris";
 
 export const DeleteProgramButton = () => {
-  const { setShowSettings, setShowDeleteConfirm } = useOverlayStore();
-
   return (
     <div className="border-t border-th-b pt-4 mt-2">
       <Button

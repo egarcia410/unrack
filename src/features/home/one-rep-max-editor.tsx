@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Form } from "@base-ui/react/form";
-import { useProgramStore } from "../../stores/program-store";
+import { useOneRepMaxes, oneRepMaxesSaved } from "../../stores/polaris";
 import { LIFTS } from "../../constants/program";
 import { LiftInputRow } from "../../components/lift-input-row";
 import { PrimaryButton } from "../../components/primary-button";
@@ -13,7 +13,7 @@ type EditOneRepMaxState = {
 
 export const OneRepMaxEditor = () => {
   const [editOneRepMax, setEditOneRepMax] = useState<EditOneRepMaxState | null>(null);
-  const { oneRepMaxes, oneRepMaxesSaved } = useProgramStore();
+  const oneRepMaxes = useOneRepMaxes();
 
   return (
     <Form

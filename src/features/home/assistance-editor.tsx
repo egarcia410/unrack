@@ -1,6 +1,12 @@
 import { useState } from "react";
 import { Collapsible } from "@base-ui/react/collapsible";
-import { useProgramStore } from "../../stores/program-store";
+import {
+  useAssistanceMaximums,
+  useBodyweightBaselines,
+  usePhase,
+  assistanceMaximumsSaved,
+  bodyweightBaselinesSaved,
+} from "../../stores/polaris";
 import { WEIGHTED_ASSISTANCE_WEEKS, BODYWEIGHT_ASSISTANCE_WEEKS } from "../../constants/exercises";
 import { roundToNearest } from "../../lib/calc";
 import { WeightInput } from "../../components/weight-input";
@@ -15,13 +21,9 @@ type EditAssistanceState = {
 export const AssistanceEditor = () => {
   const [expanded, setExpanded] = useState(false);
   const [editState, setEditState] = useState<EditAssistanceState | null>(null);
-  const {
-    assistanceMaximums,
-    bodyweightBaselines,
-    phase,
-    assistanceMaximumsSaved,
-    bodyweightBaselinesSaved,
-  } = useProgramStore();
+  const assistanceMaximums = useAssistanceMaximums();
+  const bodyweightBaselines = useBodyweightBaselines();
+  const phase = usePhase();
 
   const allAccessories = useAllUniqueAccessories();
 

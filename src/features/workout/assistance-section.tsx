@@ -1,12 +1,13 @@
 import { Collapsible } from "@base-ui/react/collapsible";
-import { useProgramStore } from "../../stores/program-store";
+import { useAssistanceMaximums, useBodyweightBaselines } from "../../stores/polaris";
 import { SectionHeader } from "../../components/section-header";
 import { DiscoveredAssistanceCard } from "./discovered-assistance-card";
 import { UndiscoveredAssistanceCard } from "./undiscovered-assistance-card";
 import { useAccessories, useAllAccessoriesDone } from "./use-workout-selectors";
 
 export const AssistanceSection = () => {
-  const { assistanceMaximums, bodyweightBaselines } = useProgramStore();
+  const assistanceMaximums = useAssistanceMaximums();
+  const bodyweightBaselines = useBodyweightBaselines();
   const accessories = useAccessories();
   const allAssistanceDone = useAllAccessoriesDone();
 

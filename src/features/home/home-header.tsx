@@ -1,11 +1,10 @@
 import { useNavigate } from "@tanstack/react-router";
 import { Clock, Settings } from "lucide-react";
-import { useOverlayStore } from "../../stores/overlay-store";
+import { setShowSettings } from "../../stores/polaris";
 import { IconButton } from "../../components/icon-button";
 
 export const HomeHeader = () => {
   const navigate = useNavigate();
-  const { setShowSettings } = useOverlayStore();
 
   return (
     <header className="flex justify-between items-center py-2 pb-4 min-h-11">

@@ -2,7 +2,12 @@ import { useState } from "react";
 import { Collapsible } from "@base-ui/react/collapsible";
 import { Button } from "@base-ui/react/button";
 import { Minus, Plus } from "lucide-react";
-import { useProgramStore } from "../../stores/program-store";
+import {
+  useUnit,
+  useTrainingMaxPercent,
+  unitToggled,
+  trainingMaxPercentChanged,
+} from "../../stores/polaris";
 import { SectionHeader } from "../../components/section-header";
 import { IconButton } from "../../components/icon-button";
 import { DeleteProgramButton } from "./delete-program-button";
@@ -10,7 +15,8 @@ import { cn } from "../../lib/cn";
 
 export const ProgramSettings = () => {
   const [settingsExpanded, setSettingsExpanded] = useState(false);
-  const { unit, trainingMaxPercent, unitToggled, trainingMaxPercentChanged } = useProgramStore();
+  const unit = useUnit();
+  const trainingMaxPercent = useTrainingMaxPercent();
 
   return (
     <Collapsible.Root open={settingsExpanded} onOpenChange={setSettingsExpanded}>

@@ -1,5 +1,5 @@
 import { createFileRoute, redirect } from "@tanstack/react-router";
-import { hasProgramData } from "../stores/program-store";
+import { hasProgramData } from "../stores/polaris";
 import { HomeHeader } from "../features/home/home-header";
 import { WeekOverview } from "../features/home/week-overview";
 import { WeekProgressBar } from "../features/home/week-progress-bar";

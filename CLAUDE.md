@@ -21,39 +21,42 @@
 - No single-character or heavily abbreviated names — code should be readable years later
 - Example: `trainingMax` not `tm`, `inputValue` not `val`, `oneRepMaxes` not `orms`
 
-## Polaris Stores
-- Define stores with `createStore(name, { state, actions, init? })` from `src/stores/polaris`
-- Consume state and actions via destructuring: `const { phase, phaseAdvanced } = useProgramStore()`
-- Valtio proxy tracking gives granular reactivity — only accessed properties trigger re-renders
-- Use `set({ key: value })` for partial merges, `set((s) => { s.key = value })` for mutations
-- Extract `initialState` constant — reuse in store init and reset actions
+## Polaris Stores (Zustand)
+- Define stores with `createStore(name, initialState, options?)` from `src/stores/polaris` — wraps Zustand with Immer, devtools, subscribeWithSelector, and optional persist middleware
+- Consume state via per-field selector hooks: `const phase = usePhase()`, `const template = useTemplate()` — never `useStore()` with no selector (breaks fine-grained subscription)
+- Actions are standalone named exports — import and call directly: `import { phaseAdvanced } from "../stores/polaris"; phaseAdvanced()`
+- Inside actions: read via `useStore.getState()`, write via `useStore.setState(partial)` or `useStore.setState((draft) => { ... })` (Immer-powered)
+- Extract `initialState` constant — reuse in store setup and `reset*Store()` helpers
 - Every store property has a concrete initial value — no optional (`?`) properties in state types
 - Use `false` for booleans, `0` for numbers, `""` for strings, `null` for data-carrying objects, `{}` for dynamic lookup maps
-- Cross-store reads use `useOtherStore.getState()` inside actions
-- Static access (route guards): `useProgramStore.getState()` or `useProgramStore.status("init")`
+- Cross-store reads: `useOtherStore.getState()` inside actions
+- Cross-store writes: import the other store's action (e.g. `setActiveCelebration`) or call `useOtherStore.setState(...)` directly
+- Static access (route guards): `useStore.getState()` or exported helpers like `hasProgramData()`, `hasActiveWorkout()`
 - Never use `.getState()` in components — only in store files, route guards, or exported static selectors
 - Actions are commands — they always return `void`, never values
-- Cross-store side-effects (e.g. setting celebration state) happen inside the action via `useOtherStore.getState()`
 
 ## Store Organization
 
+### File layout
+- Each store is a directory: `src/stores/polaris/{program,workout,overlay}/` with `*.store.ts`, `*.actions.ts`, `*.selectors.ts`, `*.types.ts`
+- Central re-exports in `src/stores/polaris/index.ts` — consumers import from there
+
 ### State types
-- Store-internal state types (`ProgramState`, `WorkoutState`) stay inline — never export them
+- Store-internal state types (`ProgramState`, `WorkoutState`) live in `*.types.ts`, exported for cross-store action typing; not consumed by components
 - Shared types that cross module boundaries live in `src/types.ts`
 
-### Computed
-- Use store `computed` for values derived from a single store's state (e.g. `activeLiftId` from `activeDay`, `template` from `templateId`)
-- Do not use computed for cross-store derivations — use selector hooks instead
-- Do not use computed when it would read most/all state properties (defeats granular reactivity)
+### Derived selectors (per-store)
+- For single-store derivations, export a selector hook from `*.selectors.ts` (e.g. `useTemplate`, `useCurrentPhase`, `useCurrentPhaseWorkouts`) — use `useMemo` when deriving from multiple fields
+- Do not read most/all state properties in one hook (defeats granular reactivity)
 
 ### Static selectors
-- Static selectors (`hasProgramData`, `hasActiveWorkout`) live in store files — for route guards and non-reactive contexts
+- Static selectors (`hasProgramData`, `hasActiveWorkout`) are non-hook helpers in `*.selectors.ts` — for route guards and non-reactive contexts
 
-### Selector hooks
+### Feature-level selector hooks
 - Name files `use-*-selectors.ts` (e.g. `use-workout-selectors.ts`, `use-home-selectors.ts`)
 - Colocate with the consuming feature
 - Use for cross-store derivations and parameterized queries
-- Selector hooks read specific store properties — never pass the full store state to utility functions
+- Selector hooks read specific store properties via atomic hooks — never call `useStore()` without a selector
 
 ## Overlay State Naming
 - `show*` prefix for boolean open/close state (e.g. `showSettings`, `showDeleteConfirm`)
@@ -70,7 +73,7 @@
 
 ## Derived State & Selectors
 - Derive computed values from stores using composed selector hooks — not helper functions that take store data as arguments
-- Components should never pull broad store data (`useProgramData()`) just to pass it into a function — encapsulate that in a hook
+- Components should never call a store hook without a selector and pass the whole state into a function — encapsulate that in a selector hook
 - Colocate selector hooks with the feature that consumes them (e.g. `src/features/workout/use-workout-selectors.ts`)
 - Hooks can compose other hooks and read from multiple stores — they are the view model layer between stores and components
 - Parameterized selectors are hooks that accept arguments (e.g. `useAccessoryExercise(exerciseIndex)`)

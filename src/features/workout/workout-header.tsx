@@ -1,12 +1,22 @@
-import { useProgramStore } from "../../stores/program-store";
-import { useWorkoutStore } from "../../stores/workout-store";
+import {
+  useCycle,
+  useTrainingMaxes,
+  useOneRepMaxes,
+  useTemplate,
+  useActivePhase,
+  useActiveLiftId,
+} from "../../stores/polaris";
 import { LIFTS } from "../../constants/program";
 import { BackButton } from "../../components/back-button";
 import { Badge } from "../../components/badge";
 
 export const WorkoutHeader = () => {
-  const { cycle, trainingMaxes, oneRepMaxes, template } = useProgramStore();
-  const { activePhase, activeLiftId } = useWorkoutStore();
+  const cycle = useCycle();
+  const trainingMaxes = useTrainingMaxes();
+  const oneRepMaxes = useOneRepMaxes();
+  const template = useTemplate();
+  const activePhase = useActivePhase();
+  const activeLiftId = useActiveLiftId();
 
   const phase = template.phases[activePhase];
   const lift = LIFTS.find((l) => l.id === activeLiftId)!;

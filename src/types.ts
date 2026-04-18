@@ -112,53 +112,7 @@ export type WorkoutEntry = {
   } | null;
 };
 
-export type ProgramData = {
-  templateId: TemplateId;
-  unit: Unit;
-  trainingMaxPercent: number;
-  trainingMaxes: Record<string, number>;
-  oneRepMaxes: Record<string, number>;
-  cycle: number;
-  phase: number;
-  workouts: WorkoutEntry[];
-  assistanceHistory: Record<
-    string,
-    Array<{
-      datetime?: number;
-      cycle?: number;
-      phase?: number;
-      weight?: number;
-      isBodyweight?: boolean;
-    }>
-  >;
-  assistanceMaximums: Record<string, number>;
-  bodyweightBaselines: Record<string, number>;
-  assistanceSlots: Record<string, string[]>;
-  customExercises: Record<string, Exercise>;
-  timestamp: number;
-};
-
 export type RestInfo = {
   duration: number;
   reason: string;
-};
-
-export type CelebrationState = {
-  type: "done" | "pr" | "cycle" | "warn";
-  message: string;
-  subtitle: string;
-  subtitleDetail?: string;
-  actionLabel?: string;
-  actionSub?: string;
-  actionSubFrom?: string;
-  actionSubTo?: string;
-  _liftId?: string;
-  _suggestedOneRepMax?: number;
-  _suggestedTrainingMax?: number;
-};
-
-export type SwapSlot = {
-  liftId: string;
-  slot: number;
-  currentId: string;
 };

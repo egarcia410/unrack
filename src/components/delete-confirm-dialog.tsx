@@ -1,11 +1,9 @@
 import { useNavigate } from "@tanstack/react-router";
 import { AlertDialog } from "@base-ui/react/alert-dialog";
-import { useOverlayStore } from "../stores/overlay-store";
-import { useProgramStore } from "../stores/program-store";
+import { useShowDeleteConfirm, setShowDeleteConfirm, programReset } from "../stores/polaris";
 
 export const DeleteConfirmDialog = () => {
-  const { showDeleteConfirm, setShowDeleteConfirm } = useOverlayStore();
-  const { programReset } = useProgramStore();
+  const showDeleteConfirm = useShowDeleteConfirm();
   const navigate = useNavigate();
 
   const handleDelete = () => {

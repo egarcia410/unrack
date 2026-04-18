@@ -1,12 +1,17 @@
 import { Button } from "@base-ui/react/button";
 import { ChevronDown } from "lucide-react";
-import { useProgramStore } from "../../stores/program-store";
-import { useOverlayStore } from "../../stores/overlay-store";
+import {
+  useCycle,
+  useCurrentPhase,
+  useTemplate,
+  setShowTemplatePicker,
+} from "../../stores/polaris";
 import { Badge } from "../../components/badge";
 
 export const WeekOverview = () => {
-  const { cycle, currentPhase, template } = useProgramStore();
-  const { setShowTemplatePicker } = useOverlayStore();
+  const cycle = useCycle();
+  const currentPhase = useCurrentPhase();
+  const template = useTemplate();
 
   return (
     <section className="mb-4">

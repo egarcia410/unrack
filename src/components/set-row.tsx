@@ -1,8 +1,7 @@
 import { Button } from "@base-ui/react/button";
 import { Check } from "lucide-react";
 import { cva } from "class-variance-authority";
-import { useProgramStore } from "../stores/program-store";
-import { useWorkoutStore } from "../stores/workout-store";
+import { useUnit, useChecked, onSetCheck } from "../stores/polaris";
 import { useActiveTrainingMax } from "../features/workout/use-workout-selectors";
 import { calcWeight } from "../lib/calc";
 import { cn } from "../lib/cn";
@@ -37,9 +36,9 @@ type SetRowProps = {
 };
 
 export const SetRow = ({ setKey, reps, percentage }: SetRowProps) => {
-  const { unit } = useProgramStore();
+  const unit = useUnit();
   const trainingMax = useActiveTrainingMax();
-  const { checked, onSetCheck } = useWorkoutStore();
+  const checked = useChecked();
 
   const done = !!checked[setKey];
   const weight = calcWeight(trainingMax, percentage);

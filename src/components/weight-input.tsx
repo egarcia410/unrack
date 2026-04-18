@@ -1,5 +1,5 @@
 import { NumberField } from "@base-ui/react/number-field";
-import { useProgramStore } from "../stores/program-store";
+import { useUnit } from "../stores/polaris";
 import { cn } from "../lib/cn";
 
 type WeightInputProps = {
@@ -25,7 +25,7 @@ export const WeightInput = ({
   className,
   suffix,
 }: WeightInputProps) => {
-  const { unit } = useProgramStore();
+  const unit = useUnit();
   const alignClass = align === "center" ? "text-center" : "text-right";
 
   return (

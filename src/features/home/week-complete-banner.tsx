@@ -1,17 +1,28 @@
 import { Dot } from "lucide-react";
-import { useProgramStore } from "../../stores/program-store";
+import {
+  usePhase,
+  useCycle,
+  useTemplate,
+  useCurrentPhase,
+  useCurrentPhaseWorkouts,
+  phaseAdvanced,
+} from "../../stores/polaris";
 import { LIFT_ORDER } from "../../constants/program";
 import { PrimaryButton } from "../../components/primary-button";
 
 export const WeekCompleteBanner = () => {
-  const { phase, template, currentPhase, currentPhaseWorkouts, phaseAdvanced } = useProgramStore();
+  const phase = usePhase();
+  const cycle = useCycle();
+  const template = useTemplate();
+  const currentPhase = useCurrentPhase();
+  const currentPhaseWorkouts = useCurrentPhaseWorkouts();
   if (currentPhaseWorkouts.length < LIFT_ORDER.length) return null;
 
   const weekPRs = currentPhaseWorkouts.filter((workout) => workout.newOneRepMax).length;
   const isLastPhase = phase >= template.phases.length - 1;
   const isDeload = !currentPhase.sets.some((s) => String(s.reps).includes("+"));
   const nextLabel = isLastPhase
-    ? "Start Cycle " + (useProgramStore.getState().cycle + 1)
+    ? "Start Cycle " + (cycle + 1)
     : "Start " + template.phases[phase + 1].label + " Phase";
 
   const handleAdvancePhase = () => {

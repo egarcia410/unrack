@@ -4,10 +4,9 @@ import { useState } from "react";
 import { LIFTS } from "../constants/program";
 import { LiftInputRow } from "../components/lift-input-row";
 import { PrimaryButton } from "../components/primary-button";
-import { useProgramStore, hasProgramData } from "../stores/program-store";
+import { programCreated, hasProgramData } from "../stores/polaris";
 
 const SetupPage = () => {
-  const { programCreated } = useProgramStore();
   const navigate = useNavigate();
   const [oneRepMaxes, setOneRepMaxes] = useState<Record<string, string>>({
     ohp: "",

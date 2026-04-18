@@ -2,8 +2,13 @@ import { useNavigate } from "@tanstack/react-router";
 import { Button } from "@base-ui/react/button";
 import { Check, Dot } from "lucide-react";
 import { cva } from "class-variance-authority";
-import { useProgramStore } from "../../stores/program-store";
-import { useWorkoutStore } from "../../stores/workout-store";
+import {
+  useCurrentPhase,
+  useCurrentPhaseWorkouts,
+  useTrainingMaxes,
+  useOneRepMaxes,
+  startWorkout,
+} from "../../stores/polaris";
 import { LIFTS, LIFT_ORDER } from "../../constants/program";
 import { calcWeight } from "../../lib/calc";
 import { PRRing } from "../../components/pr-ring";
@@ -38,8 +43,10 @@ type LiftCardProps = {
 
 export const LiftCard = ({ liftIndex }: LiftCardProps) => {
   const navigate = useNavigate();
-  const { currentPhase, currentPhaseWorkouts, trainingMaxes, oneRepMaxes } = useProgramStore();
-  const { startWorkout } = useWorkoutStore();
+  const currentPhase = useCurrentPhase();
+  const currentPhaseWorkouts = useCurrentPhaseWorkouts();
+  const trainingMaxes = useTrainingMaxes();
+  const oneRepMaxes = useOneRepMaxes();
 
   const liftId = LIFT_ORDER[liftIndex];
   const lift = LIFTS.find((candidate) => candidate.id === liftId)!;

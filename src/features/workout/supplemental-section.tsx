@@ -1,13 +1,12 @@
 import { Collapsible } from "@base-ui/react/collapsible";
-import { useProgramStore } from "../../stores/program-store";
-import { useWorkoutStore } from "../../stores/workout-store";
+import { useTemplateId, useChecked } from "../../stores/polaris";
 import { SectionHeader } from "../../components/section-header";
 import { SetRow } from "../../components/set-row";
 import { useSupplementalSets } from "./use-workout-selectors";
 
 export const SupplementalSection = () => {
-  const { templateId } = useProgramStore();
-  const { checked } = useWorkoutStore();
+  const templateId = useTemplateId();
+  const checked = useChecked();
   const supplementalSets = useSupplementalSets();
 
   const allSuppDone = supplementalSets.every((supplementalSet) => checked[supplementalSet.key]);

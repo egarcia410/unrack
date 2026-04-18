@@ -1,5 +1,15 @@
-import { useProgramStore } from "../../stores/program-store";
-import { useWorkoutStore } from "../../stores/workout-store";
+import {
+  useActivePhase as useActivePhaseNumber,
+  useActiveLiftId,
+  useAssistanceSetCounts,
+  useAssistanceLog,
+  useTemplate,
+  useTrainingMaxes,
+  useAssistanceSlots,
+  useCustomExercises,
+  useAssistanceMaximums,
+  useBodyweightBaselines,
+} from "../../stores/polaris";
 import { WEIGHTED_ASSISTANCE_WEEKS, BODYWEIGHT_ASSISTANCE_WEEKS } from "../../constants/exercises";
 import {
   getAssistanceForLift,
@@ -10,20 +20,21 @@ import { deriveSupplementalSets } from "../../lib/sets";
 export { WARMUP_SETS } from "../../lib/sets";
 
 export const useActivePhase = () => {
-  const { template } = useProgramStore();
-  const { activePhase } = useWorkoutStore();
+  const template = useTemplate();
+  const activePhase = useActivePhaseNumber();
   return template.phases[activePhase];
 };
 
 export const useActiveTrainingMax = () => {
-  const { trainingMaxes } = useProgramStore();
-  const { activeLiftId } = useWorkoutStore();
+  const trainingMaxes = useTrainingMaxes();
+  const activeLiftId = useActiveLiftId();
   return trainingMaxes[activeLiftId];
 };
 
 export const useAccessories = () => {
-  const { activeLiftId } = useWorkoutStore();
-  const { assistanceSlots, customExercises } = useProgramStore();
+  const activeLiftId = useActiveLiftId();
+  const assistanceSlots = useAssistanceSlots();
+  const customExercises = useCustomExercises();
   return getAssistanceForLift(activeLiftId, assistanceSlots, customExercises);
 };
 
@@ -33,8 +44,10 @@ export const useAccessoryExercise = (exerciseIndex: number) => {
 };
 
 export const useAssistancePrescription = (exerciseIndex: number) => {
-  const { activePhase, activeLiftId } = useWorkoutStore();
-  const { assistanceMaximums, bodyweightBaselines } = useProgramStore();
+  const activePhase = useActivePhaseNumber();
+  const activeLiftId = useActiveLiftId();
+  const assistanceMaximums = useAssistanceMaximums();
+  const bodyweightBaselines = useBodyweightBaselines();
   const exercise = useAccessoryExercise(exerciseIndex);
   return getAssistancePrescription(
     exercise,
@@ -46,23 +59,27 @@ export const useAssistancePrescription = (exerciseIndex: number) => {
 };
 
 export const useIsExerciseDiscovered = (exerciseIndex: number) => {
-  const { assistanceMaximums, bodyweightBaselines } = useProgramStore();
+  const assistanceMaximums = useAssistanceMaximums();
+  const bodyweightBaselines = useBodyweightBaselines();
   const exercise = useAccessoryExercise(exerciseIndex);
   return isAssistanceDiscovered(exercise, assistanceMaximums, bodyweightBaselines);
 };
 
 export const useSupplementalSets = () => {
-  const { template } = useProgramStore();
+  const template = useTemplate();
   const phase = useActivePhase();
-  const { activePhase } = useWorkoutStore();
+  const activePhase = useActivePhaseNumber();
   return deriveSupplementalSets(template, phase, activePhase);
 };
 
 export const useAllAccessoriesDone = () => {
   const accessories = useAccessories();
-  const { activePhase, activeLiftId } = useWorkoutStore();
-  const { assistanceSetCounts, assistanceLog } = useWorkoutStore();
-  const { assistanceMaximums, bodyweightBaselines } = useProgramStore();
+  const activePhase = useActivePhaseNumber();
+  const activeLiftId = useActiveLiftId();
+  const assistanceSetCounts = useAssistanceSetCounts();
+  const assistanceLog = useAssistanceLog();
+  const assistanceMaximums = useAssistanceMaximums();
+  const bodyweightBaselines = useBodyweightBaselines();
 
   return accessories.every((exercise) => {
     if (!isAssistanceDiscovered(exercise, assistanceMaximums, bodyweightBaselines)) {
@@ -73,7 +90,7 @@ export const useAllAccessoriesDone = () => {
       return (
         (assistanceSetCounts[exercise.id] || 0) >= undiscoveredSets &&
         assistanceLogEntry &&
-        parseFloat(assistanceLogEntry.w || "0") > 0
+        parseFloat(assistanceLogEntry || "0") > 0
       );
     }
     const prescription = getAssistancePrescription(
@@ -89,9 +106,11 @@ export const useAllAccessoriesDone = () => {
 
 export const useAccessoryProgress = () => {
   const accessories = useAccessories();
-  const { activePhase, activeLiftId } = useWorkoutStore();
-  const { assistanceSetCounts } = useWorkoutStore();
-  const { assistanceMaximums, bodyweightBaselines } = useProgramStore();
+  const activePhase = useActivePhaseNumber();
+  const activeLiftId = useActiveLiftId();
+  const assistanceSetCounts = useAssistanceSetCounts();
+  const assistanceMaximums = useAssistanceMaximums();
+  const bodyweightBaselines = useBodyweightBaselines();
 
   let done = 0;
   let total = 0;

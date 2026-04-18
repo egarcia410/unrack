@@ -1,7 +1,15 @@
 import { Button } from "@base-ui/react/button";
-import { useProgramStore } from "../../stores/program-store";
-import { useWorkoutStore } from "../../stores/workout-store";
-import { useOverlayStore } from "../../stores/overlay-store";
+import {
+  useAssistanceMaximums,
+  useBodyweightBaselines,
+  useAssistanceSlots,
+  useCustomExercises,
+  useUnit,
+  exerciseSwapped,
+  useActiveSwapSlot,
+  setActiveSwapSlot,
+  useActivePhase,
+} from "../../stores/polaris";
 import { EXERCISE_LIB, EXERCISE_CATEGORIES, CAT_LABELS } from "../../constants/exercises";
 import { getAssistanceForLift, getAssistancePrescription } from "../../lib/exercises";
 import { cn } from "../../lib/cn";
@@ -14,16 +22,13 @@ const CATEGORY_TEXT_CLASSES: Record<string, string> = {
 };
 
 export const SwapExerciseDrawer = () => {
-  const { activeSwapSlot, setActiveSwapSlot } = useOverlayStore();
-  const { activePhase } = useWorkoutStore();
-  const {
-    assistanceMaximums,
-    bodyweightBaselines,
-    assistanceSlots,
-    customExercises,
-    unit,
-    exerciseSwapped,
-  } = useProgramStore();
+  const activeSwapSlot = useActiveSwapSlot();
+  const activePhase = useActivePhase();
+  const assistanceMaximums = useAssistanceMaximums();
+  const bodyweightBaselines = useBodyweightBaselines();
+  const assistanceSlots = useAssistanceSlots();
+  const customExercises = useCustomExercises();
+  const unit = useUnit();
 
   const usedExerciseIds = activeSwapSlot
     ? new Set(

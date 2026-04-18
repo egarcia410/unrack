@@ -1,9 +1,9 @@
 import { Progress } from "@base-ui/react/progress";
-import { useProgramStore } from "../../stores/program-store";
+import { useCurrentPhaseWorkouts } from "../../stores/polaris";
 import { LIFT_ORDER } from "../../constants/program";
 
 export const WeekProgressBar = () => {
-  const { currentPhaseWorkouts } = useProgramStore();
+  const currentPhaseWorkouts = useCurrentPhaseWorkouts();
 
   const progress = currentPhaseWorkouts.length;
   const total = LIFT_ORDER.length;

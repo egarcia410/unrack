@@ -3,8 +3,7 @@ import { DrawerPreview as DrawerPrimitive } from "@base-ui/react/drawer";
 import { Button } from "@base-ui/react/button";
 import { Check } from "lucide-react";
 import { cva } from "class-variance-authority";
-import { useProgramStore } from "../../stores/program-store";
-import { useWorkoutStore } from "../../stores/workout-store";
+import { useChecked, useWorkoutStart, workoutFinished } from "../../stores/polaris";
 import { cn } from "../../lib/cn";
 import { LiveClock } from "../../components/live-clock";
 import {
@@ -27,8 +26,8 @@ const bottomBarVariants = cva("max-w-115 mx-auto shadow-[0_-4px_12px_rgba(0,0,0,
 export const WorkoutBottomBar = () => {
   const navigate = useNavigate();
 
-  const { workoutFinished } = useProgramStore();
-  const { checked, workoutStart } = useWorkoutStore();
+  const checked = useChecked();
+  const workoutStart = useWorkoutStart();
 
   const phase = useActivePhase();
   const supplementalSets = useSupplementalSets();

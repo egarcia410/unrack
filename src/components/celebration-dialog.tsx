@@ -3,8 +3,7 @@ import { ArrowRight, Dot, Dumbbell, Star, TriangleAlert, Trophy, Zap } from "luc
 import { Dialog } from "@base-ui/react/dialog";
 import { cva } from "class-variance-authority";
 import { cn } from "../lib/cn";
-import { useOverlayStore } from "../stores/overlay-store";
-import { useProgramStore } from "../stores/program-store";
+import { useActiveCelebration, setActiveCelebration, trainingMaxAdjusted } from "../stores/polaris";
 
 const celebrationVariants = cva(
   "fixed z-50 inset-0 m-auto h-fit text-center px-7 py-9 rounded-3xl bg-th-s1 border max-w-80 w-11/12 transition-[opacity,transform] duration-200 data-starting-style:opacity-0 data-starting-style:scale-95 data-ending-style:opacity-0 data-ending-style:scale-95",
@@ -40,26 +39,14 @@ const titleColorVariants = cva("text-xl font-extrabold mb-1.5", {
 });
 
 export const CelebrationDialog = () => {
-  const { activeCelebration, setActiveCelebration } = useOverlayStore();
-  const { trainingMaxAdjusted } = useProgramStore();
+  const activeCelebration = useActiveCelebration();
 
   useEffect(() => {
     if (activeCelebration && activeCelebration.type !== "warn") {
       const timeoutId = setTimeout(() => setActiveCelebration(null), 3500);
       return () => clearTimeout(timeoutId);
     }
-  }, [activeCelebration, setActiveCelebration]);
-
-  const onAction = activeCelebration?._liftId
-    ? () => {
-        trainingMaxAdjusted(
-          activeCelebration._liftId!,
-          activeCelebration._suggestedOneRepMax!,
-          activeCelebration._suggestedTrainingMax!,
-        );
-        setActiveCelebration(null);
-      }
-    : undefined;
+  }, [activeCelebration]);
 
   const Icon =
     activeCelebration?.type === "cycle"
@@ -71,6 +58,32 @@ export const CelebrationDialog = () => {
           : Dumbbell;
 
   const variantType = activeCelebration?.type === "warn" ? "warn" : "default";
+
+  const subtitle =
+    activeCelebration?.type === "done"
+      ? activeCelebration.liftName
+      : activeCelebration?.type === "pr"
+        ? `${activeCelebration.liftName}: ${activeCelebration.oldOneRepMax} to ${activeCelebration.newOneRepMax} ${activeCelebration.unit}`
+        : activeCelebration?.type === "warn" || activeCelebration?.type === "cycle"
+          ? activeCelebration.subtitle
+          : undefined;
+
+  const subtitleDetail =
+    activeCelebration?.type === "done" || activeCelebration?.type === "pr"
+      ? activeCelebration.duration
+      : undefined;
+
+  const onAction =
+    activeCelebration?.type === "warn"
+      ? () => {
+          trainingMaxAdjusted(
+            activeCelebration.liftId,
+            activeCelebration.suggestedOneRepMax,
+            activeCelebration.suggestedTrainingMax,
+          );
+          setActiveCelebration(null);
+        }
+      : undefined;
 
   return (
     <Dialog.Root
@@ -96,26 +109,19 @@ export const CelebrationDialog = () => {
             )}
           >
             <p className="flex items-center justify-center">
-              {activeCelebration?.subtitle}
-              {activeCelebration?.subtitleDetail && (
+              {subtitle}
+              {subtitleDetail && (
                 <>
                   <Dot size={16} />
-                  {activeCelebration.subtitleDetail}
+                  {subtitleDetail}
                 </>
               )}
             </p>
             {activeCelebration?.type === "warn" && (
-              <>
-                {activeCelebration.actionSubFrom && activeCelebration.actionSubTo && (
-                  <p className="text-xs font-mono text-th-t3 mt-3 flex items-center justify-center gap-1">
-                    {activeCelebration.actionSubFrom} <ArrowRight size={12} />{" "}
-                    {activeCelebration.actionSubTo}
-                  </p>
-                )}
-                {activeCelebration.actionSub && !activeCelebration.actionSubFrom && (
-                  <p className="text-xs font-mono text-th-t3 mt-3">{activeCelebration.actionSub}</p>
-                )}
-              </>
+              <p className="text-xs font-mono text-th-t3 mt-3 flex items-center justify-center gap-1">
+                {activeCelebration.comparisonFrom} <ArrowRight size={12} />{" "}
+                {activeCelebration.comparisonTo}
+              </p>
             )}
           </Dialog.Description>
           {activeCelebration?.type === "warn" && onAction && (
@@ -124,7 +130,7 @@ export const CelebrationDialog = () => {
                 onClick={onAction}
                 className="flex-1 py-3.5 rounded-xl border-none bg-th-r text-white text-sm font-bold min-h-12"
               >
-                {activeCelebration.actionLabel || "Adjust"}
+                {activeCelebration.actionLabel}
               </Dialog.Close>
               <Dialog.Close
                 onClick={() => setActiveCelebration(null)}

@@ -1,7 +1,14 @@
 import { Dot, Minus, Plus, ArrowRight } from "lucide-react";
 import { cva } from "class-variance-authority";
-import { useProgramStore } from "../../stores/program-store";
-import { useWorkoutStore } from "../../stores/workout-store";
+import {
+  useUnit,
+  useOneRepMaxes,
+  useActiveLiftId,
+  useChecked,
+  useAmrapReps,
+  activateAmrap,
+  setAmrapReps,
+} from "../../stores/polaris";
 import { calcWeight, epley } from "../../lib/calc";
 import { cn } from "../../lib/cn";
 import { PRRing } from "../../components/pr-ring";
@@ -45,12 +52,14 @@ type AmrapCardProps = {
 };
 
 export const AmrapCard = ({ setIndex }: AmrapCardProps) => {
-  const { unit, oneRepMaxes } = useProgramStore();
+  const unit = useUnit();
+  const oneRepMaxes = useOneRepMaxes();
   const trainingMax = useActiveTrainingMax();
-  const { activeLiftId } = useWorkoutStore();
+  const activeLiftId = useActiveLiftId();
   const phase = useActivePhase();
 
-  const { checked, amrapReps, activateAmrap, setAmrapReps } = useWorkoutStore();
+  const checked = useChecked();
+  const amrapReps = useAmrapReps();
 
   const set = phase.sets[setIndex];
   const setKey = `m${setIndex}`;

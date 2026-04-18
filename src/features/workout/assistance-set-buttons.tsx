@@ -1,6 +1,10 @@
 import { Button } from "@base-ui/react/button";
 import { Check } from "lucide-react";
-import { useWorkoutStore } from "../../stores/workout-store";
+import {
+  useAssistanceSetCounts,
+  incrementAssistanceSet,
+  decrementAssistanceSet,
+} from "../../stores/polaris";
 import { cn } from "../../lib/cn";
 
 type AssistanceSetButtonsProps = {
@@ -9,7 +13,7 @@ type AssistanceSetButtonsProps = {
 };
 
 export const AssistanceSetButtons = ({ exerciseId, totalSets }: AssistanceSetButtonsProps) => {
-  const { assistanceSetCounts, incrementAssistanceSet, decrementAssistanceSet } = useWorkoutStore();
+  const assistanceSetCounts = useAssistanceSetCounts();
   const setsDone = assistanceSetCounts[exerciseId] || 0;
 
   return (

@@ -1,14 +1,18 @@
 import { Button } from "@base-ui/react/button";
-import { useProgramStore } from "../../stores/program-store";
-import { useOverlayStore } from "../../stores/overlay-store";
+import {
+  useTemplateId,
+  templateChanged,
+  useShowTemplatePicker,
+  setShowTemplatePicker,
+} from "../../stores/polaris";
 import { TEMPLATES } from "../../constants/program";
 import { Drawer } from "../../components/drawer";
 import { cn } from "../../lib/cn";
 import type { TemplateId } from "../../types";
 
 export const TemplatePickerDrawer = () => {
-  const { showTemplatePicker, setShowTemplatePicker } = useOverlayStore();
-  const { templateId, templateChanged } = useProgramStore();
+  const showTemplatePicker = useShowTemplatePicker();
+  const templateId = useTemplateId();
 
   return (
     <Drawer
